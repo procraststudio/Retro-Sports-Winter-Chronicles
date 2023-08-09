@@ -3,15 +3,19 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public string name { get; set; }
+    public int ranking { get; set; }    
     public char grade { get; set; }
     public int experience { get; set; }
     public int averagePerformance { get; set; }
     public int finalModifier  { get; set; }
     public int finalPerformance { get; set; }
+    public int place { get; set; }
 
-    public Player(string name, char grade, int experience)
+       
+
+    public Player(string name, int ranking, char grade, int experience)
     {
-
+        this.ranking = ranking;
         this.name = name;
         this.experience = experience;
         this.grade = grade;
@@ -20,7 +24,7 @@ public class Player : MonoBehaviour
 
     public int calculateAverage()
     {
-        if (grade == 'A')
+        if (this.grade =='A')
         {
             averagePerformance = 24;
         }
