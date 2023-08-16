@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -12,20 +11,26 @@ public class Competition : MonoBehaviour
     public int thirdD6;
     public int competitionRoll;
     public int performance;
-    [SerializeField] TMP_Text finalText;
-    [SerializeField] TMP_Text descriptionText;
+    public int partsOfRun;
+    [SerializeField] public TMP_Text finalText;
     [SerializeField] TMP_Text startingList;
     [SerializeField] TMP_Text outsidersList;
+    [SerializeField] TMP_Text outOf15List;
     [SerializeField] TMP_Text resultsText;
-    [SerializeField] TMP_Text competitionName; 
-    List<Player> players = new List<Player>();
+    [SerializeField] TMP_Text competitorName;
+    [SerializeField] TMP_Text competitionName;
+    public List<Player> players = new List<Player>();
     List<Player> finishers = new List<Player>();
-    List<Player> outsiders = new List<Player>();
+    public List<Player> outsiders = new List<Player>();
+    public List<Player> outOf15Competitors;
     public Player currentCompetitor;
     int currentCompetitorNo;
+    public int numberOfButtonClicks = 0;
     public GameObject dicePanel;
     Dice dice;
-    Surprises surprise;   
+    Surprises surprise;
+    RunDescription description;
+    
 
 
     void Start()
@@ -35,113 +40,124 @@ public class Competition : MonoBehaviour
         competitionName.text = FindObjectOfType<Gamemanager>().competitionName.ToString();
         currentCompetitorNo = players.Count - 1;
         dice = FindObjectOfType<Dice>();
+        description = FindObjectOfType<RunDescription>();
         updatePlayerListText();
         updateOutsiders();
         surprise = FindObjectOfType<Surprises>();
+        partsOfRun = 0;
+        outOf15Competitors = new List<Player> { };
 
     }
 
-    void Update()
+    private void Update()
     {
-
-
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            Run();
+        }
     }
 
     public void Run()
     {
+        surprise.surpriseEffect = false;
+        dice.ResetDice();
+        description.ResetDescription();
         currentCompetitor = players[currentCompetitorNo];
-        bool surpriseHappened = surprise.IsSurprise(currentCompetitor);
-        if (!surpriseHappened)
+        competitorName.text = currentCompetitor.name + " (" + currentCompetitor.nationality + ")";
+        partsOfRun++;
+        Debug.Log("RUN: " + partsOfRun);
+        //  SURPRISE CHECK
+        surprise.CheckSurprise(currentCompetitor);
+        SurpriseEffect(currentCompetitor);
+
+        if ((currentCompetitorNo >= 0) && (!surprise.surpriseEffect))
         {
-            if (currentCompetitorNo >= 0)
+            currentCompetitor = players[currentCompetitorNo];
+            firstD6 = Random.Range(1, 7);
+            secondD6 = Random.Range(1, 7);
+            thirdD6 = Random.Range(1, 7);
+            dice.StartCoroutine("showDice");
+            //dice.showDice();
+            competitionRoll = firstD6 + secondD6;
+            Debug.Log("NAME: " + currentCompetitor.name + ". SUM OF 2D6: " + competitionRoll + ". THIRD D6: " + thirdD6);
+
+            switch (competitionRoll)
             {
-                currentCompetitor = players[currentCompetitorNo];
-                firstD6 = Random.Range(1, 7);
-                secondD6 = Random.Range(1, 7);
-                thirdD6 = Random.Range(1, 7);
-                //dice.StartCoroutine("RollTheDice");
-                dice.showDice();
-                competitionRoll = firstD6 + secondD6;
-                Debug.Log("NAME: " + currentCompetitor.name + ". SUM OF 2D6: " + competitionRoll + ". THIRD D6: " + thirdD6);
-                switch (competitionRoll)
-                {
-                    case 2: calculatePerformance(currentCompetitor, -1, thirdD6); break; //DISASTER
-                    case 3: calculatePerformance(currentCompetitor, 0, thirdD6); break; // MEDIOCRE
-                    case 4:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
-                        { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 0, thirdD6); }
-                        break;
+                case 2:
+                    currentCompetitor.PoorFormEffect();
+                    calculatePerformance(currentCompetitor, -1, thirdD6); break; //DISASTER
+                case 3: calculatePerformance(currentCompetitor, 0, thirdD6); break; // MEDIOCRE
+                case 4:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
+                    { calculatePerformance(currentCompetitor, 1, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 0, thirdD6); }
+                    break;
 
-                    case 5:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                        { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                        break; // POOR
-                    case 6:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                        { calculatePerformance(currentCompetitor, 3, thirdD6); }
-                        else if ((currentCompetitor.grade == 'E'))
-                        { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                        break; // BELOW AVERAGE
+                case 5:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
+                    { calculatePerformance(currentCompetitor, 2, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 1, thirdD6); }
+                    break; // POOR
+                case 6:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
+                    { calculatePerformance(currentCompetitor, 3, thirdD6); }
+                    else if ((currentCompetitor.grade == 'E'))
+                    { calculatePerformance(currentCompetitor, 1, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 2, thirdD6); }
+                    break; // BELOW AVERAGE
 
-                    case 7:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                        { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                        else if ((currentCompetitor.grade == 'C'))
-                        { calculatePerformance(currentCompetitor, 3, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                        break; //AVERAGE
+                case 7:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
+                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
+                    else if ((currentCompetitor.grade == 'C'))
+                    { calculatePerformance(currentCompetitor, 3, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 2, thirdD6); }
+                    break; //AVERAGE
 
-                    case 8:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                        { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                        else if ((currentCompetitor.grade == 'C'))
-                        { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //GOOD
+                case 8:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
+                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
+                    else if ((currentCompetitor.grade == 'C'))
+                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //GOOD
 
-                    case 9:
-                        if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
-                        { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                        else if ((currentCompetitor.grade == 'D'))
-                        { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //PRETTY GOOD
+                case 9:
+                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
+                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
+                    else if ((currentCompetitor.grade == 'D'))
+                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //PRETTY GOOD
 
-                    case 10:
-                        if ((currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C') || (currentCompetitor.grade == 'D'))
-                        { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                        else if ((currentCompetitor.grade == 'E'))
-                        { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                        else if ((currentCompetitor.grade == 'A')) { calculatePerformance(currentCompetitor, 6, thirdD6); };
-                        break; // VERY GOOD
+                case 10:
+                    if ((currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C') || (currentCompetitor.grade == 'D'))
+                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
+                    else if ((currentCompetitor.grade == 'E'))
+                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
+                    else if ((currentCompetitor.grade == 'A')) { calculatePerformance(currentCompetitor, 6, thirdD6); };
+                    break; // VERY GOOD
 
-                    case 11:
-                        if ((currentCompetitor.grade == 'E'))
-                        { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                        else { calculatePerformance(currentCompetitor, 6, thirdD6); }; break; //GREAT!
-                    case 12:
-                        Debug.Log(currentCompetitor.name + ": GREAT! GREAT! GREAT");
-                        { calculatePerformance(currentCompetitor, 7, thirdD6); }; break; // CRIT SUCCESS
-                }
+                case 11:
+                    if ((currentCompetitor.grade == 'E'))
+                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
+                    else { calculatePerformance(currentCompetitor, 6, thirdD6); }; break; //GREAT!
+                case 12:
+                    {
+                        currentCompetitor.GoodFormEffect();
+                        calculatePerformance(currentCompetitor, 7, thirdD6);
+                    };
+                    break; // CRIT SUCCESS
             }
 
-            // players.Remove(currentCompetitor);
-            // 
-            currentCompetitorNo--;
-
-            finishers.Add(currentCompetitor);
-            players.RemoveAt(players.Count - 1);
-
-            updatePlayerListText();
-            updateResults();
+            if (partsOfRun > 2)
+            {
+                currentCompetitorNo--;
+                finishers.Add(currentCompetitor);
+                players.RemoveAt(players.Count - 1);
+                updatePlayerListText();
+                updateResults();
+                partsOfRun = 0;
+            }
         }
-        else
-        {
-            SurpriseEffect();
-            return;
-        }
-        // 
     }
 
     public void calculatePerformance(Player player, int modifier, int thirdDie)
@@ -150,32 +166,31 @@ public class Competition : MonoBehaviour
         switch (modifier)
         {
             case -1:
-                player.finalModifier = thirdDie * (-2);
-                if (player.finalModifier > -6) { player.finalModifier = -6; };
-                descriptionText.color = Color.red; descriptionText.text = "DISASTER..."; break;
-            case 0: player.finalModifier = thirdDie * (-2); descriptionText.color = Color.red; descriptionText.text = "MEDIOCRE"; break;
-            case 1: player.finalModifier = thirdDie * (-1); descriptionText.color = Color.red; descriptionText.text = "VERY POOR"; break;
-            case 2: player.finalModifier = Random.Range(-3, 0); descriptionText.color = Color.red; descriptionText.text = "POOR"; break;
+                player.runModifier = thirdDie * (-2);
+                if (player.runModifier > -6) { player.runModifier = -6; };
+                description.StoreDescription(Color.red, "DISASTER"); break;
+            case 0: player.runModifier = thirdDie * (-2); description.StoreDescription(Color.red, "MEDIOCRE"); break;
+            case 1: player.runModifier = thirdDie * (-1); description.StoreDescription(Color.red, "VERY POOR"); break;
+            case 2: player.runModifier = Random.Range(-3, 0); description.StoreDescription(Color.red, "POOR"); break;
             case 3:
-                if (thirdDie < 3) { player.finalModifier = Random.Range(-4, -1); }
-                else if (thirdDie > 4) { player.finalModifier = Random.Range(1, 4); }
-                else { player.finalModifier = 0; }; descriptionText.color = Color.white; descriptionText.text = "BELOW AVERAGE"; break;
+                if (thirdDie < 3) { player.runModifier = Random.Range(-4, -1); }
+                else if (thirdDie > 4) { player.runModifier = Random.Range(1, 4); }
+                else { player.runModifier = 0; }; description.StoreDescription(Color.white, "NOT GOOD"); break;
             case 4:
-                if (thirdDie < 3) { player.finalModifier = Random.Range(-3, 0); }
-                else if (thirdDie > 4) { player.finalModifier = Random.Range(2, 5); }
-                else { player.finalModifier = 0; }; descriptionText.color = Color.white; descriptionText.text = "AVERAGE"; break;
-            case 5: player.finalModifier = Random.Range(1, 4); descriptionText.color = Color.green; descriptionText.text = "GOOD"; break;
-            case 6: player.finalModifier = thirdDie; descriptionText.color = Color.green; descriptionText.text = "GREAT!"; break;
+                if (thirdDie < 3) { player.runModifier = Random.Range(-3, 0); }
+                else if (thirdDie > 4) { player.runModifier = Random.Range(2, 5); }
+                else { player.runModifier = 0; }; description.StoreDescription(Color.white, "AVERAGE"); break;
+            case 5: player.runModifier = Random.Range(1, 4); description.StoreDescription(Color.green, "GOOD"); break;
+            case 6: player.runModifier = thirdDie; description.StoreDescription(Color.green, "GREAT!"); break;
             case 7:
-                player.finalModifier = thirdDie * 2;
-                if (player.finalModifier < 6) { player.finalModifier = 6; }
-                descriptionText.color = Color.green; descriptionText.text = "WONDERFUL!"; break;
+                player.runModifier = thirdDie * 2;
+                if (player.runModifier < 6) { player.runModifier = 6; }
+                description.StoreDescription(Color.green, "WONDERFUL!"); break;
         }
+
         player.calculateAverage();
-        player.calculateFinal(player.finalModifier);
+        player.calculateFinal(player.runModifier);
         showResults(currentCompetitor, currentCompetitor.finalPerformance);
-
-
 
     }
 
@@ -184,15 +199,15 @@ public class Competition : MonoBehaviour
     {
         finalText.text += "\n" + player.name +
         ": AVERAGE: " + player.averagePerformance +
-        ", MODIFIER: " + player.finalModifier +
-        ", FINAL: " + player.finalPerformance;
+        ", RUN MODIFIER: " + player.runModifier +
+        ", SUM OF RUN: " + (player.averagePerformance + player.runModifier);
 
     }
     public void showStarters(List<Player> players)
     {
         for (int i = 0; i < players.Count; i++)
         {
-            startingList.text = players[i].name + " . GRADE: " + players[i].grade + "\n";
+            startingList.text = players[i].name + " (" + players[i].nationality + ")" + " . GRADE: " + players[i].grade + "\n";
         }
 
     }
@@ -200,11 +215,12 @@ public class Competition : MonoBehaviour
     public void updatePlayerListText()
     {
         startingList.text = "";
-       
+
 
         foreach (Player player in players)
         {
-            startingList.text += player.name + " . Grade: " + player.grade + "\n";
+            startingList.text += player.name +
+            " (" + player.nationality + ")" + ". Rank: " + player.ranking + ", Grade: " + player.grade + "\n";
         }
 
     }
@@ -220,6 +236,18 @@ public class Competition : MonoBehaviour
         }
 
     }
+    public void updateOutOf15List()
+    {
+        outOf15List.text = "";
+
+
+        foreach (Player player in outOf15Competitors)
+        {
+            outOf15List.text += player.name + " . Grade: " + player.grade + "\n";
+        }
+
+    }
+
 
     public void updateResults()
     {
@@ -232,25 +260,29 @@ public class Competition : MonoBehaviour
 
         foreach (Player player in finishers)
         {
-            resultsText.text += player.place +". "+ player.name + " RESULT :" + player.finalPerformance+ "\n";
+            resultsText.text += player.place +
+             ". " + player.name + " (" + player.nationality + "): " + player.finalPerformance + " pts." + "\n";
         }
     }
 
-    public void SurpriseEffect()
+    public void SurpriseEffect(Player player)
     {
-        //outOf15List.Add(currentCompetitor)
-        players.RemoveAt(players.Count - 1);
-        descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
+        if (surprise.surpriseEffect)
+        {
+            Player goodOutsider = outsiders[0];
+            outOf15Competitors.Add(player);
+            players.RemoveAt(players.Count - 1);
+            players.Add(goodOutsider);
+            outsiders.Remove(goodOutsider);
+            updateOutOf15List();
+            updateOutsiders();
+            updatePlayerListText();
+            partsOfRun = 0;
+            // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
+            finalText.text += "\n" + player.name + " IS OUT OF 15!";
+        }
     }
 
-    //public void showDice(int firstDie, int secondDie, int thirdDie)
-    //{
-    // dicePanel.SetActive(true);
-    //firstDieImage.GetComponent<SpriteRenderer>().sprite = diceImages[firstDie-1];
-    // secondDieImage.GetComponent<SpriteRenderer>().sprite = diceImages[secondDie+5];
-    // thirdDieImage.GetComponent<SpriteRenderer>().sprite = diceImages[thirdDie + 11];
-    // Debug.Log("DICE SHOWN");
-    // }
 
 
 

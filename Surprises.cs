@@ -1,43 +1,47 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
+using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class Surprises : MonoBehaviour
 {
-    public int surpriseChance { get; set; }
+    public float surpriseChance { get; set; }
+    Gamemanager gamemanager;
+    public bool surpriseEffect { get; set; }
+    [SerializeField] TMP_Text surpriseInfo;
+
     void Start()
     {
-       
-        surpriseChance  =  Random.Range(13, 81) + FindObjectOfType<Gamemanager>().surprisesModifier;
-        Debug.Log("SURPRISE CHANCE TODAY: "+surpriseChance);
+        Debug.Log("SURPRISE CHANCE TODAY: " + surpriseChance);
+        surpriseEffect = false;
+        gamemanager = FindObjectOfType<Gamemanager>();
     }
 
-    // Update is called once per frame
 
 
-
-    public bool IsSurprise(Player player)
+    public void CheckSurprise(Player player)
     {
-        int surpriseRoll = Random.Range(1, 100);
-        if ((surpriseRoll) <= (surpriseChance))
+        surpriseInfo.text = "";
+        int favourites = gamemanager.numberOfFavourites;
+        float surpriseRoll = Random.Range(1, 100);
+        Debug.Log("SURPRISE ROLL: " + surpriseRoll);
+        if (((player.ranking) <= (favourites)) && (surpriseRoll <= (player.ranking * FindObjectOfType<Gamemanager>().surprisesModifier)))
         {
-            int surpriseChance = Random.Range(1, 100);
-            if (((player.ranking * 3) + (surpriseChance)) > 75)
-            {
-                Debug.Log("SURPRISE!");
-                return true;
-            }
-            else { Debug.Log("THAT WAS CLOSE...");
-                 return false; }
-
+            Debug.Log("SURPRISE!");
+            surpriseInfo.text = player.name +" ("+ player.nationality.ToString() +") IS OUT OF 15!";
+            player.PoorFormEffect();
+            surpriseEffect = true;
         }
-        else {
+        else
+        {
             Debug.Log("NO SURPRISE");
-            return false; }
+        }
     }
 
 
-    }
+}
+
+
+
+
+
 
