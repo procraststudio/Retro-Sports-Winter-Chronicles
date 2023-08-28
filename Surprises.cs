@@ -22,23 +22,27 @@ public class Surprises : MonoBehaviour
     {
         surpriseInfo.text = "";
         int favourites = gamemanager.numberOfFavourites;
+        float realSurpriseChance = player.ranking * FindObjectOfType<Gamemanager>().surprisesModifier;
         float surpriseRoll = Random.Range(1, 100);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
-        if (((player.ranking) <= (favourites)) && (surpriseRoll <= (player.ranking * FindObjectOfType<Gamemanager>().surprisesModifier)))
+        if (((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
             Debug.Log("SURPRISE!");
-            surpriseInfo.text = player.name +" ("+ player.nationality.ToString() +") IS OUT OF 15!";
+            surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
             player.PoorFormEffect();
             surpriseEffect = true;
         }
+
         else
         {
             Debug.Log("NO SURPRISE");
         }
     }
-
-
 }
+
+
+
+
 
 
 

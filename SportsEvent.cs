@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-public class Gamemanager : MonoBehaviour
+[CreateAssetMenu(fileName = "New SportsEvent", menuName = "Event")]
+
+public class SportsEvent : ScriptableObject
 {
     public List<Player> favourites, outsiders;
     public List<Player>[] lists;
@@ -11,19 +13,20 @@ public class Gamemanager : MonoBehaviour
     Competition competition;
     public String competitionName;
     public float surprisesModifier;
+    public bool weatherImpact;
     public int numberOfFavourites { get; set; }
-    public float bestTimeInSec { get; set; } 
-    public string venueNation { get; set; } 
-    
+    public float bestTimeInSec { get; set; }
+    public string venueNation { get; set; }
+
     void Start()
     {
-        competition = FindObjectOfType<Competition>();
-        competitionName = "CALGARY 1988 Alpine Ski: Slalom"; //Downhill
-        venueNation = "CAN";
-        surprisesModifier = 3.0f;
+       // competition = FindObjectOfType<Competition>();
+       // competitionName = "CALGARY 1988 Alpine Ski: Downhill MEN"; //Downhill
+       // venueNation = "CAN";
+       // surprisesModifier = 3.0f;
         // FAVOURITES:
         Player player01 = new Player("Zurbriggen", 1, 'A', 3, "SUI");
-        Player player02 = new Player("Muller", 2, 'A', 2, "SUI" );
+        Player player02 = new Player("Muller", 2, 'A', 2, "SUI");
         Player player03 = new Player("Piccard", 3, 'A', 2, "FRA");
         Player player04 = new Player("Stock", 4, 'B', 1, "AUT");
         Player player05 = new Player("Pfaffenbichler", 5, 'B', 1, "AUT");
@@ -43,32 +46,14 @@ public class Gamemanager : MonoBehaviour
         player06, player07, player08, player09, player10};
         outsiders = new List<Player> { player11, player12, player13, player14, player15 };
         lists = new List<Player>[] { favourites, outsiders };
-        RandomizeLists(lists);
+        //RandomizeLists(lists);
         numberOfFavourites = favourites.Count;
         Debug.Log("FAVOURITES: " + numberOfFavourites);
-        bestTimeInSec = 119.63f;  
+        bestTimeInSec = 119.63f;
 
     }
 
 
-    private void RandomizeLists(List<Player>[] lists)
-    {
-        for (int i = 0; i < lists.Length; i++)
-        {
-            int n = lists[i].Count;
-            while (n > 1)
-            {
-                n--;
-                int k = Random.Range(0, n + 1);
-                Player value = lists[i][k];
-                lists[i][k] = lists[i][n];
-                lists[i][n] = value;
-            }
-
-        }
-
-
-    }
 
 
 }
