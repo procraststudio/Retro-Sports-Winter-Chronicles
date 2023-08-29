@@ -103,11 +103,10 @@ public class Player : MonoBehaviour
     public string ConvertPointsToTime(int finalPerformance)
     {
         float realTime = FindObjectOfType<Gamemanager>().bestTimeInSec;
-        // Zak³adamy, ¿e 1 punkt = 1/100 sekundy
+        // Assume that 1 point = 1/100 sec
         float realPerformance = (finalPerformance / 80.00f);
         float differenceInSeconds = realTime - (realTime * realPerformance);
-        totalSeconds = realTime + differenceInSeconds * 0.09f; // or 0.114
-        Debug.Log(totalSeconds);
+        totalSeconds = realTime + differenceInSeconds * 0.0875f; // or 0.114
         int minutes = (int)totalSeconds / 60;
         int seconds = (int)totalSeconds % 60;
         int hundredths = Mathf.RoundToInt((totalSeconds - Mathf.Floor(totalSeconds)) * 100);
@@ -118,8 +117,10 @@ public class Player : MonoBehaviour
     }
     public string ConvertDifference (int difference)
     {
+        float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
+        float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
         //string.alignment = TextAnchor.MiddleRight;
-        float totalDifference = difference * 0.09f; // or 0.114 :)
+        float totalDifference = difference * modifier; 
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);

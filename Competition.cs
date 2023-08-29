@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -17,15 +16,19 @@ public class Competition : MonoBehaviour
     [SerializeField] public TMP_Text finalText;
     [SerializeField] TMP_Text startingList;
     [SerializeField] TMP_Text outsidersList;
+    [SerializeField] TMP_Text underdogsList;
     [SerializeField] TMP_Text outOf15List;
     [SerializeField] TMP_Text finishersList;
     [SerializeField] TMP_Text resultsList;
     [SerializeField] TMP_Text competitionName;
+    [SerializeField] private GameObject setupButton;
     public GameObject runButton;
-
+    public GameObject weatherPanel;
+    public GameObject presentationPanel;
     public List<Player> players = new List<Player>();
     List<Player> finishers = new List<Player>();
     public List<Player> outsiders = new List<Player>();
+    public List<Player> underdogs = new List<Player>();
     public List<Player> outOf15Competitors;
     public Player currentCompetitor { get; set; }
     int currentCompetitorNo;
@@ -39,12 +42,24 @@ public class Competition : MonoBehaviour
     Decoration decoration;
     public bool competitionIsOver;
     public int bestFinalPerformance;
+    public GameState myState;
+
+    public enum GameState
+    {
+        WeatherPhase,
+        PresentationPhase,
+        StartPhase,
+        CompetitionPhase,
+        DecorationPhase,
+    }
 
 
     void Start()
-    { 
+    {
+        myState = GameState.WeatherPhase;
         players = FindObjectOfType<Gamemanager>().favourites;
         outsiders = FindObjectOfType<Gamemanager>().outsiders;
+        underdogs = FindObjectOfType<Gamemanager>().underdogs;
         competitionName.text = FindObjectOfType<Gamemanager>().competitionName.ToString();
         decoration = FindObjectOfType<Decoration>();
         currentCompetitorNo = players.Count - 1;
@@ -52,6 +67,7 @@ public class Competition : MonoBehaviour
         description = FindObjectOfType<RunDescription>();
         updatePlayerListText();
         updateOutsiders();
+        updateUnderdogs();
         surprise = FindObjectOfType<Surprises>();
         partsOfRun = 0;
         outOf15Competitors = new List<Player> { };
@@ -62,7 +78,8 @@ public class Competition : MonoBehaviour
 
     private void Update()
     {
-       
+        GameStatesManager();
+
         if (Input.GetKeyDown(KeyCode.Return))
         {
             Run();
@@ -75,7 +92,7 @@ public class Competition : MonoBehaviour
         surprise.surpriseEffect = false;
         dice.ResetDice();
         description.ResetDescription();
-        currentCompetitor = players[currentCompetitorNo]; 
+        currentCompetitor = players[currentCompetitorNo];
         partsOfRun++;
         Debug.Log("RUN: " + partsOfRun);
         //  SURPRISE CHECK
@@ -169,7 +186,7 @@ public class Competition : MonoBehaviour
                 updatePlayerListText();
                 updateResults();
                 partsOfRun = 0;
-              
+
             }
         }
     }
@@ -250,6 +267,18 @@ public class Competition : MonoBehaviour
         }
 
     }
+    public void updateUnderdogs()
+    {
+        underdogsList.text = "";
+
+        foreach (Player player in underdogs)
+        {
+            underdogsList.text += player.name + " . Grade: " + player.grade + "\n";
+        }
+
+    }
+
+
     public void updateOutOf15List()
     {
         outOf15List.text = "";
@@ -275,78 +304,117 @@ public class Competition : MonoBehaviour
         bestFinalPerformance = finishers[0].finalPerformance;
         Debug.Log("BEST: " + bestFinalPerformance);
 
-        
+
         // enable RichText
         // foreach (Player player in finishers)
         for (int i = 0; i < finishers.Count; i++)
-   
+
         {
             Sprite flagSpriteName = Resources.Load<Sprite>("flags/");
-            
-            finishersList.text += finishers[i].place + 
+
+            finishersList.text += finishers[i].place +
              ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance + "\n";//+ TimeDisplay(finishers[i]) ;//+player.ConvertPointsToTime(player.finalPerformance)+"\n";
             resultsList.text += TimeDisplay(finishers[i]);
 
         }
-        
+
     }
 
     public void SurpriseEffect(Player player)
     {
+        int d6Roll = Random.Range(1, 7);
+        Player surpriseCompetitor;
         if (surprise.surpriseEffect)
         {
-            Player goodOutsider = outsiders[0];
+            if ((d6Roll == 1) || (outsiders.Count == 0)) // IF 1 ON D6: BIG SURPRISE, UNDERDOG ENTERS
+            {
+                surpriseCompetitor = underdogs[0];
+                underdogs.Remove(surpriseCompetitor);
+            }
+
+            else
+            {
+                surpriseCompetitor = outsiders[0];
+                outsiders.Remove(surpriseCompetitor);
+            }
+
             outOf15Competitors.Add(player);
             players.RemoveAt(players.Count - 1);
-            players.Add(goodOutsider);
-            outsiders.Remove(goodOutsider);
+            players.Add(surpriseCompetitor);
             updateOutOf15List();
             updateOutsiders();
+            updateUnderdogs();
             updatePlayerListText();
             partsOfRun = 0;
             // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
-            finalText.text += "\n" + player.name + " IS OUT OF 15!";
+            finalText.text += "\n" + player.name + " IS OUT OF 15!" + "\n" + surpriseCompetitor.name + " ENTERS!";
         }
     }
 
-    public void DecorationPhase ()
+    public void DecorationPhase()
     {
-        if (players.Count < 1) {
+        if (players.Count < 1)
+        {
             finalText.text = "";
             currentCompetitor = null;
-            runButton.SetActive(false);    
+            runButton.SetActive(false);
             competitionIsOver = true;
             decoration.winner = finishers[0];
-            decoration.secondPlayer = finishers[1]; 
-            decoration.thirdPlayer = finishers[2];  
+            decoration.secondPlayer = finishers[1];
+            decoration.thirdPlayer = finishers[2];
             //TO DO: Decoration effects
-            decoration.StartCoroutine("DecorateMedalists");   
-        
+            decoration.StartCoroutine("DecorateMedalists");
+
         }
     }
 
     public string TimeDisplay(Player player)
     {
         int pointsDifference = bestFinalPerformance - player.finalPerformance;
-        if (player.place==1)
+        if (player.place == 1)
         {
-           return player.ConvertPointsToTime(player.finalPerformance) + "\n";
+            return player.ConvertPointsToTime(player.finalPerformance) + "\n";
 
-       }
+        }
         else
         {
             return player.ConvertDifference(pointsDifference) + "\n";
-              // player.ConvertPointsToTime(timeDifference) + "\n";
+            // player.ConvertPointsToTime(timeDifference) + "\n";
         }
 
     }
 
-    
+    void GameStatesManager()
+    {
+        if (myState == GameState.WeatherPhase)
+        {
+            runButton.SetActive(false);
+            dicePanel.SetActive(false);
+            presentationPanel.SetActive(false);
+
+        }
+        else if (myState == GameState.PresentationPhase)
+        {
+            weatherPanel.SetActive(false);
+            setupButton.SetActive(false);
+            runButton.SetActive(false);
+            presentationPanel.SetActive(true);
+            dicePanel.SetActive(false);
+        }
+        else if (myState == GameState.CompetitionPhase)
+        {
+            weatherPanel.SetActive(false);
+            setupButton.SetActive(false);
+            presentationPanel.SetActive(false);
+            runButton.SetActive(true);
+            dicePanel.SetActive(true);
+
+        }
+
+        }
+
+    }
 
 
-
-
-
-}
 
 
