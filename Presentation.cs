@@ -18,7 +18,7 @@ public class Presentation : MonoBehaviour
     private int favouritesGenerated;
     private bool presentationPhaseOver;
     public List<Player> favourites;
-    private List<string>[] comments;
+    private List<string> unusedComments = new List<string>();
 
 
     void Start()
@@ -29,6 +29,10 @@ public class Presentation : MonoBehaviour
         competition = FindObjectOfType<Competition>();
         favourites = competition.players;
         Debug.Log("START PRESENTATION DONE");
+        if (unusedComments.Count == 0)
+        {
+            LoadFileLines();
+        }
     }
 
     void Update()
@@ -40,7 +44,8 @@ public class Presentation : MonoBehaviour
     {
         Debug.Log("CLICK!");
         List<Player> favourites = competition.players;
-        if (!presentationPhaseOver ) {
+        if (!presentationPhaseOver)
+        {
             for (int i = 0; i < favourites.Count; i++)
             {
                 if ((favouritesGenerated < 3) && (favourites[i].grade == 'A'))
@@ -53,7 +58,7 @@ public class Presentation : MonoBehaviour
                     favouritesGenerated++;
                 }
             }
-           
+
         }
         else
         {
@@ -73,19 +78,32 @@ public class Presentation : MonoBehaviour
 
     public void showComments(int player)
     {
+        //TextAsset textAsset = Resources.Load<TextAsset>(textPath);
+        if (unusedComments.Count > 0)
+        {
+            int randomIndex = Random.Range(0, unusedComments.Count);
+            string randomLine = unusedComments[randomIndex];
+            descriptionText[player].text = randomLine;
+            unusedComments.RemoveAt(randomIndex);
+            Debug.Log("Random Line: " + randomLine);
+        }
+        else
+        {
+            Debug.Log("No more unused lines.");
+        }
+    }
+    private void LoadFileLines()
+    {
         TextAsset textAsset = Resources.Load<TextAsset>(textPath);
         if (textAsset != null)
         {
             string[] lines = textAsset.text.Split('\n');
-            if (lines.Length > 0)
+            foreach (string line in lines)
             {
-                string randomLine = lines[Random.Range(0, lines.Length)];
-                descriptionText[player].text = randomLine;  
-                Debug.Log("Random Line: " + randomLine);
-            }
-            else
-            {
-                Debug.LogError("Text file is empty.");
+                if (!string.IsNullOrEmpty(line.Trim()))
+                {
+                    unusedComments.Add(line.Trim());
+                }
             }
         }
         else
@@ -96,7 +114,7 @@ public class Presentation : MonoBehaviour
 
     void CheckEndPhase()
     {
-        if (favouritesGenerated>2)
+        if (favouritesGenerated > 2)
         {
             presentationPhaseOver = true;
         }

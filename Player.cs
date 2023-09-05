@@ -1,8 +1,4 @@
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
-using TMPro.EditorUtilities;
-using TMPro;
 
 public enum grade
 {
@@ -24,7 +20,7 @@ public class Player : MonoBehaviour
     public float totalSeconds { get; set; }
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
-
+    public bool homeFactor = false;
 
 
     public Player(string name, int ranking, char grade, int experience, string nationality)
@@ -37,7 +33,7 @@ public class Player : MonoBehaviour
 
     }
 
-    public int calculateAverage()
+    public int CalculateAverage()
     {
         // ORIGINAL AVERAGES: A 24, B 18, C 12, D 6, E 0 
         if (this.grade == 'A')
@@ -56,19 +52,35 @@ public class Player : MonoBehaviour
         {
             averagePerformance = 9;
         }
+        else if (grade == 'E')
+        {
+            averagePerformance = 4;
+        }
 
         return averagePerformance;
 
+    }
+    public int GetGradeModifier()
+    {
+        switch (grade)
+        {
+            case 'A': return 3;
+            case 'B': return 2;
+            case 'C': return 1;
+            default: return 0;
+        }
     }
 
     public void AddRunModifier(int modifier)
     {
         runModifier += modifier;
     }
+
     public void calculateFinal(int finalModifier)
     {
-        finalPerformance += averagePerformance + runModifier;
+        finalPerformance += CalculateAverage() + finalModifier;
     }
+
 
     public void GoodFormEffect()
     {
@@ -99,6 +111,14 @@ public class Player : MonoBehaviour
             goodFormEffect = false;
         }
     }
+    public void CheckHomeFactor()
+    {
+        if ((this.nationality == FindObjectOfType<Gamemanager>().venueNation))
+        {
+            this.homeFactor = true;
+            Debug.Log("HOME FACTOR!");
+        }
+    }
 
     public string ConvertPointsToTime(int finalPerformance)
     {
@@ -115,21 +135,21 @@ public class Player : MonoBehaviour
 
         return formattedTime;
     }
-    public string ConvertDifference (int difference)
+    public string ConvertDifference(int difference)
     {
         float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
         float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
         //string.alignment = TextAnchor.MiddleRight;
-        float totalDifference = difference * modifier; 
+        float totalDifference = difference * modifier;
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);
-        string formattedTime = (minutes >0) ?
+        string formattedTime = (minutes > 0) ?
            // < align = right > This text is aligned to the right.</ align >
            string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
-            string.Format("+"+"{0:00}.{1:00}", seconds.ToString(), hundredths);
-        
-        return  formattedTime;
+            string.Format("+" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
+
+        return formattedTime;
     }
 
 }

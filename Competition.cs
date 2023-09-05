@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 using Random = UnityEngine.Random;
 
 
@@ -18,17 +19,22 @@ public class Competition : MonoBehaviour
     [SerializeField] TMP_Text outsidersList;
     [SerializeField] TMP_Text underdogsList;
     [SerializeField] TMP_Text outOf15List;
+    [SerializeField] TMP_Text disqualifiedList;
     [SerializeField] TMP_Text finishersList;
     [SerializeField] TMP_Text resultsList;
     [SerializeField] TMP_Text competitionName;
     [SerializeField] private GameObject setupButton;
+    [SerializeField] private GameObject eventButton;
+
     public GameObject runButton;
     public GameObject weatherPanel;
     public GameObject presentationPanel;
+    public GameObject eventPanel;
     public List<Player> players = new List<Player>();
     List<Player> finishers = new List<Player>();
     public List<Player> outsiders = new List<Player>();
     public List<Player> underdogs = new List<Player>();
+    public List<Player> disqualified = new List<Player>();
     public List<Player> outOf15Competitors;
     public Player currentCompetitor { get; set; }
     int currentCompetitorNo;
@@ -46,11 +52,12 @@ public class Competition : MonoBehaviour
 
     public enum GameState
     {
-        WeatherPhase,
-        PresentationPhase,
-        StartPhase,
-        CompetitionPhase,
-        DecorationPhase,
+        WeatherPhase=0,
+        PresentationPhase=1,
+        StartPhase=2,
+        CompetitionPhase=3,
+        EventPhase=4,
+        DecorationPhase=5,
     }
 
 
@@ -65,9 +72,9 @@ public class Competition : MonoBehaviour
         currentCompetitorNo = players.Count - 1;
         dice = FindObjectOfType<Dice>();
         description = FindObjectOfType<RunDescription>();
-        updatePlayerListText();
-        updateOutsiders();
-        updateUnderdogs();
+        UpdatePlayerList(players, startingList);
+        UpdatePlayerList(outsiders, outsidersList);
+        UpdatePlayerList(underdogs, underdogsList);
         surprise = FindObjectOfType<Surprises>();
         partsOfRun = 0;
         outOf15Competitors = new List<Player> { };
@@ -90,6 +97,7 @@ public class Competition : MonoBehaviour
     public void Run()
     {
         surprise.surpriseEffect = false;
+        surprise.disqualification = false;
         dice.ResetDice();
         description.ResetDescription();
         currentCompetitor = players[currentCompetitorNo];
@@ -144,11 +152,14 @@ public class Competition : MonoBehaviour
                     break; //AVERAGE
 
                 case 8:
+                    currentCompetitor.CheckHomeFactor(); //HOME FACTOR
                     if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
                     { calculatePerformance(currentCompetitor, 5, thirdD6); }
                     else if ((currentCompetitor.grade == 'C'))
                     { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //GOOD
+
+                    else { calculatePerformance(currentCompetitor, 3, thirdD6); };
+                    break; //GOOD
 
                 case 9:
                     if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
@@ -177,23 +188,28 @@ public class Competition : MonoBehaviour
                     };
                     break; // CRIT SUCCESS
             }
+            CheckEvent(currentCompetitor);  
 
             if (partsOfRun > 2)
             {
                 currentCompetitorNo--;
                 finishers.Add(currentCompetitor);
                 players.RemoveAt(players.Count - 1);
-                updatePlayerListText();
+                UpdatePlayerList(players, startingList);
                 updateResults();
                 partsOfRun = 0;
-
             }
         }
     }
 
     public void calculatePerformance(Player player, int modifier, int thirdDie)
     {
-        //int finalModifier;
+        int homeBonus = 0;
+        if (player.homeFactor)
+        {
+            homeBonus = thirdDie;
+            finalText.text += "\n" + "HOME FACTOR: +" + thirdDie;
+        };
         switch (modifier)
         {
             case -1:
@@ -219,9 +235,10 @@ public class Competition : MonoBehaviour
                 description.StoreDescription(Color.green, "WONDERFUL!"); break;
         }
 
-        player.calculateAverage();
-        player.calculateFinal(player.runModifier);
+        // player.calculateAverage();
+        player.calculateFinal(player.runModifier + homeBonus);
         showResults(currentCompetitor, currentCompetitor.finalPerformance);
+        player.homeFactor = false;
 
     }
 
@@ -231,7 +248,7 @@ public class Competition : MonoBehaviour
         finalText.text += "\n" + player.name +
         ": AVERAGE: " + player.averagePerformance +
         ", RUN MODIFIER: " + player.runModifier +
-        ", SUM OF RUN: " + (player.averagePerformance + player.runModifier);
+        ", SUM: " + (player.averagePerformance + player.runModifier);
 
     }
     public void showStarters(List<Player> players)
@@ -243,54 +260,26 @@ public class Competition : MonoBehaviour
 
     }
 
-    public void updatePlayerListText()
+    public void UpdatePlayerList(List<Player> list, TMP_Text listText)
     {
-        startingList.text = "";
+        listText.text = "";
 
-
-        foreach (Player player in players)
+        if (listText.text.Contains("startingList"))
         {
-            startingList.text += player.name +
-            " (" + player.nationality + ")" + ". Rank: " + player.ranking + ", Grade: " + player.grade + "\n";
+            foreach (Player player in players)
+            {
+                startingList.text += player.name +
+                 " (" + player.nationality + ")" + ". Rank: " + player.ranking + ", Grade: " + player.grade + "\n";
+            }
         }
-
-    }
-
-    public void updateOutsiders()
-    {
-        outsidersList.text = "";
-
-
-        foreach (Player player in outsiders)
+        else
         {
-            outsidersList.text += player.name + " . Grade: " + player.grade + "\n";
+            foreach (Player player in list)
+            {
+                listText.text += player.name + " . Grade: " + player.grade + "\n";
+            }
         }
-
     }
-    public void updateUnderdogs()
-    {
-        underdogsList.text = "";
-
-        foreach (Player player in underdogs)
-        {
-            underdogsList.text += player.name + " . Grade: " + player.grade + "\n";
-        }
-
-    }
-
-
-    public void updateOutOf15List()
-    {
-        outOf15List.text = "";
-
-
-        foreach (Player player in outOf15Competitors)
-        {
-            outOf15List.text += player.name + " . Grade: " + player.grade + "\n";
-        }
-
-    }
-
 
     public void updateResults()
     {
@@ -304,9 +293,6 @@ public class Competition : MonoBehaviour
         bestFinalPerformance = finishers[0].finalPerformance;
         Debug.Log("BEST: " + bestFinalPerformance);
 
-
-        // enable RichText
-        // foreach (Player player in finishers)
         for (int i = 0; i < finishers.Count; i++)
 
         {
@@ -341,10 +327,10 @@ public class Competition : MonoBehaviour
             outOf15Competitors.Add(player);
             players.RemoveAt(players.Count - 1);
             players.Add(surpriseCompetitor);
-            updateOutOf15List();
-            updateOutsiders();
-            updateUnderdogs();
-            updatePlayerListText();
+            UpdatePlayerList(outOf15Competitors, outOf15List);
+            UpdatePlayerList(outsiders, outsidersList);
+            UpdatePlayerList(underdogs, underdogsList);
+            UpdatePlayerList(players, startingList);
             partsOfRun = 0;
             // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
             finalText.text += "\n" + player.name + " IS OUT OF 15!" + "\n" + surpriseCompetitor.name + " ENTERS!";
@@ -384,6 +370,20 @@ public class Competition : MonoBehaviour
 
     }
 
+    void CheckEvent(Player player)
+    {
+        if ((firstD6 == secondD6) && (firstD6 + secondD6 != 2) && (firstD6 + secondD6 != 12))
+        {
+            //description.StoreDescription(Color.white,"\n"+ "+EVENT!");
+            Debug.Log("EVENT!");
+            finalText.text += "\n" + "EVENT!";
+            runButton.SetActive(false);
+            eventButton.SetActive(true);
+            myState = GameState.EventPhase;
+        }
+    }
+
+
     void GameStatesManager()
     {
         if (myState == GameState.WeatherPhase)
@@ -410,10 +410,22 @@ public class Competition : MonoBehaviour
             dicePanel.SetActive(true);
 
         }
+        else if (myState == GameState.EventPhase)
+        {
+            weatherPanel.SetActive(false);
+            setupButton.SetActive(false);
+            presentationPanel.SetActive(false);
+            runButton.SetActive(false);
+            dicePanel.SetActive(false);
+            
+
+            // eventPanel.SetActive(true);
 
         }
 
     }
+
+}
 
 
 
