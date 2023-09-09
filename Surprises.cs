@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -13,6 +12,7 @@ public class Surprises : MonoBehaviour
     public bool disqualification { get; set; }
     [SerializeField] TMP_Text surpriseInfo;
     [SerializeField] TMP_Text surpriseModifier;
+    Competition competition;
 
     void Start()
     {
@@ -21,11 +21,12 @@ public class Surprises : MonoBehaviour
         disqualification = false;
         gamemanager = FindObjectOfType<Gamemanager>();
         weather = FindObjectOfType<Weather>();
+        competition = FindObjectOfType<Competition>();
     }
 
     private void Update()
     {
-        surpriseModifier.text = SurpriseModifier().ToString("F2");
+      surpriseModifier.text = SurpriseModifier().ToString("F2");
     }
 
 
@@ -39,12 +40,14 @@ public class Surprises : MonoBehaviour
 
         if (((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
+            surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
+            player.PoorFormEffect();
+            player.myState = Player.PlayerState.OutOf15;
+            Debug.Log("SURPRISE! NEW STATE " + player.myState);
+            surpriseEffect = true;
+            competition.SurpriseEffect(player);
 
-                Debug.Log("SURPRISE!");
-                surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
-                player.PoorFormEffect();
-                surpriseEffect = true;
-            }
+        }
 
         else
         {

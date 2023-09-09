@@ -14,13 +14,25 @@ public class Player : MonoBehaviour
     public int experience { get; set; }
     public string nationality { get; set; }
     public int averagePerformance { get; set; }
-    public int runModifier { get; set; }
-    public int finalPerformance { get; set; }
+    public int runModifiers { get; set; }
+    public int currentModifier { get; set; }
+    public int actualRunPoints { get; set; } = 0;
+    public float finalPerformance { get; set; }
     public int place { get; set; }
     public float totalSeconds { get; set; }
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
     public bool homeFactor = false;
+    public PlayerState myState;
+
+    public enum PlayerState
+    {
+        DidNotStart = 0,
+        Running = 1,
+        OutOf15 = 2,
+        DidNotFinish = 3,
+        Disqualified = 4,
+    }
 
 
     public Player(string name, int ranking, char grade, int experience, string nationality)
@@ -30,7 +42,7 @@ public class Player : MonoBehaviour
         this.experience = experience;
         this.grade = grade;
         this.nationality = nationality;
-
+        this.myState = PlayerState.Running;
     }
 
     public int CalculateAverage()
@@ -73,12 +85,22 @@ public class Player : MonoBehaviour
 
     public void AddRunModifier(int modifier)
     {
-        runModifier += modifier;
+        actualRunPoints += modifier;
+        Debug.Log(modifier + " pts added.");
+    }
+    public int CalculateActualRun()
+    {
+        int sumOfPointsInRun = (actualRunPoints + averagePerformance);
+        finalPerformance += (float)(actualRunPoints + averagePerformance);
+        return sumOfPointsInRun;
+
     }
 
-    public void calculateFinal(int finalModifier)
+    public float CalculateFinal()
     {
-        finalPerformance += CalculateAverage() + finalModifier;
+        finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
+        
+        return finalPerformance;
     }
 
 
@@ -111,16 +133,22 @@ public class Player : MonoBehaviour
             goodFormEffect = false;
         }
     }
-    public void CheckHomeFactor()
+    public bool CheckHomeFactor()
     {
         if ((this.nationality == FindObjectOfType<Gamemanager>().venueNation))
         {
-            this.homeFactor = true;
             Debug.Log("HOME FACTOR!");
+            return true;
         }
+        else { return false; }
     }
 
-    public string ConvertPointsToTime(int finalPerformance)
+    public void SetPlayerState(PlayerState state)
+    {
+        myState = state;
+    }
+
+    public string ConvertPointsToTime(float finalPerformance)
     {
         float realTime = FindObjectOfType<Gamemanager>().bestTimeInSec;
         // Assume that 1 point = 1/100 sec
@@ -135,7 +163,7 @@ public class Player : MonoBehaviour
 
         return formattedTime;
     }
-    public string ConvertDifference(int difference)
+    public string ConvertDifference(float difference)
     {
         float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
         float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
@@ -145,9 +173,9 @@ public class Player : MonoBehaviour
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);
         string formattedTime = (minutes > 0) ?
-           // < align = right > This text is aligned to the right.</ align >
-           string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
-            string.Format("+" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
+
+        string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
+        string.Format("+" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
 
         return formattedTime;
     }

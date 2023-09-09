@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 using Random = UnityEngine.Random;
 
 
@@ -16,27 +15,31 @@ public class Competition : MonoBehaviour
     public TextMeshProUGUI textMeshPro;
     [SerializeField] public TMP_Text finalText;
     [SerializeField] TMP_Text startingList;
-    [SerializeField] TMP_Text outsidersList;
-    [SerializeField] TMP_Text underdogsList;
+    [SerializeField] public TMP_Text outsidersList;
+    [SerializeField] public TMP_Text underdogsList;
     [SerializeField] TMP_Text outOf15List;
     [SerializeField] TMP_Text disqualifiedList;
+    [SerializeField] TMP_Text didNotFinishList;
     [SerializeField] TMP_Text finishersList;
     [SerializeField] TMP_Text resultsList;
     [SerializeField] TMP_Text competitionName;
     [SerializeField] private GameObject setupButton;
     [SerializeField] private GameObject eventButton;
+    [SerializeField] private PlayerDisplay _playerDisplay;
 
     public GameObject runButton;
     public GameObject weatherPanel;
     public GameObject presentationPanel;
     public GameObject eventPanel;
+    public GameObject competitorPanel;
     public List<Player> players = new List<Player>();
     List<Player> finishers = new List<Player>();
     public List<Player> outsiders = new List<Player>();
     public List<Player> underdogs = new List<Player>();
     public List<Player> disqualified = new List<Player>();
+    public List<Player> didNotFinish = new List<Player>();
     public List<Player> outOf15Competitors;
-    public Player currentCompetitor { get; set; }
+    public Player currentCompetitor { get;  set; }
     int currentCompetitorNo;
     public GameObject dicePanel;
     Dice dice;
@@ -47,17 +50,18 @@ public class Competition : MonoBehaviour
     public Player bronzeMedal;
     Decoration decoration;
     public bool competitionIsOver;
-    public int bestFinalPerformance;
+    public float bestFinalPerformance;
     public GameState myState;
+    private bool eventHappened = false;
 
     public enum GameState
     {
-        WeatherPhase=0,
-        PresentationPhase=1,
-        StartPhase=2,
-        CompetitionPhase=3,
-        EventPhase=4,
-        DecorationPhase=5,
+        WeatherPhase = 0,
+        PresentationPhase = 1,
+        StartPhase = 2,
+        CompetitionPhase = 3,
+        EventPhase = 4,
+        DecorationPhase = 5,
     }
 
 
@@ -78,12 +82,14 @@ public class Competition : MonoBehaviour
         surprise = FindObjectOfType<Surprises>();
         partsOfRun = 0;
         outOf15Competitors = new List<Player> { };
+        // didNotFinish = new List<Player> { };
+        // disqualified = new List<Player> { };    
         currentCompetitor = null;
         competitionIsOver = false;
 
     }
 
-    private void Update()
+    void Update()
     {
         GameStatesManager();
 
@@ -91,7 +97,7 @@ public class Competition : MonoBehaviour
         {
             Run();
         }
-        DecorationPhase();
+        //DecorationPhase();
     }
 
     public void Run()
@@ -101,22 +107,24 @@ public class Competition : MonoBehaviour
         dice.ResetDice();
         description.ResetDescription();
         currentCompetitor = players[currentCompetitorNo];
+        _playerDisplay.DisplayCompetitor(currentCompetitor);    
         partsOfRun++;
         Debug.Log("RUN: " + partsOfRun);
         //  SURPRISE CHECK
         surprise.CheckSurprise(currentCompetitor);
-        SurpriseEffect(currentCompetitor);
+        //SurpriseEffect(currentCompetitor);
 
         if ((currentCompetitorNo >= 0) && (!surprise.surpriseEffect))
         {
             currentCompetitor = players[currentCompetitorNo];
-            firstD6 = Random.Range(1, 7);
+            firstD6 =  Random.Range(1, 7);
             secondD6 = Random.Range(1, 7);
-            thirdD6 = Random.Range(1, 7);
+            thirdD6 =  Random.Range(1, 7);
             dice.StartCoroutine("showDice");
             //dice.showDice();
             competitionRoll = firstD6 + secondD6;
             Debug.Log("NAME: " + currentCompetitor.name + ". SUM OF 2D6: " + competitionRoll + ". THIRD D6: " + thirdD6);
+            CheckEvent(currentCompetitor);
 
             switch (competitionRoll)
             {
@@ -152,7 +160,11 @@ public class Competition : MonoBehaviour
                     break; //AVERAGE
 
                 case 8:
-                    currentCompetitor.CheckHomeFactor(); //HOME FACTOR
+                    if (currentCompetitor.CheckHomeFactor()) //HOME FACTOR +D6
+                    {
+                        currentCompetitor.AddRunModifier(thirdD6);
+                        Debug.Log("HOME FACTOR: +" + thirdD6);
+                    }
                     if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
                     { calculatePerformance(currentCompetitor, 5, thirdD6); }
                     else if ((currentCompetitor.grade == 'C'))
@@ -188,22 +200,30 @@ public class Competition : MonoBehaviour
                     };
                     break; // CRIT SUCCESS
             }
-            CheckEvent(currentCompetitor);  
+            //CheckEvent(currentCompetitor);
+            EndRun();
+        }
+    }
 
-            if (partsOfRun > 2)
-            {
-                currentCompetitorNo--;
-                finishers.Add(currentCompetitor);
-                players.RemoveAt(players.Count - 1);
-                UpdatePlayerList(players, startingList);
-                updateResults();
-                partsOfRun = 0;
-            }
+    public void EndRun()
+    {
+        if (partsOfRun > 2) // and player is not out
+        {
+            eventHappened = false;
+            finishers.Add(currentCompetitor);
+            players.RemoveAt(players.Count - 1);
+            UpdatePlayerList(players, startingList);
+            currentCompetitor.CalculateFinal();
+            Debug.Log("SUM OF FLOAT: " + currentCompetitor.finalPerformance);
+            updateResults();
+            currentCompetitorNo--;
+            partsOfRun = 0;
         }
     }
 
     public void calculatePerformance(Player player, int modifier, int thirdDie)
     {
+        _playerDisplay.DisplayCompetitor(currentCompetitor);
         int homeBonus = 0;
         if (player.homeFactor)
         {
@@ -213,42 +233,44 @@ public class Competition : MonoBehaviour
         switch (modifier)
         {
             case -1:
-                player.runModifier = thirdDie * (-2);
-                if (player.runModifier > -6) { player.runModifier = -6; };
+                if (modifier > -6) { player.AddRunModifier(-6); }
+                else { player.AddRunModifier(thirdDie * (-2)); };
                 description.StoreDescription(Color.red, "DISASTER"); break;
-            case 0: player.runModifier = thirdDie * (-2); description.StoreDescription(Color.red, "MEDIOCRE"); break;
-            case 1: player.runModifier = thirdDie * (-1); description.StoreDescription(Color.red, "VERY POOR"); break;
-            case 2: player.runModifier = Random.Range(-3, 0); description.StoreDescription(Color.red, "POOR"); break;
+            case 0: player.AddRunModifier(thirdDie * (-2)); description.StoreDescription(Color.red, "MEDIOCRE"); break;
+            case 1: player.AddRunModifier(thirdDie * (-1)); description.StoreDescription(Color.red, "VERY POOR"); break;
+            case 2: player.AddRunModifier((thirdDie + 1) / -2); description.StoreDescription(Color.red, "POOR"); break;
             case 3:
-                if (thirdDie < 3) { player.runModifier = Random.Range(-4, -1); }
-                else if (thirdDie > 4) { player.runModifier = Random.Range(1, 4); }
-                else { player.runModifier = 0; }; description.StoreDescription(Color.white, "NOT GOOD"); break;
+                if (thirdDie < 3) { player.AddRunModifier(Random.Range(-4, -1)); }
+                else if (thirdDie > 4) { player.AddRunModifier(Random.Range(1, 4)); }
+                else { player.AddRunModifier(0); }; description.StoreDescription(Color.white, "NOT GOOD"); break;
             case 4:
-                if (thirdDie < 3) { player.runModifier = Random.Range(-3, 0); }
-                else if (thirdDie > 4) { player.runModifier = Random.Range(2, 5); }
-                else { player.runModifier = 0; }; description.StoreDescription(Color.white, "AVERAGE"); break;
-            case 5: player.runModifier = Random.Range(1, 4); description.StoreDescription(Color.green, "GOOD"); break;
-            case 6: player.runModifier = thirdDie; description.StoreDescription(Color.green, "GREAT!"); break;
+                if (thirdDie < 3) { player.AddRunModifier(Random.Range(-3, 0)); }
+                else if (thirdDie > 4) { player.AddRunModifier(Random.Range(2, 5)); }
+                else { player.AddRunModifier(0); }; description.StoreDescription(Color.white, "AVERAGE"); break;
+            case 5: player.AddRunModifier((thirdDie + 1) / 2); description.StoreDescription(Color.green, "GOOD"); break;
+            case 6: player.AddRunModifier(thirdDie); description.StoreDescription(Color.green, "GREAT!"); break;
             case 7:
-                player.runModifier = thirdDie * 2;
-                if (player.runModifier < 6) { player.runModifier = 6; }
+                if (modifier < 6) { player.AddRunModifier(6); }
+                else { player.AddRunModifier(thirdDie * 2); }
                 description.StoreDescription(Color.green, "WONDERFUL!"); break;
         }
 
-        // player.calculateAverage();
-        player.calculateFinal(player.runModifier + homeBonus);
-        showResults(currentCompetitor, currentCompetitor.finalPerformance);
+        player.CalculateAverage();
+        //player.CalculateFinal();
+        showResults(currentCompetitor);
         player.homeFactor = false;
+        player.actualRunPoints = 0;
 
     }
 
 
-    public void showResults(Player player, int result)
+    public void showResults(Player player)
     {
+
         finalText.text += "\n" + player.name +
         ": AVERAGE: " + player.averagePerformance +
-        ", RUN MODIFIER: " + player.runModifier +
-        ", SUM: " + (player.averagePerformance + player.runModifier);
+        ", RUN MODIFIERS: " + player.actualRunPoints +
+        ", SUM: " + player.CalculateActualRun().ToString();
 
     }
     public void showStarters(List<Player> players)
@@ -296,10 +318,8 @@ public class Competition : MonoBehaviour
         for (int i = 0; i < finishers.Count; i++)
 
         {
-            Sprite flagSpriteName = Resources.Load<Sprite>("flags/");
-
             finishersList.text += finishers[i].place +
-             ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance + "\n";//+ TimeDisplay(finishers[i]) ;//+player.ConvertPointsToTime(player.finalPerformance)+"\n";
+             ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "\n";
             resultsList.text += TimeDisplay(finishers[i]);
 
         }
@@ -308,6 +328,17 @@ public class Competition : MonoBehaviour
 
     public void SurpriseEffect(Player player)
     {
+        surprise.surpriseEffect = true;
+        var state = player.myState;
+
+        switch (state)
+        {
+            case Player.PlayerState.OutOf15: outOf15Competitors.Add(player); break;
+            case Player.PlayerState.DidNotFinish: didNotFinish.Add(player); break;
+            case Player.PlayerState.Disqualified: disqualified.Add(player); break;
+        }
+        UpdatePlayerList(didNotFinish, didNotFinishList);
+        UpdatePlayerList(disqualified, disqualifiedList);
         int d6Roll = Random.Range(1, 7);
         Player surpriseCompetitor;
         if (surprise.surpriseEffect)
@@ -324,16 +355,20 @@ public class Competition : MonoBehaviour
                 outsiders.Remove(surpriseCompetitor);
             }
 
-            outOf15Competitors.Add(player);
             players.RemoveAt(players.Count - 1);
             players.Add(surpriseCompetitor);
-            UpdatePlayerList(outOf15Competitors, outOf15List);
+            UpdatePlayerList(players, startingList);
             UpdatePlayerList(outsiders, outsidersList);
             UpdatePlayerList(underdogs, underdogsList);
-            UpdatePlayerList(players, startingList);
+            UpdatePlayerList(outOf15Competitors, outOf15List);
+            // UpdatePlayerList(didNotFinish, didNotFinishList);
+           //  UpdatePlayerList(disqualified, disqualifiedList);
+
+            // UpdateLists();
             partsOfRun = 0;
+            eventHappened = false;
             // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
-            finalText.text += "\n" + player.name + " IS OUT OF 15!" + "\n" + surpriseCompetitor.name + " ENTERS!";
+            finalText.text += "\n" + player.name + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.name + " ENTERS!";
         }
     }
 
@@ -356,7 +391,7 @@ public class Competition : MonoBehaviour
 
     public string TimeDisplay(Player player)
     {
-        int pointsDifference = bestFinalPerformance - player.finalPerformance;
+        float pointsDifference = bestFinalPerformance - player.finalPerformance;
         if (player.place == 1)
         {
             return player.ConvertPointsToTime(player.finalPerformance) + "\n";
@@ -372,14 +407,18 @@ public class Competition : MonoBehaviour
 
     void CheckEvent(Player player)
     {
-        if ((firstD6 == secondD6) && (firstD6 + secondD6 != 2) && (firstD6 + secondD6 != 12))
+        if ((!eventHappened) && ((firstD6 == secondD6) && (firstD6 + secondD6 != 2) && (firstD6 + secondD6 != 12)))
         {
-            //description.StoreDescription(Color.white,"\n"+ "+EVENT!");
+            eventHappened = true;
+            var shortEvent = FindObjectOfType<ShortEvent>();
+
             Debug.Log("EVENT!");
             finalText.text += "\n" + "EVENT!";
-            runButton.SetActive(false);
-            eventButton.SetActive(true);
-            myState = GameState.EventPhase;
+            shortEvent.GetEventType();
+
+            // runButton.SetActive(false);
+            // eventButton.SetActive(true);
+            // myState = GameState.EventPhase;
         }
     }
 
@@ -403,9 +442,11 @@ public class Competition : MonoBehaviour
         }
         else if (myState == GameState.CompetitionPhase)
         {
+
             weatherPanel.SetActive(false);
             setupButton.SetActive(false);
             presentationPanel.SetActive(false);
+            eventButton.SetActive(false);
             runButton.SetActive(true);
             dicePanel.SetActive(true);
 
@@ -417,7 +458,7 @@ public class Competition : MonoBehaviour
             presentationPanel.SetActive(false);
             runButton.SetActive(false);
             dicePanel.SetActive(false);
-            
+
 
             // eventPanel.SetActive(true);
 

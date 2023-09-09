@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using System.Collections.Generic;
+
 
 public class PlayerDisplay : MonoBehaviour
 {
@@ -15,31 +17,25 @@ public class PlayerDisplay : MonoBehaviour
     Competition competition;
 
 
-    void Start()
+    public void Start()
     {
-        //player = null; 
+        player = null; 
+        competition = FindObjectOfType<Competition>();
         formIndicator.GetComponent<SpriteRenderer>().sprite = null;
         competitorName.text = "";
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
-        competition = FindObjectOfType<Competition>();
     }
 
-    void Update()
-    {
-        player = competition.currentCompetitor;
-        if (!competition.competitionIsOver)
-        {
-            competitorName.text = player.name; // + " (" + player.nationality + ")";
-            ShowFormIndicators();
+
+    public void DisplayCompetitor(Player player)
+    {   
+            competitorName.text = player.name;  
+            ShowFormIndicators(player);
             ShowFlag(player);
-        }
-
-        // ShowFormIndicators();
-        // ShowFlag();
-
+            Debug.Log("Showing player " + player.name);   
     }
 
-    public void ShowFormIndicators()
+    public void ShowFormIndicators(Player player)
     {
         // formIndicator.GetComponent<SpriteRenderer>().sprite = null;
 

@@ -17,6 +17,7 @@ public class Weather : MonoBehaviour
     public TMP_Text buttonText;
     [SerializeField] Sprite[] diceSides;
     [SerializeField] TMP_Text temperatureText;
+    [SerializeField] TMP_Text snowConditionText;
     [SerializeField] GameObject[] firstDieImages;
     [SerializeField] GameObject[] secondDieImages;
     [SerializeField] GameObject[] weatherCharts;
@@ -143,6 +144,7 @@ public class Weather : MonoBehaviour
         {
             snowCondition = "hard";//HARD SHOW }
         }
+        snowConditionText.text = "SNOW: " + snowCondition.ToUpper().ToString(); 
         descriptionTexts[2].text = snowCondition.ToUpper().ToString();
         weatherCharts[2].SetActive(true);
         ChangeButtonName("PRESENTATION");
