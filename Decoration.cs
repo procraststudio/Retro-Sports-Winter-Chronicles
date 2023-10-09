@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Decoration : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class Decoration : MonoBehaviour
     public GameObject[] flags;
     public GameObject podiumImage;
     [SerializeField] TMP_Text[] winnersNames;
+    [SerializeField] private Competition competition;
+    [SerializeField] GameObject ExitButton;
+
     public Player winner { get; set; }
     public Player secondPlayer { get; set; }
     public Player thirdPlayer { get; set; }
@@ -20,11 +24,18 @@ public class Decoration : MonoBehaviour
     void Start()
     {
         //decorationPanel.SetActive(false);
+        competition = FindObjectOfType<Competition>();
+
         thirdPlacePanel.SetActive(false);
         secondPlacePanel.SetActive(false);
         winnerPanel.SetActive(false);   
         podiumImage.SetActive(false);
-        
+
+         winner = competition.finishers[0];
+         secondPlayer = competition.finishers[1];
+         thirdPlayer = competition.finishers[2];
+        //TO DO: Decoration effects
+         StartCoroutine("DecorateMedalists");
     }
 
     // Update is called once per frame
@@ -49,7 +60,13 @@ public class Decoration : MonoBehaviour
         winnerPanel.SetActive(true);
         winnersNames[2].text = winner.name;
         flags[2].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + winner.nationality);
+        ExitButton.SetActive(true);    
+
+    }
 
 
+    public void ExitToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }

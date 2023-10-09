@@ -137,7 +137,7 @@ public class ShortEvent : MonoBehaviour
         {
             if (competition.players.Count < 8)
             {
-                actualCompetitor.AddRunModifier(5);
+                actualCompetitor.AddRunModifier(competition.currentRun, 5);
                 descriptionText.text += "CLEARED RUN! ACCELERATION! +5 points";
             }
 
@@ -171,12 +171,12 @@ public class ShortEvent : MonoBehaviour
 
         else if (eventRoll % 2 == 0)
         {
-            actualCompetitor.AddRunModifier(eventRoll);
+            actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
             descriptionText.text += actualCompetitor.name + " TAKES RISK... GREAT SPEED! +" + eventRoll + " pts.";
         }
         else
         {
-            actualCompetitor.AddRunModifier(-eventRoll);
+            actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll);
             descriptionText.text += actualCompetitor.name + " TAKES RISK... FAILURE! -" + eventRoll + " pts.";
         }
     }
@@ -187,12 +187,12 @@ public class ShortEvent : MonoBehaviour
         {
             if (eventRoll == 1)
             {
-                actualCompetitor.AddRunModifier(-6);
+                actualCompetitor.AddRunModifier(competition.currentRun, -6);
                 descriptionText.text += "HORRIBLE MISTAKE! POOR " + actualCompetitor.name + ". -6pts.";
             }
             else if (eventRoll == 6)
             {
-                actualCompetitor.AddRunModifier(6);
+                actualCompetitor.AddRunModifier(competition.currentRun, 6);
                 descriptionText.text += "GREAT SPEED OF " + actualCompetitor.name + "! +6pts.";
             }
             else
@@ -202,7 +202,7 @@ public class ShortEvent : MonoBehaviour
         }
         else if (weather.snowCondition.Contains("hard"))
         {
-            actualCompetitor.AddRunModifier(3);
+            actualCompetitor.AddRunModifier(competition.currentRun, 3);
             descriptionText.text += "GREAT SNOW CONDITION. +3 points";
         }
         else

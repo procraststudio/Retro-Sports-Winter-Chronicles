@@ -16,6 +16,7 @@ public class Gamemanager : MonoBehaviour
     public float bestTimeInSec { get; private set; } 
     private float tenthTime; // Time of 10th competitor (in secs)
     public float timeDifference;
+    public static int numbersOfRun = 2;
     public string venueNation { get; private set; } 
     public float temperatureMin { get; private set; }
     public float temperatureMax { get; private set; }
@@ -23,18 +24,18 @@ public class Gamemanager : MonoBehaviour
 void Start()
     {
         competition = FindObjectOfType<Competition>();
-        competitionName = "CALGARY 1988 Alpine Ski: Downhill MEN"; //Downhill
+        competitionName = "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
         venueNation = "CAN";
-        surprisesModifier = 3.00f;
+        surprisesModifier = 1.00f; // default should be 1.00 f
         temperatureMin = -11.00f;
         temperatureMax = -4.00f;
         // FAVOURITES:
-        Player player01 = new Player("Zurbriggen", 1, 'A', 3, "CAN"); // SUI
-        Player player02 = new Player("Muller", 2, 'A', 2, "CAN" ); //SUI
-        Player player03 = new Player("Piccard", 3, 'A', 2, "CAN");//FRA
-        Player player04 = new Player("Stock", 4, 'B', 1, "CAN"); // AUT
-        Player player05 = new Player("Pfaffenbichler", 5, 'B', 1, "CAN");//AUT
-        Player player06 = new Player("Wasmeier", 6, 'B', 2, "CAN");//FRG
+        Player player01 = new Player("Zurbriggen", 1, 'A', 3, "SUI");
+        Player player02 = new Player("Muller", 2, 'A', 2, "SUI" );
+        Player player03 = new Player("Piccard", 3, 'A', 2, "FRA");
+        Player player04 = new Player("Stock", 4, 'B', 1, "AUT");
+        Player player05 = new Player("Pfaffenbichler", 5, 'B', 1, "AUT");
+        Player player06 = new Player("Wasmeier", 6, 'B', 2, "FRG");
         Player player07 = new Player("Steiner", 7, 'B', 2, "AUT");
         Player player08 = new Player("Bell", 8, 'B', 3, "GBR");
         Player player09 = new Player("Girardelli", 9, 'B', 3, "LUX");

@@ -16,7 +16,10 @@ public class Player : MonoBehaviour
     public int averagePerformance { get; set; }
     public int runModifiers { get; set; }
     public int currentModifier { get; set; }
-    public int actualRunPoints { get; set; } = 0;
+    public float firstRunPoints { get; set; } = 0;
+    public int firstRunModifiers { get; set; } = 0;
+    public float secondRunPoints { get; set; } = 0;
+    public int secondRunModifiers { get; set; } = 0;
     public float finalPerformance { get; set; }
     public int place { get; set; }
     public float totalSeconds { get; set; }
@@ -83,23 +86,56 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void AddRunModifier(int modifier)
+    public void AddRunModifier(int currentRun, int modifier)
     {
-        actualRunPoints += modifier;
-        Debug.Log(modifier + " pts added.");
+        if (currentRun == 1)
+        {
+            firstRunModifiers += modifier;
+            Debug.Log(modifier + " pts added.");
+        }
+        else if (currentRun == 2)
+        {
+            secondRunModifiers += modifier;
+            Debug.Log(modifier + " pts added.");
+        }
     }
-    public int CalculateActualRun()
+    public float CalculateActualRun(int currentRun)
     {
-        int sumOfPointsInRun = (actualRunPoints + averagePerformance);
-        finalPerformance += (float)(actualRunPoints + averagePerformance);
-        return sumOfPointsInRun;
+        if (currentRun == 1)
+        {
+            firstRunPoints += (float)CalculateAverage() + (float)firstRunModifiers;
+            return firstRunPoints;
+            // finalPerformance = (float)firstRunPoints + Random.Range(0.00f, 1.00f);
+        }
+        else if (currentRun == 2)
+        {
+            secondRunPoints += (float)CalculateAverage() + (float)secondRunModifiers;
+            return secondRunPoints;
+            // finalPerformance += (float)secondRunPoints;
+        }
+        else
+        {
+            return 0.0f;
+        }
 
+    }
+    public int actualModifiers(int currentRun)
+    {
+        if (currentRun == 1)
+        {
+            return firstRunModifiers;
+        }
+        else
+        {
+            return secondRunModifiers;
+        }
     }
 
     public float CalculateFinal()
     {
-        finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
-        
+        finalPerformance = firstRunPoints + secondRunPoints + Random.Range(0.00f, 1.00f);
+        //finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
+
         return finalPerformance;
     }
 
@@ -148,11 +184,11 @@ public class Player : MonoBehaviour
         myState = state;
     }
 
-    public string ConvertPointsToTime(float finalPerformance)
+    public string ConvertPointsToTime(float points)
     {
         float realTime = FindObjectOfType<Gamemanager>().bestTimeInSec;
         // Assume that 1 point = 1/100 sec
-        float realPerformance = (finalPerformance / 80.00f);
+        float realPerformance = (points / 80.00f);
         float differenceInSeconds = realTime - (realTime * realPerformance);
         totalSeconds = realTime + differenceInSeconds * 0.0875f; // or 0.114
         int minutes = (int)totalSeconds / 60;
@@ -167,7 +203,7 @@ public class Player : MonoBehaviour
     {
         float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
         float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
-        //string.alignment = TextAnchor.MiddleRight;
+                                              //string.alignment = TextAnchor.MiddleRight;
         float totalDifference = difference * modifier;
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;

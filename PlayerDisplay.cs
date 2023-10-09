@@ -32,7 +32,6 @@ public class PlayerDisplay : MonoBehaviour
             competitorName.text = player.name;  
             ShowFormIndicators(player);
             ShowFlag(player);
-            Debug.Log("Showing player " + player.name);   
     }
 
     public void ShowFormIndicators(Player player)

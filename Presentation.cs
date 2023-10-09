@@ -11,6 +11,7 @@ public class Presentation : MonoBehaviour
     [SerializeField] private TMP_Text[] favouriteName;
     [SerializeField] private TMP_Text[] favouriteGradeExp;
     [SerializeField] private GameObject[] flagSection;
+    [SerializeField] private TMP_Text buttonText;
     Competition competition;
     public string flagsFolderPath = "flags/";
     private string textPath = "comments";
@@ -28,7 +29,6 @@ public class Presentation : MonoBehaviour
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
         competition = FindObjectOfType<Competition>();
         favourites = competition.players;
-        Debug.Log("START PRESENTATION DONE");
         if (unusedComments.Count == 0)
         {
             LoadFileLines();
@@ -42,7 +42,6 @@ public class Presentation : MonoBehaviour
 
     public void GenerateFavourites()
     {
-        Debug.Log("CLICK!");
         List<Player> favourites = competition.players;
         if (!presentationPhaseOver)
         {
@@ -51,13 +50,13 @@ public class Presentation : MonoBehaviour
                 if ((favouritesGenerated < 3) && (favourites[i].grade == 'A'))
                 {
                     actualFavourite = favourites[i];
-                    Debug.Log("FAVOURITE IS: " + actualFavourite.name);
                     showPlayerData(favouritesGenerated, actualFavourite);
                     showComments(favouritesGenerated);
-                    // TO DO: Time delay
+                    // TO DO: Some time delay
                     favouritesGenerated++;
                 }
             }
+            buttonText.text = "START";
 
         }
         else
@@ -85,7 +84,6 @@ public class Presentation : MonoBehaviour
             string randomLine = unusedComments[randomIndex];
             descriptionText[player].text = randomLine;
             unusedComments.RemoveAt(randomIndex);
-            Debug.Log("Random Line: " + randomLine);
         }
         else
         {

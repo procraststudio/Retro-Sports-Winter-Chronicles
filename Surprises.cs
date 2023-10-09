@@ -6,6 +6,7 @@ using Random = UnityEngine.Random;
 public class Surprises : MonoBehaviour
 {
     public float surpriseChance { get; set; }
+    [SerializeField] private float realSurpriseChance { get; set; }
     Gamemanager gamemanager;
     Weather weather;
     public bool surpriseEffect { get; set; }
@@ -26,7 +27,10 @@ public class Surprises : MonoBehaviour
 
     private void Update()
     {
-      surpriseModifier.text = SurpriseModifier().ToString("F2");
+        if (realSurpriseChance >= 1.00f)
+        {
+            surpriseModifier.text = realSurpriseChance.ToString("F0") + "%";
+        }
     }
 
 
@@ -34,11 +38,11 @@ public class Surprises : MonoBehaviour
     {
         surpriseInfo.text = "";
         int favourites = gamemanager.numberOfFavourites;
-        float realSurpriseChance = player.ranking * SurpriseModifier();
-        float surpriseRoll = Random.Range(1, 100);
+        realSurpriseChance = player.ranking * SurpriseModifier();
+        float surpriseRoll = Random.Range(1, 101);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
 
-        if (((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
+        if ((surpriseRoll==1) || ((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
             surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
             player.PoorFormEffect();

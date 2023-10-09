@@ -37,7 +37,7 @@ public class Weather : MonoBehaviour
         diceIndex = 0;
         precipitation = string.Empty;
         temperatureRolled = false;
-        ResetWeatherCharts();
+     //   ResetWeatherCharts();
         weatherPhaseOver = false;
         weatherModifier = 1.00f;
     }
@@ -98,7 +98,7 @@ public class Weather : MonoBehaviour
 
     public IEnumerator WeatherDice()
     {
-        ResetWeatherCharts();
+        //ResetWeatherCharts();
         diceChanging = true;
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
