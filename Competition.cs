@@ -57,6 +57,7 @@ public class Competition : MonoBehaviour
     public float bestRunPerformance;
     public GameState myState;
     private bool eventHappened = false;
+    private bool decorationSpawned = false;
 
     public enum GameState
     {
@@ -220,6 +221,23 @@ public class Competition : MonoBehaviour
             {
                 finishers.Add(currentCompetitor);
             }
+
+            else if (currentRun > 1)
+            {
+                bool playerExists = false;
+                for (int i = finishers.Count - 1; i >= 0; i--)
+                {
+                    if (finishers[i].name == currentCompetitor.name)
+                    {
+                        playerExists = true;
+                    }
+
+                }
+                if (!playerExists)
+                {
+                    finishers.Add(currentCompetitor);
+                }
+            }
             eventHappened = false;
             players.RemoveAt(players.Count - 1);
             UpdatePlayerList(players, startingList);
@@ -227,7 +245,6 @@ public class Competition : MonoBehaviour
             updateResults();
             currentCompetitorNo--;
             partsOfRun = 0;
-
         }
     }
 
@@ -339,17 +356,20 @@ public class Competition : MonoBehaviour
         {
             finishers[i].place = i + 1;
         }
-        bestFinalPerformance = finishers[0].finalPerformance;
-        //bestRunPerformance = finishers[0].CalculateActualRun(currentRun);
 
-        Debug.Log("BEST: " + bestFinalPerformance);
+        if (finishers.Count > 0)
+        {
+            bestFinalPerformance = finishers[0].finalPerformance;
+        }
+        //bestRunPerformance = finishers[0].CalculateActualRun(currentRun);
+        //Debug.Log("BEST: " + bestFinalPerformance);
 
         for (int i = 0; i < finishers.Count; i++)
 
         {
             if (finishers[i].name == currentCompetitor.name)
             {
-                string fullText = "<color=green>" + finishers[i].place + ". "+ finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=green>" + "\n";
+                string fullText = "<color=green>" + finishers[i].place + ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=green>" + "\n";
                 finishersList.text += fullText;
                 resultsList.text += "<color=green>" + TimeDisplay(finishers[i]) + "<color=green>";
             }
@@ -375,10 +395,20 @@ public class Competition : MonoBehaviour
 
         switch (state)
         {
-            case Player.PlayerState.OutOf15: outOf15Competitors.Add(player); finishers.Remove(player); break;
-            case Player.PlayerState.DidNotFinish: didNotFinish.Add(player); finishers.Remove(player); break;
-            case Player.PlayerState.Disqualified: disqualified.Add(player); finishers.Remove(player); break;
+            case Player.PlayerState.OutOf15: outOf15Competitors.Add(player); break;
+            case Player.PlayerState.DidNotFinish: didNotFinish.Add(player); break;
+            case Player.PlayerState.Disqualified: disqualified.Add(player); break;
         }
+        Player playerToDelete = player;
+
+        for (int i = finishers.Count - 1; i >= 0; i--)
+        {
+            if (finishers[i].name == playerToDelete.name) // Mo¿esz u¿yæ Equals lub innych metod porównywania
+            {
+                finishers.RemoveAt(i); // Usuñ obiekt z listy
+            }
+        }
+
         UpdatePlayerList(didNotFinish, didNotFinishList);
         UpdatePlayerList(disqualified, disqualifiedList);
         int d6Roll = Random.Range(1, 7);
@@ -417,8 +447,6 @@ public class Competition : MonoBehaviour
 
     public void DecorationPhase()
     {
-        bool decorationSpawned = false;
-        
         if ((competitionIsOver) && (!decorationSpawned))
         {
             finalText.text = "";
@@ -428,7 +456,7 @@ public class Competition : MonoBehaviour
             newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
             newObject.transform.localPosition = new Vector3(7.17f, -61.23f, 0.00f);
             decorationSpawned = true;
-            // competitionIsOver = true;
+
         }
     }
 
@@ -444,7 +472,7 @@ public class Competition : MonoBehaviour
             }
             else
             {
-                return "    " +player.ConvertDifference(pointsDifference) + "\n";
+                return "    " + player.ConvertDifference(pointsDifference) + "\n";
             }
         }
         else
@@ -497,13 +525,7 @@ public class Competition : MonoBehaviour
 
             else
             {
-                //currentRun++;
                 players.AddRange(finishers);
-                //for (int i = finishers.Count - 1; i >= 0; i--)
-                //{
-                //    players.Add(finishers[i]);
-                //}
-
                 UpdatePlayerList(players, startingList);
                 currentCompetitorNo = players.Count - 1;
                 List<Player> blackHorses = new List<Player>();
@@ -516,8 +538,7 @@ public class Competition : MonoBehaviour
                 }
                 Debug.Log("NEXT RUN PREPARED!");
                 Debug.Log("BLACKHORSES POINTS: " + blackHorses[0].firstRunPoints);
-                // event
-                // competitors from out of 15/outsiders/underdogs can enter 2 nd run, how many perf. points they have?
+                // possible weather change, +/- weather modifier
             }
 
         }

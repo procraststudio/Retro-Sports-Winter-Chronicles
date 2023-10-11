@@ -143,7 +143,8 @@ public class ShortEvent : MonoBehaviour
 
             else
             {
-                descriptionText.text += "GREAT STRATEGY!";
+                actualCompetitor.AddRunModifier(competition.currentRun, -5);
+                descriptionText.text += "POOR STRATEGY! -5 points";
             }
         }
     }
@@ -214,13 +215,21 @@ public class ShortEvent : MonoBehaviour
     }
     private void Surprise()  // UNDERDOG ENTERS INTO OUTSIDERS
     {
-        Player underdog = competition.underdogs[0];
-        underdog.GoodFormEffect();
-        descriptionText.text += "GOOD FORM OF UNDERDOG! " + underdog.name.ToString();
-        competition.underdogs.Remove(underdog);
-        competition.outsiders.Insert(0, underdog);
-        competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
-        competition.UpdatePlayerList(competition.underdogs, competition.underdogsList);
+        if (competition.underdogs.Count > 0)
+        {
+            Player underdog = competition.underdogs[0];
+            underdog.GoodFormEffect();
+            descriptionText.text += "GOOD FORM OF UNDERDOG! " + underdog.name.ToString();
+            competition.underdogs.Remove(underdog);
+            competition.outsiders.Insert(competition.outsiders.Count, underdog);
+            competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
+            competition.UpdatePlayerList(competition.underdogs, competition.underdogsList);
+        }
+        else if (competition.outsiders.Count >0)
+        {
+            competition.outsiders[competition.outsiders.Count-1].GoodFormEffect();
+            descriptionText.text += "GOOD FORM OF OUTSIDER!";
+        }
     }
 
 

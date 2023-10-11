@@ -16,7 +16,7 @@ public class Gamemanager : MonoBehaviour
     public float bestTimeInSec { get; private set; } 
     private float tenthTime; // Time of 10th competitor (in secs)
     public float timeDifference;
-    public static int numbersOfRun = 2;
+    public static int numbersOfRun = 1;
     public string venueNation { get; private set; } 
     public float temperatureMin { get; private set; }
     public float temperatureMax { get; private set; }

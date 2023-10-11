@@ -42,13 +42,23 @@ public class Surprises : MonoBehaviour
         float surpriseRoll = Random.Range(1, 101);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
 
-        if ((surpriseRoll==1) || ((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
+        if ((surpriseRoll == 1) || ((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
             surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
             player.PoorFormEffect();
             player.myState = Player.PlayerState.OutOf15;
             Debug.Log("SURPRISE! NEW STATE " + player.myState);
             surpriseEffect = true;
+            //Player playerToDelete = player;
+
+            //for (int i = competition.finishers.Count - 1; i >= 0; i--)
+            //{
+            //    if (competition.finishers[i].name == playerToDelete.name) // Mo¿esz u¿yæ Equals lub innych metod porównywania
+            //    {
+            //        competition.finishers.RemoveAt(i); // Usuñ obiekt z listy
+            //    }
+            //}
+
             competition.SurpriseEffect(player);
 
         }
