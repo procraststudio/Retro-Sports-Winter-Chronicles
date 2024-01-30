@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 
 public class Competition : MonoBehaviour
 {
+    public static Competition Instance { get; private set; }
     public int firstD6;
     public int secondD6;
     public int thirdD6;
@@ -23,6 +25,7 @@ public class Competition : MonoBehaviour
     [SerializeField] TMP_Text finishersList;
     [SerializeField] TMP_Text resultsList;
     [SerializeField] TMP_Text secondRunResults;
+    [SerializeField] TMP_Text [] timeDifferenceText;
     [SerializeField] TMP_Text competitionName;
     [SerializeField] private GameObject setupButton;
     [SerializeField] private GameObject eventButton;
@@ -58,6 +61,10 @@ public class Competition : MonoBehaviour
     public GameState myState;
     private bool eventHappened = false;
     private bool decorationSpawned = false;
+    Gamemanager gamemanager;
+    public float firstSectorMostPoints = 0f;
+    public float secondSectorMostPoints = 0f;
+    public float thirdSectorMostPoints = 0f;
 
     public enum GameState
     {
@@ -68,14 +75,26 @@ public class Competition : MonoBehaviour
         EventPhase = 4,
         DecorationPhase = 5,
     }
-
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        //TO DO highScore = PlayerPrefs.GetInt("highScore"); //loading high scores
+    }
 
     void Start()
     {
         myState = GameState.WeatherPhase;
-        players = FindObjectOfType<Gamemanager>().favourites;
-        outsiders = FindObjectOfType<Gamemanager>().outsiders;
-        underdogs = FindObjectOfType<Gamemanager>().underdogs;
+        gamemanager = FindObjectOfType<Gamemanager>();
+        players = gamemanager.favourites;
+        outsiders = gamemanager.outsiders;
+        underdogs = gamemanager.underdogs;
         currentRun = 1;
 
         decoration = FindObjectOfType<Decoration>();
@@ -83,6 +102,7 @@ public class Competition : MonoBehaviour
         dice = FindObjectOfType<Dice>();
         description = FindObjectOfType<RunDescription>();
         UpdatePlayerList(players, startingList);
+        FindObjectOfType<PlayerDataLoader>().LoadPlayers(players);
         UpdatePlayerList(outsiders, outsidersList);
         UpdatePlayerList(underdogs, underdogsList);
         surprise = FindObjectOfType<Surprises>();
@@ -98,7 +118,7 @@ public class Competition : MonoBehaviour
 
     void Update()
     {
-        competitionName.text = FindObjectOfType<Gamemanager>().competitionName.ToString() + currentRun.ToString();
+        competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
         GameStatesManager();
         HandleNextRun();
 
@@ -131,7 +151,7 @@ public class Competition : MonoBehaviour
             dice.StartCoroutine("showDice");
             //dice.showDice();
             competitionRoll = firstD6 + secondD6;
-            Debug.Log("NAME: " + currentCompetitor.name + ". SUM OF 2D6: " + competitionRoll + ". THIRD D6: " + thirdD6);
+            Debug.Log("NAME: " + currentCompetitor.secondName + ". SUM OF 2D6: " + competitionRoll + ". THIRD D6: " + thirdD6);
             CheckEvent(currentCompetitor);
 
             switch (competitionRoll)
@@ -209,8 +229,60 @@ public class Competition : MonoBehaviour
                     break; // CRIT SUCCESS
             }
             //CheckEvent(currentCompetitor);
+
             EndRun();
         }
+    }
+
+    public void CalculateSectorTime(Player player, float sectorPoints)
+    {
+        if (player.myState == Player.PlayerState.Running)
+        {
+            float differenceInPoints = 0;
+            switch (partsOfRun)
+            {
+                case 1:
+                    if (sectorPoints > firstSectorMostPoints)
+                    {
+                        differenceInPoints = firstSectorMostPoints - sectorPoints;
+                        firstSectorMostPoints = sectorPoints;
+                        Debug.Log("1st SECTOR RECORD: " + sectorPoints);
+                        Debug.Log("DIFFERENCE: " + differenceInPoints);
+                        // GREEN ARROW UP 
+                    }
+                    else
+                    {
+                        differenceInPoints = firstSectorMostPoints - sectorPoints;
+                    }
+                    break;
+                case 2:
+                    if (sectorPoints > secondSectorMostPoints)
+                    {
+                        secondSectorMostPoints = sectorPoints;
+                        Debug.Log("2nd SECTOR RECORD: " + sectorPoints);
+                    };
+                    differenceInPoints = secondSectorMostPoints - sectorPoints; break;
+                case 3:
+                    if (sectorPoints > thirdSectorMostPoints)
+                    {
+                        thirdSectorMostPoints = sectorPoints;
+                        Debug.Log("3rd SECTOR RECORD: " + sectorPoints);
+                    };
+                    differenceInPoints = thirdSectorMostPoints - sectorPoints; break;
+            }
+            // SHOW DIFFERENCE
+            Debug.Log(player.ConvertDifference(differenceInPoints));
+
+            if (differenceInPoints > 0)
+            {
+                timeDifferenceText[partsOfRun - 1].text = "<color=red>" + (player.ConvertDifference(differenceInPoints).ToString()) + "<color=red>";
+            }
+            else
+            {
+                timeDifferenceText[partsOfRun - 1].text = "<color=green>" + (player.ConvertDifference(differenceInPoints).ToString()) + "<color=green>";
+            }
+        }
+        
     }
 
     public void EndRun()
@@ -227,7 +299,7 @@ public class Competition : MonoBehaviour
                 bool playerExists = false;
                 for (int i = finishers.Count - 1; i >= 0; i--)
                 {
-                    if (finishers[i].name == currentCompetitor.name)
+                    if (finishers[i].secondName == currentCompetitor.secondName)
                     {
                         playerExists = true;
                     }
@@ -241,6 +313,7 @@ public class Competition : MonoBehaviour
             eventHappened = false;
             players.RemoveAt(players.Count - 1);
             UpdatePlayerList(players, startingList);
+            FindObjectOfType<PlayerDataLoader>().UpdateCompetitors(players);
             currentCompetitor.CalculateFinal();
             updateResults();
             currentCompetitorNo--;
@@ -258,13 +331,13 @@ public class Competition : MonoBehaviour
                 if (modifier > -6) { player.AddRunModifier(currentRun, -6); }
                 else { player.AddRunModifier(currentRun, thirdDie * (-2)); };
                 description.StoreDescription(Color.red, "DISASTER"); break;
-            case 0: player.AddRunModifier(currentRun, thirdDie * (-2)); description.StoreDescription(Color.red, "MEDIOCRE"); break;
-            case 1: player.AddRunModifier(currentRun, thirdDie * (-1)); description.StoreDescription(Color.red, "VERY POOR"); break;
-            case 2: player.AddRunModifier(currentRun, (thirdDie + 1) / -2); description.StoreDescription(Color.red, "POOR"); break;
+            case 0: player.AddRunModifier(currentRun, thirdDie * (-2)); description.StoreDescription(Color.red, "VERY POOR"); break;
+            case 1: player.AddRunModifier(currentRun, thirdDie * (-1)); description.StoreDescription(Color.red, "POOR"); break;
+            case 2: player.AddRunModifier(currentRun, (thirdDie + 1) / -2); description.StoreDescription(Color.red, "NOT GOOD"); break;
             case 3:
                 if (thirdDie < 3) { player.AddRunModifier(currentRun, Random.Range(-4, -1)); }
                 else if (thirdDie > 4) { player.AddRunModifier(currentRun, Random.Range(1, 4)); }
-                else { player.AddRunModifier(currentRun, 0); }; description.StoreDescription(Color.white, "NOT GOOD"); break;
+                else { player.AddRunModifier(currentRun, 0); }; description.StoreDescription(Color.white, "AVERAGE"); break;
             case 4:
                 if (thirdDie < 3) { player.AddRunModifier(currentRun, Random.Range(-3, 0)); }
                 else if (thirdDie > 4) { player.AddRunModifier(currentRun, Random.Range(2, 5)); }
@@ -278,7 +351,9 @@ public class Competition : MonoBehaviour
         }
 
         // player.CalculateAverage();
+        float currentPlayerPoints = player.firstRunPoints;
         player.CalculateActualRun(currentRun);
+        CalculateSectorTime(player, player.firstRunPoints - currentPlayerPoints);
         player.CalculateFinal();
         showResults(currentCompetitor);
         player.homeFactor = false;
@@ -291,7 +366,7 @@ public class Competition : MonoBehaviour
     {
         if (player.myState == Player.PlayerState.Running)
         {
-            finalText.text += "\n" + player.name +
+            finalText.text += "\n" + player.secondName +
             ": AVERAGE: " + player.averagePerformance +
             ", RUN MODIFIERS: " + player.actualModifiers(currentRun) + ", SUM: ";
             if (currentRun == 2)
@@ -308,7 +383,7 @@ public class Competition : MonoBehaviour
     {
         for (int i = 0; i < players.Count; i++)
         {
-            startingList.text = players[i].name + " (" + players[i].nationality + ")" + " . GRADE: " + players[i].grade + "\n";
+            startingList.text = players[i].secondName + " (" + players[i].nationality + ")" + " . GRADE: " + players[i].grade + "\n";
         }
 
     }
@@ -327,11 +402,11 @@ public class Competition : MonoBehaviour
             {
                 if (i == list.Count - 1)
                 {
-                    listText.text += "=>" + list[i].name.ToUpper() + ". Grade: " + list[i].grade + ". Rank: " + list[i].ranking + "\n";
+                    listText.text += "=>" + list[i].secondName.ToUpper() + ". Grade: " + list[i].grade + ". Rank: " + list[i].ranking + "\n";
                 }
                 else
                 {
-                    listText.text += list[i].name + ". Grade: " + list[i].grade + "\n";
+                    listText.text += list[i].secondName + ". Grade: " + list[i].grade + "\n";
                 }
             }
         }
@@ -341,7 +416,7 @@ public class Competition : MonoBehaviour
             listText.text = "";
             foreach (Player player in list)
             {
-                listText.text += player.name + ". Grade: " + player.grade + "\n";
+                listText.text += player.secondName + ". Grade: " + player.grade + "\n";
             }
 
         }
@@ -367,15 +442,15 @@ public class Competition : MonoBehaviour
         for (int i = 0; i < finishers.Count; i++)
 
         {
-            if (finishers[i].name == currentCompetitor.name)
+            if (finishers[i].secondName == currentCompetitor.secondName)
             {
-                string fullText = "<color=green>" + finishers[i].place + ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=green>" + "\n";
+                string fullText = "<color=green>" + finishers[i].place + ". " + finishers[i].secondName.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=green>" + "\n";
                 finishersList.text += fullText;
                 resultsList.text += "<color=green>" + TimeDisplay(finishers[i]) + "<color=green>";
             }
             else
             {
-                string fullText = "<color=white>" + finishers[i].place + ". " + finishers[i].name.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=white>" + "\n";
+                string fullText = "<color=white>" + finishers[i].place + ". " + finishers[i].secondName.ToUpper() + " (" + finishers[i].nationality + "): " + finishers[i].finalPerformance.ToString("F1") + "<color=white>" + "\n";
                 finishersList.text += fullText;
                 resultsList.text += "<color=white>" + TimeDisplay(finishers[i]) + "<color=white>";
             }
@@ -403,7 +478,7 @@ public class Competition : MonoBehaviour
 
         for (int i = finishers.Count - 1; i >= 0; i--)
         {
-            if (finishers[i].name == playerToDelete.name) // Mo¿esz u¿yæ Equals lub innych metod porównywania
+            if (finishers[i].secondName == playerToDelete.secondName) // Mo¿esz u¿yæ Equals lub innych metod porównywania
             {
                 finishers.RemoveAt(i); // Usuñ obiekt z listy
             }
@@ -423,8 +498,15 @@ public class Competition : MonoBehaviour
 
             else
             {
-                surpriseCompetitor = outsiders[0];
-                outsiders.Remove(surpriseCompetitor);
+                if (underdogs.Count == 0)
+                {
+                    return;
+                }
+                else
+                {
+                    surpriseCompetitor = outsiders[0];
+                    outsiders.Remove(surpriseCompetitor);
+                }
             }
 
             players.RemoveAt(players.Count - 1);
@@ -435,13 +517,13 @@ public class Competition : MonoBehaviour
             UpdatePlayerList(outOf15Competitors, outOf15List);
             updateResults();
             // UpdatePlayerList(didNotFinish, didNotFinishList);
-            //  UpdatePlayerList(disqualified, disqualifiedList);
+            // UpdatePlayerList(disqualified, disqualifiedList);
 
             // UpdateLists();
             partsOfRun = 0;
             eventHappened = false;
             // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
-            finalText.text += "\n" + player.name + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.name + " ENTERS!";
+            finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
         }
     }
 
@@ -451,10 +533,10 @@ public class Competition : MonoBehaviour
         {
             finalText.text = "";
             currentCompetitor = null;
-            runButton.SetActive(false);
+            myState = GameState.DecorationPhase;
             GameObject newObject = Instantiate(DecorationPanel);
             newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
-            newObject.transform.localPosition = new Vector3(7.17f, -61.23f, 0.00f);
+            newObject.transform.localPosition = new Vector3(7.17f, 0.00f, 0.00f);
             decorationSpawned = true;
 
         }
@@ -579,6 +661,17 @@ public class Competition : MonoBehaviour
             runButton.SetActive(false);
             dicePanel.SetActive(false);
         }
+        else if (myState == GameState.DecorationPhase)
+        {
+            weatherPanel.SetActive(false);
+            setupButton.SetActive(false);
+            presentationPanel.SetActive(false);
+            runButton.SetActive(false);
+            dicePanel.SetActive(false);
+            competitorPanel.SetActive(false);
+        }
+
+
 
 
     }

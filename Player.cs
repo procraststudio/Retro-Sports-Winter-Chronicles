@@ -8,7 +8,8 @@ public enum grade
 
 public class Player : MonoBehaviour
 {
-    public string name { get; set; }
+    public string secondName { get; set; }
+    public string surname { get; set; }
     public int ranking { get; set; }
     public char grade { get; set; }
     public int experience { get; set; }
@@ -30,18 +31,19 @@ public class Player : MonoBehaviour
 
     public enum PlayerState
     {
-        DidNotStart = 0,
+        DidNotStart = 0,  // DNS
         Running = 1,
         OutOf15 = 2,
-        DidNotFinish = 3,
-        Disqualified = 4,
+        DidNotFinish = 3,  //DNF
+        Disqualified = 4,  //DQ
     }
 
 
-    public Player(string name, int ranking, char grade, int experience, string nationality)
+    public Player(string surname, string name, int ranking, char grade, int experience, string nationality)
     {
         this.ranking = ranking;
-        this.name = name;
+        this.surname = surname;
+        this.secondName = name;
         this.experience = experience;
         this.grade = grade;
         this.nationality = nationality;
@@ -146,6 +148,10 @@ public class Player : MonoBehaviour
         {
             grade--;
             ranking -= 5;
+            if (ranking < 1)
+            {
+                ranking = 1;
+            }   
             goodFormEffect = true;
             Debug.Log("Good form!" + " New ranking: " + ranking);
         }
@@ -204,14 +210,20 @@ public class Player : MonoBehaviour
         float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
         float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
                                               //string.alignment = TextAnchor.MiddleRight;
-        float totalDifference = difference * modifier;
+        float totalDifference = Mathf.Abs(difference) * modifier;
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);
-        string formattedTime = (minutes > 0) ?
+        string formattedTime = (minutes > 0)  ?
 
         string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
+        (difference<0) ?
+        string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths):
         string.Format("+" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
+
+         if (difference < 0) {
+           string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
+        }
 
         return formattedTime;
     }

@@ -22,7 +22,7 @@ public class Surprises : MonoBehaviour
         disqualification = false;
         gamemanager = FindObjectOfType<Gamemanager>();
         weather = FindObjectOfType<Weather>();
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
     }
 
     private void Update()
@@ -44,7 +44,7 @@ public class Surprises : MonoBehaviour
 
         if ((surpriseRoll == 1) || ((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
-            surpriseInfo.text = player.name + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
+            surpriseInfo.text = player.secondName + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
             player.PoorFormEffect();
             player.myState = Player.PlayerState.OutOf15;
             Debug.Log("SURPRISE! NEW STATE " + player.myState);

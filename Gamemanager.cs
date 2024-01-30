@@ -9,6 +9,7 @@ public class Gamemanager : MonoBehaviour
     public List<Player>[] lists;
 
     Competition competition;
+    public String typeOfCompetition;
     public String competitionName;
     public float surprisesModifier;
     public float disqalificationModifier = 0.18f; // percentage of surprisesModifier
@@ -16,40 +17,42 @@ public class Gamemanager : MonoBehaviour
     public float bestTimeInSec { get; private set; } 
     private float tenthTime; // Time of 10th competitor (in secs)
     public float timeDifference;
-    public static int numbersOfRun = 1;
+    public static int numbersOfRun;
     public string venueNation { get; private set; } 
     public float temperatureMin { get; private set; }
     public float temperatureMax { get; private set; }
 
 void Start()
     {
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
+        typeOfCompetition = "alpine skiing";
         competitionName = "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
         venueNation = "CAN";
+        numbersOfRun = 1;
         surprisesModifier = 1.00f; // default should be 1.00 f
         temperatureMin = -11.00f;
         temperatureMax = -4.00f;
         // FAVOURITES:
-        Player player01 = new Player("Zurbriggen", 1, 'A', 3, "SUI");
-        Player player02 = new Player("Muller", 2, 'A', 2, "SUI" );
-        Player player03 = new Player("Piccard", 3, 'A', 2, "FRA");
-        Player player04 = new Player("Stock", 4, 'B', 1, "AUT");
-        Player player05 = new Player("Pfaffenbichler", 5, 'B', 1, "AUT");
-        Player player06 = new Player("Wasmeier", 6, 'B', 2, "FRG");
-        Player player07 = new Player("Steiner", 7, 'B', 2, "AUT");
-        Player player08 = new Player("Bell", 8, 'B', 3, "GBR");
-        Player player09 = new Player("Girardelli", 9, 'B', 3, "LUX");
-        Player player10 = new Player("Sbardelotto", 10, 'C', 2, "ITA");
+        Player player01 = new Player("Pirmin", "Zurbriggen", 1, 'A', 3, "SUI");
+        Player player02 = new Player("Peter", "Muller", 2, 'A', 2, "SUI" );
+        Player player03 = new Player("Franck", "Piccard", 3, 'A', 2, "FRA");
+        Player player04 = new Player("Leonhard", "Stock", 4, 'B', 1, "AUT");
+        Player player05 = new Player("Gerhard", "Pfaffenbichler", 5, 'B', 1, "AUT");
+        Player player06 = new Player("Markus", "Wasmeier", 6, 'B', 2, "FRG");
+        Player player07 = new Player("Anton", "Steiner", 7, 'B', 2, "AUT");
+        Player player08 = new Player("Martin", "Bell", 8, 'B', 3, "GBR");
+        Player player09 = new Player("Marc", "Girardelli", 9, 'B', 3, "LUX");
+        Player player10 = new Player("Danilo", "Sbardelotto", 10, 'C', 2, "ITA");
         // OUTSIDERS:
-        Player player11 = new Player("Boyd", 11, 'C', 1, "CAN");
-        Player player12 = new Player("Heinzer", 12, 'C', 1, "SUI");
-        Player player13 = new Player("Belczyk", 13, 'D', 2, "CAN");
-        Player player14 = new Player("Mader", 14, 'D', 2, "AUT");
-        Player player15 = new Player("Tauscher", 15, 'D', 3, "FRG");
+        Player player11 = new Player("Rob", "Boyd", 11, 'C', 1, "CAN");
+        Player player12 = new Player("Franz","Heinzer", 12, 'C', 1, "SUI");
+        Player player13 = new Player("Felix", "Belczyk", 13, 'D', 2, "CAN");
+        Player player14 = new Player("Gunther", "Mader", 14, 'D', 2, "AUT");
+        Player player15 = new Player("Hansjorg", "Tauscher", 15, 'D', 3, "FRG");
         // UNDERDOGS:
-        Player player16 = new Player("Henning", 16, 'E', 1, "SWE");
-        Player player17 = new Player("Bires", 17, 'E', 0, "TCH");
-        Player player18 = new Player("Birkner", 18, 'E', 0, "ARG");
+        Player player16 = new Player("Niklas", "Henning", 16, 'E', 1, "SWE");
+        Player player17 = new Player("Adrian", "Bires", 17, 'E', 0, "TCH");
+        Player player18 = new Player("Jorge", "Birkner", 18, 'E', 0, "ARG");
 
         favourites = new List<Player> { player01, player02, player03, player04, player05,
         player06, player07, player08, player09, player10};

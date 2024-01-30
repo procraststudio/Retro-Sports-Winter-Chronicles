@@ -27,7 +27,7 @@ public class Presentation : MonoBehaviour
         favouritesGenerated = 0;
         actualFavourite = null;
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
         favourites = competition.players;
         if (unusedComments.Count == 0)
         {
@@ -70,7 +70,7 @@ public class Presentation : MonoBehaviour
 
     public void showPlayerData(int favouriteNo, Player player)
     {
-        favouriteName[favouriteNo].text = player.name;
+        favouriteName[favouriteNo].text = player.secondName;
         favouriteGradeExp[favouriteNo].text = "GRADE: " + player.grade.ToString() + "    EXP: " + player.experience.ToString(); ;
         flagSection[favouriteNo].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
     }

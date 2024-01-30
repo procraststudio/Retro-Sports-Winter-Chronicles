@@ -16,7 +16,7 @@ public class RunDescription : MonoBehaviour
 
     void Start()
     {
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
         textIndex = 0;
 
     }

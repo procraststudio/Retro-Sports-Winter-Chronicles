@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 public class Utilities : MonoBehaviour
 {
-    public GameObject competition;
+    Competition competition;
 
     // Start is called before the first frame update
     void Start()
     {
-        competition = GameObject.FindGameObjectWithTag("competition_script");
+        competition = Competition.Instance;
 
     }
 

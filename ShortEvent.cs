@@ -27,7 +27,7 @@ public class ShortEvent : MonoBehaviour
 
     public void Start()
     {
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
         weather = FindObjectOfType<Weather>();
         eventRolled = false;
         weatherModifier = (int)weather.weatherModifier; // TO DO" Check this value if not too high
@@ -106,7 +106,7 @@ public class ShortEvent : MonoBehaviour
         }
         else
         {
-            descriptionText.text += "OH NO! " + actualCompetitor.name + " IS OUT";
+            descriptionText.text += "OH NO! " + actualCompetitor.secondName + " IS OUT";
             actualCompetitor.myState +=2; //DNF
             Debug.Log("STATE IS: " + actualCompetitor.myState.ToString());
             competition.SurpriseEffect(actualCompetitor);
@@ -120,7 +120,7 @@ public class ShortEvent : MonoBehaviour
         }
         else
         {
-            descriptionText.text += "OH NO! " + actualCompetitor.name + " IS DISQUALIFIED";
+            descriptionText.text += "OH NO! " + actualCompetitor.secondName + " IS DISQUALIFIED";
             actualCompetitor.myState += 3; // DQ
             competition.SurpriseEffect(actualCompetitor);
         }
@@ -173,12 +173,12 @@ public class ShortEvent : MonoBehaviour
         else if (eventRoll % 2 == 0)
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
-            descriptionText.text += actualCompetitor.name + " TAKES RISK... GREAT SPEED! +" + eventRoll + " pts.";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED! +" + eventRoll + " pts.";
         }
         else
         {
             actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll);
-            descriptionText.text += actualCompetitor.name + " TAKES RISK... FAILURE! -" + eventRoll + " pts.";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... FAILURE! -" + eventRoll + " pts.";
         }
     }
 
@@ -189,16 +189,16 @@ public class ShortEvent : MonoBehaviour
             if (eventRoll == 1)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, -6);
-                descriptionText.text += "HORRIBLE MISTAKE! POOR " + actualCompetitor.name + ". -6pts.";
+                descriptionText.text += "HORRIBLE MISTAKE! POOR " + actualCompetitor.secondName + ". -6pts.";
             }
             else if (eventRoll == 6)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, 6);
-                descriptionText.text += "GREAT SPEED OF " + actualCompetitor.name + "! +6pts.";
+                descriptionText.text += "GREAT SPEED OF " + actualCompetitor.secondName + "! +6pts.";
             }
             else
             {
-                descriptionText.text += actualCompetitor.name + " NEARLY FALLS DOWN. IT WAS CLOSE...";
+                descriptionText.text += actualCompetitor.secondName + " NEARLY FALLS DOWN. IT WAS CLOSE...";
             }
         }
         else if (weather.snowCondition.Contains("hard"))
@@ -219,7 +219,7 @@ public class ShortEvent : MonoBehaviour
         {
             Player underdog = competition.underdogs[0];
             underdog.GoodFormEffect();
-            descriptionText.text += "GOOD FORM OF UNDERDOG! " + underdog.name.ToString();
+            descriptionText.text += "GOOD FORM OF UNDERDOG! " + underdog.secondName.ToString();
             competition.underdogs.Remove(underdog);
             competition.outsiders.Insert(competition.outsiders.Count, underdog);
             competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
@@ -227,8 +227,8 @@ public class ShortEvent : MonoBehaviour
         }
         else if (competition.outsiders.Count >0)
         {
-            competition.outsiders[competition.outsiders.Count-1].GoodFormEffect();
-            descriptionText.text += "GOOD FORM OF OUTSIDER!";
+            competition.outsiders[0].GoodFormEffect();
+            descriptionText.text += "GOOD FORM OF OUTSIDER: " + competition.outsiders[0].secondName;
         }
     }
 

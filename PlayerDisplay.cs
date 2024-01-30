@@ -1,12 +1,15 @@
 using TMPro;
 using UnityEngine;
-using System.Collections.Generic;
 
 
 public class PlayerDisplay : MonoBehaviour
 {
     public Player player;
     [SerializeField] TMP_Text competitorName;
+    [SerializeField] TMP_Text competitorGrade;
+    [SerializeField] TMP_Text competitorExperience;
+    [SerializeField] TMP_Text competitorRanking;
+    public TMP_Text secondName;
     [SerializeField] GameObject formIndicator;
     [SerializeField] GameObject playerFlag;
     [SerializeField] Sprite[] formIndicators;
@@ -19,19 +22,34 @@ public class PlayerDisplay : MonoBehaviour
 
     public void Start()
     {
-        player = null; 
-        competition = FindObjectOfType<Competition>();
-        formIndicator.GetComponent<SpriteRenderer>().sprite = null;
-        competitorName.text = "";
+        //player = null;
+        competition = Competition.Instance;
+       // formIndicator.GetComponent<SpriteRenderer>().sprite = null;
+        //competitorName.text = "";
+       // competitorGrade.text = "";
+       // competitorExperience.text = "";
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
+    }
+
+    public void Update()
+    {
+       // if (competition.currentCompetitor != null)
+       // {
+           // player = competition.currentCompetitor;
+           // DisplayCompetitor(player);
+      //  }
     }
 
 
     public void DisplayCompetitor(Player player)
-    {   
-            competitorName.text = player.name;  
-            ShowFormIndicators(player);
-            ShowFlag(player);
+    {
+        string boldSecondName = "<b>"+player.secondName+"</b>";
+        competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
+        competitorGrade.text = player.grade.ToString();
+        competitorExperience.text = player.experience.ToString();
+        competitorRanking.text = player.ranking.ToString();
+        ShowFormIndicators(player);
+        ShowFlag(player);
     }
 
     public void ShowFormIndicators(Player player)
@@ -58,14 +76,6 @@ public class PlayerDisplay : MonoBehaviour
 
     public void ShowFlag(Player player)
     {
-        //if (flagSprite != null)
-        //{
         playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
-        // }
-        //else
-        //{ 
-        // Debug.LogWarning("Flag not found.");
-        //}
-
     }
 }

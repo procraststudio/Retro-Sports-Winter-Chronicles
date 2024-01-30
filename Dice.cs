@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class Dice : MonoBehaviour
@@ -9,6 +10,7 @@ public class Dice : MonoBehaviour
     [SerializeField] GameObject[] secondDieImages;
     [SerializeField] GameObject[] thirdDieImages;
     [SerializeField] GameObject[] allDices;
+    [SerializeField] TMP_Text[] timeGapTexts;
     public bool diceActive;
     public int diceIndex;
     RunDescription description;
@@ -18,7 +20,7 @@ public class Dice : MonoBehaviour
 
     void Start()
     {
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
         diceActive = false;
         diceIndex = 0;
         description = FindObjectOfType<RunDescription>();
@@ -60,8 +62,12 @@ public class Dice : MonoBehaviour
             for (int i = 0; i < allDices.Length; i++)
             {
                 allDices[i].GetComponent<SpriteRenderer>().sprite = null;
+                
 
             }
+            timeGapTexts[0].text = "";
+            timeGapTexts[1].text = "";
+            timeGapTexts[2].text = "";
             diceIndex = 0;
         }
 

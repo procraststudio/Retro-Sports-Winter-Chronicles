@@ -24,6 +24,7 @@ public class Weather : MonoBehaviour
     [SerializeField] TMP_Text[] descriptionTexts;
     [SerializeField] GameObject precipitationImage;
     [SerializeField] Sprite[] precipitationSprites;
+    [SerializeField] GameObject[] chartIndicator;
     public string precipitation { get; set; }
     public string snowCondition { get; set; }
     private int snowConditionModifier;
@@ -33,13 +34,13 @@ public class Weather : MonoBehaviour
 
     public void Start()
     {
-        competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance; 
         diceIndex = 0;
         precipitation = string.Empty;
         temperatureRolled = false;
      //   ResetWeatherCharts();
         weatherPhaseOver = false;
-        weatherModifier = 1.00f;
+        weatherModifier = 1.00f; 
     }
 
     public void CalculateTemperature()
@@ -127,6 +128,7 @@ public class Weather : MonoBehaviour
         //thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
         // description.ShowDescription();
         // weatherCharts[0].SetActive(true);
+      // TO DO:  MoveChartIndicator(firstD6 + secondD6, 0);
         diceChanging = false;
         diceIndex++;
 
@@ -211,6 +213,15 @@ public class Weather : MonoBehaviour
         buttonText.text = buttonName.ToString();
     }
 
+    public void MoveChartIndicator(int diceSum, int indicatorNumber)
+    {
+        
+        var targetPosition =  new Vector3(1.92f, -175f, 0f);
+        var movementThisFrame = 50f* Time.deltaTime;
+        chartIndicator[indicatorNumber].transform.position = Vector3.MoveTowards(transform.position, targetPosition, movementThisFrame);
+
+        //chartIndicator[indicatorNumber].transform.position = new Vector3(0.00f, -0.80f, 0.00f);
+    }
 
 
 
