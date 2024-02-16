@@ -19,4 +19,6 @@ public class Utilities : MonoBehaviour
         Debug.Log("Doublets generated");
     }
 
+    // TO DO DESACTIVATE WEATHER & PRESENTATION
+
 }

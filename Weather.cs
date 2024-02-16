@@ -1,6 +1,8 @@
 using System.Collections;
 using TMPro;
+using UnityEditor;
 using UnityEngine;
+using static UnityEditor.Experimental.GraphView.GraphView;
 using Random = UnityEngine.Random;
 
 public class Weather : MonoBehaviour
@@ -28,6 +30,7 @@ public class Weather : MonoBehaviour
     public string precipitation { get; set; }
     public string snowCondition { get; set; }
     private int snowConditionModifier;
+    private int precipitationModifier = 0;
     public bool weatherPhaseOver;
     Competition competition;
     public float weatherModifier; //affects probability of surprises 
@@ -40,7 +43,7 @@ public class Weather : MonoBehaviour
         temperatureRolled = false;
      //   ResetWeatherCharts();
         weatherPhaseOver = false;
-        weatherModifier = 1.00f; 
+        weatherModifier = 1.00f; //default
     }
 
     public void CalculateTemperature()
@@ -60,7 +63,7 @@ public class Weather : MonoBehaviour
             case 3:
                 actualTemperature += (minTemp + Random.Range(-10.00f, -6.10f));
                 description = "VERY COLD" + "\n" + "+1 to snow condition roll";
-                snowConditionModifier += 1; weatherModifier *= 1.30f; break;//VERY COLD
+                snowConditionModifier += 1; weatherModifier *= 1.30f; precipitationModifier -= 1; break;//VERY COLD
             case 4:
                 actualTemperature += (minTemp + Random.Range(-6.00f, -3.10f));
                 description = "COLD"; weatherModifier *= 1.10f; break;// COLD
@@ -72,15 +75,15 @@ public class Weather : MonoBehaviour
                 description = "ABOVE AVERAGE"; break;// ABOVE AVERAGE
             case 10:
                 actualTemperature += (maxTemp + Random.Range(3.10f, 6.00f));
-                description = "HOT"; weatherModifier *= 0.90f; break;// HOT
+                description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; break;// HOT
             case 11:
                 actualTemperature += (maxTemp + Random.Range(6.10f, 10.00f));
                 description = "VERY HOT" + "\n" + "-1 to snow condition roll";
-                snowConditionModifier -= 1; weatherModifier *= 0.70f; break;// VERY HOT
+                snowConditionModifier -= 1; weatherModifier *= 0.70f; precipitationModifier += 2; break;// VERY HOT
             case 12:
                 actualTemperature += (maxTemp + Random.Range(10.10f, 15.00f));
                 description = "EXTREME HOT" + "\n" + "-2 to snow condition roll";
-                snowConditionModifier -= 2; weatherModifier *= 0.50f;
+                snowConditionModifier -= 2; weatherModifier *= 0.50f; precipitationModifier += 3;
                 break;// EXTREME HOT
             default:
                 actualTemperature = averageTemperature;
@@ -89,7 +92,7 @@ public class Weather : MonoBehaviour
         }
         descriptionTexts[0].text = description.ToString();
         weatherCharts[0].SetActive(true);
-        temperatureText.text = actualTemperature.ToString("F1") + " C";
+        temperatureText.text = actualTemperature.ToString("F0");
         Debug.Log("TEMP IS: " + actualTemperature);
         ChangeButtonName("NEXT");
         temperatureRolled = true;
@@ -168,7 +171,7 @@ public class Weather : MonoBehaviour
 
     public void CalculatePrecipitation()
     {
-        switch (firstD6 + secondD6)
+        switch (firstD6 + secondD6+precipitationModifier)
         {
             case 2:
             case 3:
@@ -213,16 +216,9 @@ public class Weather : MonoBehaviour
         buttonText.text = buttonName.ToString();
     }
 
-    public void MoveChartIndicator(int diceSum, int indicatorNumber)
-    {
-        
-        var targetPosition =  new Vector3(1.92f, -175f, 0f);
-        var movementThisFrame = 50f* Time.deltaTime;
-        chartIndicator[indicatorNumber].transform.position = Vector3.MoveTowards(transform.position, targetPosition, movementThisFrame);
 
-        //chartIndicator[indicatorNumber].transform.position = new Vector3(0.00f, -0.80f, 0.00f);
-    }
 
+    
 
 
 }

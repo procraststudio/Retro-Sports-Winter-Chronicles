@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,38 +7,48 @@ public class PlayerDataLoader : MonoBehaviour
     public GameObject playerDataPrefab;
     public GameObject playerDataObject;
     public Transform playerDataParent;
-    [SerializeField] string nameOfTheList;
-    public List<Player> listToLoad;
+    public List<Player> listToLoad = new List<Player>();
     public List<GameObject> gameObjects;
     Competition competition;
     public bool competitorsLoaded;
+    private string nameOfTheList;
 
 
     void Start()
     {
         competitorsLoaded = false;
         competition = Competition.Instance;
-        listToLoad = competition.players;
+        tag = this.gameObject.tag;
+        //if (this.gameObject.tag == "favourites_list")
+        //{
+        //    listToLoad = competition.players;
+        //}
+        //else if (this.gameObject.tag == "outsiders_list")
+        //{
+        //    listToLoad = competition.outsiders;
+        //}
 
-       // LoadPlayers(listToLoad);
+        // LoadCompetitorsList(listToLoad);
 
         // load initial lists
     }
 
     void Update()
     {
-       // if ((competitorsLoaded)&&(listToLoad.Count != gameObjects.Count))
-       // {
-         //   UpdateCompetitors(listToLoad);
-       // }
+        // if ((competitorsLoaded)&&(listToLoad.Count != gameObjects.Count))
+        // {
+        //   UpdateCompetitors(listToLoad);
+        // }
     }
 
 
-    public void LoadPlayers(List<Player> players)
+    public void LoadCompetitorsList()
     {
-        if (players.Count > 0)
+       CheckListToLoad();
+
+        if ((listToLoad.Count > 0)&&(!competitorsLoaded))
         {
-            foreach (Player competitor in players)
+            foreach (Player competitor in listToLoad)
             {
                 playerDataObject = Instantiate(playerDataPrefab, playerDataParent);
                 gameObjects.Add(playerDataObject);
@@ -45,19 +56,56 @@ public class PlayerDataLoader : MonoBehaviour
                 playerData.DisplayCompetitor(competitor);
 
             }
-            competitorsLoaded=true;
+            competitorsLoaded = true;
         }
     }
 
-    public void UpdateCompetitors(List<Player> competitors)
+    public void UpdateCompetitors()
     {
         foreach (GameObject obj in gameObjects)
         {
             Destroy(obj);
-
+            competitorsLoaded = false;
         }
-        LoadPlayers(competitors);
+        LoadCompetitorsList();
 
+    }
+
+    public List<Player> CheckListToLoad()
+    {
+        
+        if (gameObject.CompareTag("favourites_list"))
+        {
+            listToLoad = competition.players;
+        }
+        else if (gameObject.CompareTag("outsiders_list"))
+        {
+            listToLoad = competition.outsiders;
+        }
+        else if (gameObject.CompareTag("underdogs_list"))
+        {
+            listToLoad = competition.underdogs;
+        }
+        else if (gameObject.CompareTag("finishers_list"))
+        {
+            listToLoad = competition.finishers;
+        }
+        else if (gameObject.CompareTag("outOf15_list"))
+        {
+            listToLoad = competition.outOf15Competitors;
+        }
+        else if (gameObject.CompareTag("didNotFinish_list"))
+        {
+            listToLoad = competition.didNotFinish;
+        }
+        else if (gameObject.CompareTag("disqualified_list"))
+        {
+            listToLoad = competition.disqualified;
+        }
+
+
+        return listToLoad;
+      
     }
 }
 

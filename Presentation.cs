@@ -5,7 +5,6 @@ using static Competition;
 
 public class Presentation : MonoBehaviour
 {
-
     public Player actualFavourite;
     [SerializeField] private TMP_Text[] descriptionText;
     [SerializeField] private TMP_Text[] favouriteName;
@@ -18,6 +17,7 @@ public class Presentation : MonoBehaviour
     private Sprite flagSprite;
     private int favouritesGenerated;
     private bool presentationPhaseOver;
+    private bool absenceChecked = false;
     public List<Player> favourites;
     private List<string> unusedComments = new List<string>();
 
@@ -33,6 +33,7 @@ public class Presentation : MonoBehaviour
         {
             LoadFileLines();
         }
+
     }
 
     void Update()
@@ -42,19 +43,33 @@ public class Presentation : MonoBehaviour
 
     public void GenerateFavourites()
     {
+        if (!absenceChecked)
+        {
+            FindObjectOfType<Absences>().CheckAbsence();
+            absenceChecked = true;
+        }
+
+        competition.LoadLists();
         List<Player> favourites = competition.players;
         if (!presentationPhaseOver)
         {
             for (int i = 0; i < favourites.Count; i++)
             {
-                if ((favouritesGenerated < 3) && (favourites[i].grade == 'A'))
+                if (favouritesGenerated < 3)
                 {
-                    actualFavourite = favourites[i];
-                    showPlayerData(favouritesGenerated, actualFavourite);
-                    showComments(favouritesGenerated);
-                    // TO DO: Some time delay
-                    favouritesGenerated++;
+                    if (favourites[i].grade == 'A')
+                    {
+                        actualFavourite = favourites[i];
+                        showPlayerData(favouritesGenerated, actualFavourite);
+                        showComments(favouritesGenerated);
+                        // TO DO: Some time delay
+                        favouritesGenerated++;
+                    }
+                    
+
+
                 }
+
             }
             buttonText.text = "START";
 
@@ -115,6 +130,7 @@ public class Presentation : MonoBehaviour
         if (favouritesGenerated > 2)
         {
             presentationPhaseOver = true;
+
         }
     }
 }

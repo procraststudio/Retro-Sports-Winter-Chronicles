@@ -26,33 +26,33 @@ void Start()
     {
         competition = Competition.Instance;
         typeOfCompetition = "alpine skiing";
-        competitionName = "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
+        competitionName = "CALGARY 1988 Alpine Ski: Slalom MEN. RUN: ";    // "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
         venueNation = "CAN";
         numbersOfRun = 1;
-        surprisesModifier = 1.00f; // default should be 1.00 f
+        surprisesModifier = 2.00f;  //1.00f; // default should be 1.00f, slalom 2.00
         temperatureMin = -11.00f;
         temperatureMax = -4.00f;
         // FAVOURITES:
-        Player player01 = new Player("Pirmin", "Zurbriggen", 1, 'A', 3, "SUI");
-        Player player02 = new Player("Peter", "Muller", 2, 'A', 2, "SUI" );
-        Player player03 = new Player("Franck", "Piccard", 3, 'A', 2, "FRA");
-        Player player04 = new Player("Leonhard", "Stock", 4, 'B', 1, "AUT");
-        Player player05 = new Player("Gerhard", "Pfaffenbichler", 5, 'B', 1, "AUT");
-        Player player06 = new Player("Markus", "Wasmeier", 6, 'B', 2, "FRG");
-        Player player07 = new Player("Anton", "Steiner", 7, 'B', 2, "AUT");
-        Player player08 = new Player("Martin", "Bell", 8, 'B', 3, "GBR");
-        Player player09 = new Player("Marc", "Girardelli", 9, 'B', 3, "LUX");
-        Player player10 = new Player("Danilo", "Sbardelotto", 10, 'C', 2, "ITA");
+        Player player01 = new Player("Alberto", "Tomba", 1, 'A', 1, "ITA");
+        Player player02 = new Player("Gunther", "Mader", 2, 'B', 2, "AUT");
+        Player player03 = new Player("Felix", "McGrath", 3, 'B', 1, "USA");
+        Player player04 = new Player("Paul", "Frommelt", 4, 'B', 2, "LIE");
+        Player player05 = new Player("Armin", "Bittner", 5, 'B', 1, "FRG");
+        Player player06 = new Player("Hubert", "Strolz", 6, 'B', 2, "AUT");
+        Player player07 = new Player("Bernhard", "Gstrein", 7, 'B', 1, "AUT");
+        Player player08 = new Player("Jonas", "Nilsson", 8, 'B', 2, "SWE");
+        Player player09 = new Player("Pirmin", "Zurbriggen", 9, 'C', 3, "SUI");
+        Player player10 = new Player("Grega", "Benedik", 10, 'C', 2, "YUG");
         // OUTSIDERS:
-        Player player11 = new Player("Rob", "Boyd", 11, 'C', 1, "CAN");
-        Player player12 = new Player("Franz","Heinzer", 12, 'C', 1, "SUI");
-        Player player13 = new Player("Felix", "Belczyk", 13, 'D', 2, "CAN");
-        Player player14 = new Player("Gunther", "Mader", 14, 'D', 2, "AUT");
-        Player player15 = new Player("Hansjorg", "Tauscher", 15, 'D', 3, "FRG");
+        Player player11 = new Player("Tetsuya", "Okabe", 11, 'C', 1, "JPN");
+        Player player12 = new Player("Thomas", "Stangassinger", 12, 'C', 1, "AUT");
+        Player player13 = new Player("Richard", "Pramotton", 13, 'C', 1, "ITA");
+        Player player14 = new Player("Carlo", "Gerosa", 14, 'C', 1, "ITA");
+        Player player15 = new Player("Dietmar", "Kohlbichler", 15, 'C', 1, "AUT");
         // UNDERDOGS:
-        Player player16 = new Player("Niklas", "Henning", 16, 'E', 1, "SWE");
-        Player player17 = new Player("Adrian", "Bires", 17, 'E', 0, "TCH");
-        Player player18 = new Player("Jorge", "Birkner", 18, 'E', 0, "ARG");
+        Player player16 = new Player("Bojan", "Krizaj", 16, 'D', 3, "YUG");
+        Player player17 = new Player("Finn Christian", "Jagge", 17, 'E', 0, "NOR");
+        Player player18 = new Player("Peter", "Jurko", 18, 'E', 0, "TCH");
 
         favourites = new List<Player> { player01, player02, player03, player04, player05,
         player06, player07, player08, player09, player10};
@@ -60,8 +60,6 @@ void Start()
         underdogs = new List<Player> { player16, player17, player18 };
         lists = new List<Player>[] { favourites, outsiders, underdogs };
         RandomizeLists(lists);
-        numberOfFavourites = favourites.Count;
-        Debug.Log("FAVOURITES: " + numberOfFavourites);
         bestTimeInSec = 119.63f;
         tenthTime = 122.69f;
         timeDifference = tenthTime - bestTimeInSec;
@@ -87,6 +85,8 @@ void Start()
 
 
     }
+
+    
 
 
 }

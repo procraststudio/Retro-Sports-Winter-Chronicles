@@ -29,6 +29,8 @@ public class Player : MonoBehaviour
     public bool homeFactor = false;
     public PlayerState myState;
 
+    // ? TODO: ADD Dominator like Albert Tomba = grade A+
+
     public enum PlayerState
     {
         DidNotStart = 0,  // DNS
@@ -105,13 +107,13 @@ public class Player : MonoBehaviour
     {
         if (currentRun == 1)
         {
-            firstRunPoints += (float)CalculateAverage() + (float)firstRunModifiers;
+            firstRunPoints += (float)CalculateAverage() + (float)firstRunModifiers + Random.Range(-0.50f, 0.50f);
             return firstRunPoints;
             // finalPerformance = (float)firstRunPoints + Random.Range(0.00f, 1.00f);
         }
         else if (currentRun == 2)
         {
-            secondRunPoints += (float)CalculateAverage() + (float)secondRunModifiers;
+            secondRunPoints += (float)CalculateAverage() + (float)secondRunModifiers + Random.Range(-0.50f, 0.50f);
             return secondRunPoints;
             // finalPerformance += (float)secondRunPoints;
         }
@@ -135,7 +137,7 @@ public class Player : MonoBehaviour
 
     public float CalculateFinal()
     {
-        finalPerformance = firstRunPoints + secondRunPoints + Random.Range(0.00f, 1.00f);
+        finalPerformance = firstRunPoints + secondRunPoints; // + Random.Range(0.00f, 1.00f);
         //finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
 
         return finalPerformance;

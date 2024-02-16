@@ -9,10 +9,13 @@ public class Surprises : MonoBehaviour
     [SerializeField] private float realSurpriseChance { get; set; }
     Gamemanager gamemanager;
     Weather weather;
+    ShortEvent currentEvent;
     public bool surpriseEffect { get; set; }
     public bool disqualification { get; set; }
     [SerializeField] TMP_Text surpriseInfo;
     [SerializeField] TMP_Text surpriseModifier;
+    public GameObject eventWindow;
+    public TMP_Text eventTitle;
     Competition competition;
 
     void Start()
@@ -22,6 +25,7 @@ public class Surprises : MonoBehaviour
         disqualification = false;
         gamemanager = FindObjectOfType<Gamemanager>();
         weather = FindObjectOfType<Weather>();
+        currentEvent = FindObjectOfType<ShortEvent>();
         competition = Competition.Instance;
     }
 
@@ -39,14 +43,34 @@ public class Surprises : MonoBehaviour
         surpriseInfo.text = "";
         int favourites = gamemanager.numberOfFavourites;
         realSurpriseChance = player.ranking * SurpriseModifier();
-        float surpriseRoll = Random.Range(1, 101);
+        int surpriseRoll = Random.Range(1, 101);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
 
         if ((surpriseRoll == 1) || ((player.ranking) <= (favourites)) && (surpriseRoll <= realSurpriseChance))
         {
-            surpriseInfo.text = player.secondName + " (" + player.nationality.ToString() + ") IS OUT OF 15!";
-            player.PoorFormEffect();
-            player.myState = Player.PlayerState.OutOf15;
+            eventWindow.SetActive(true);
+            if (gamemanager.competitionName.Contains("Slalom") && (surpriseRoll % 2 == 0))
+            {
+                if (((int)realSurpriseChance+player.ranking) % 5 == 0)
+                {
+                    surpriseInfo.text = player.secondName.ToUpper() + " MISSES THE GATE! DISQUALIFIED!";
+                    player.myState = Player.PlayerState.Disqualified;
+                }
+                else 
+                {
+                    surpriseInfo.text = player.secondName.ToUpper() + " FALLS DOWN! OUT!";
+                    player.myState = Player.PlayerState.DidNotFinish;
+                }
+            }
+
+            else
+            {
+                // eventTitle.text = "SURPRISE!".ToString();
+                surpriseInfo.text = player.secondName.ToUpper() + " IS OUT OF 15!";
+                player.PoorFormEffect();
+                player.myState = Player.PlayerState.OutOf15;
+            }
+
             Debug.Log("SURPRISE! NEW STATE " + player.myState);
             surpriseEffect = true;
             //Player playerToDelete = player;
@@ -60,6 +84,8 @@ public class Surprises : MonoBehaviour
             //}
 
             competition.SurpriseEffect(player);
+            currentEvent.StartCoroutine("CloseEventWindow");
+            // eventTitle.text = "EVENT".ToString();
 
         }
 
