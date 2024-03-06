@@ -15,16 +15,18 @@ public class Presentation : MonoBehaviour
     public string flagsFolderPath = "flags/";
     private string textPath = "comments";
     private Sprite flagSprite;
-    private int favouritesGenerated;
+    private bool favouritesGenerated;
+    private int noOfBigFavourites = 0;
     private bool presentationPhaseOver;
     private bool absenceChecked = false;
     public List<Player> favourites;
+    public List<Player> bigFavourites = new List<Player>();
     private List<string> unusedComments = new List<string>();
 
 
     void Start()
     {
-        favouritesGenerated = 0;
+        favouritesGenerated = false;
         actualFavourite = null;
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
         competition = Competition.Instance;
@@ -38,7 +40,7 @@ public class Presentation : MonoBehaviour
 
     void Update()
     {
-        CheckEndPhase();
+       // CheckEndPhase();
     }
 
     public void GenerateFavourites()
@@ -55,25 +57,66 @@ public class Presentation : MonoBehaviour
         {
             for (int i = 0; i < favourites.Count; i++)
             {
-                if (favouritesGenerated < 3)
+                //CHECK HOW MANY 'A' COMPETITORS
+                if ((favourites[i].grade == 'A') && (noOfBigFavourites <3))
                 {
-                    if (favourites[i].grade == 'A')
-                    {
-                        actualFavourite = favourites[i];
-                        showPlayerData(favouritesGenerated, actualFavourite);
-                        showComments(favouritesGenerated);
-                        // TO DO: Some time delay
-                        favouritesGenerated++;
-                    }
-                    
-
+                    bigFavourites.Add(favourites[i]);
+                    noOfBigFavourites++;
+                   
+                }
+            }
+            for (int i = 0; i < favourites.Count; i++)
+            {
+                if ((favourites[i].grade == 'B') && (noOfBigFavourites < 3))
+                {
+                    bigFavourites.Add(favourites[i]);
+                    noOfBigFavourites++;
 
                 }
 
             }
-            buttonText.text = "START";
 
+                switch (noOfBigFavourites)
+            {
+                case 1:
+                    showPlayerData(0, bigFavourites[0]);
+                    showComments(0); break;
+                case 2:
+                    showPlayerData(0, bigFavourites[0]);
+                    showComments(0);
+                    showPlayerData(1, bigFavourites[1]);
+                    showComments(1); break;
+                case 3:
+                    showPlayerData(0, bigFavourites[0]);
+                    showComments(0);
+                    showPlayerData(1, bigFavourites[1]);
+                    showComments(1);
+                    showPlayerData(2, bigFavourites[2]);
+                    showComments(2);
+                    break;
+            }
+
+            //if (favouritesGenerated < 3)
+            //{
+            //    if (favourites[i].grade == 'A')
+            //    {
+            //        actualFavourite = favourites[i];
+            //        showPlayerData(favouritesGenerated, actualFavourite);
+            //        showComments(favouritesGenerated);
+            //        // TO DO: Some time delay
+            //        favouritesGenerated++;
+            //    }
+
+
+
+
+            presentationPhaseOver = true;
+            buttonText.text = "START".ToString();
         }
+
+
+
+
         else
         {
             competition.myState = GameState.CompetitionPhase;
@@ -127,7 +170,7 @@ public class Presentation : MonoBehaviour
 
     void CheckEndPhase()
     {
-        if (favouritesGenerated > 2)
+        if (favouritesGenerated)
         {
             presentationPhaseOver = true;
 

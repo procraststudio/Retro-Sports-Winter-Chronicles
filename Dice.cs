@@ -1,8 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using System.Linq;
-using System;
 using Random = UnityEngine.Random;
 
 public class Dice : MonoBehaviour
@@ -17,14 +15,16 @@ public class Dice : MonoBehaviour
     [SerializeField] TMP_Text[] timeGapTexts;
     [SerializeField] GameObject[] commentatorIcon;
     [SerializeField] GameObject[] competitorImage;
+    [SerializeField] GameObject summaryImage;
+    [SerializeField] Sprite[] summarySprites;
     [SerializeField] Sprite[] skiersIcons;
     public bool diceActive;
     public int diceIndex;
     RunDescription description;
-    private float pause = 0.10f;
+    private float pause = 0.15f;
     private float animatePause = 0.50f;
     private bool diceChanging;
-    private int currentCompetitorImage ;
+    private int currentCompetitorImage;
 
 
     void Start()
@@ -36,6 +36,7 @@ public class Dice : MonoBehaviour
         diceChanging = false;
         currentCompetitorImage = 0;
         ResetTimeGapBackgrounds();
+        ResetDice();
     }
 
 
@@ -51,7 +52,7 @@ public class Dice : MonoBehaviour
     public IEnumerator showDice()
     {
         diceChanging = true;
-        StartCoroutine("animateEffect"); 
+        StartCoroutine("animateEffect");
         firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.firstD6 - 1];
         yield return new WaitForSeconds(pause);
         secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.secondD6 + 5];
@@ -66,7 +67,7 @@ public class Dice : MonoBehaviour
     }
 
 
-    public int GenerateObject(int length )
+    public int GenerateObject(int length)
     {
         var index = Random.Range(0, length);
         return index;
@@ -75,7 +76,7 @@ public class Dice : MonoBehaviour
     public IEnumerator animateEffect()
     {
         // MIX THE IMAGES
-       // GameObject[] array = skiersIcons; 
+        // GameObject[] array = skiersIcons; 
 
         competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
         yield return new WaitForSeconds(animatePause);
@@ -135,8 +136,21 @@ public class Dice : MonoBehaviour
         {
             competitorImage[i].GetComponent<SpriteRenderer>().sprite = null;
         }
+        summaryImage.GetComponent<SpriteRenderer>().sprite = null;
         currentCompetitorImage = 0;
     }
+
+    public void ShowSummaryImage(string description)
+    {
+        commentatorIcon[3].SetActive(true);
+        switch (description)
+        {
+            case ("good"): summaryImage.GetComponent<SpriteRenderer>().sprite = summarySprites[0]; break;
+            case ("bad"): summaryImage.GetComponent<SpriteRenderer>().sprite = summarySprites[2]; break;
+            default: summaryImage.GetComponent<SpriteRenderer>().sprite = summarySprites[1]; break;
+        }
+    }
+
 
 }
 

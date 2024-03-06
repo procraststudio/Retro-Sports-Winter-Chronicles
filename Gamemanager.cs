@@ -12,7 +12,7 @@ public class Gamemanager : MonoBehaviour
     public String typeOfCompetition;
     public String competitionName;
     public float surprisesModifier;
-    public float disqalificationModifier = 0.18f; // percentage of surprisesModifier
+    public float disqalificationModifier = 0.18f; // default percentage of surprisesModifier
     public int numberOfFavourites { get; set; }
     public float bestTimeInSec { get; private set; } 
     private float tenthTime; // Time of 10th competitor (in secs)
@@ -28,8 +28,8 @@ void Start()
         typeOfCompetition = "alpine skiing";
         competitionName = "CALGARY 1988 Alpine Ski: Slalom MEN. RUN: ";    // "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
         venueNation = "CAN";
-        numbersOfRun = 1;
-        surprisesModifier = 2.00f;  //1.00f; // default should be 1.00f, slalom 2.00
+        numbersOfRun = 2;
+        surprisesModifier = 0.50f;  //1.00f; // default should be 1.00f, slalom 2.00
         temperatureMin = -11.00f;
         temperatureMax = -4.00f;
         // FAVOURITES:
@@ -60,8 +60,8 @@ void Start()
         underdogs = new List<Player> { player16, player17, player18 };
         lists = new List<Player>[] { favourites, outsiders, underdogs };
         RandomizeLists(lists);
-        bestTimeInSec = 119.63f;
-        tenthTime = 122.69f;
+        bestTimeInSec = 49.42f;         // DH 119.63f; 2 runs: average from 2 best runs
+        tenthTime =    50.51f;       // DH 122.69f; przy 15 faworytach to czas 15-go?
         timeDifference = tenthTime - bestTimeInSec;
 
     }

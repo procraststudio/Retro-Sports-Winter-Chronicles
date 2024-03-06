@@ -1,83 +1,197 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Burst.Intrinsics;
 using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class CommentsSystem : MonoBehaviour
 {
     Competition competition;
-    private string textPath = "commentator_good";
-    private List<string> unusedComments = new List<string>();
+    Dice dice;
+    private string goodTextPath = "commentator_good";
+    private string badTextPath = "commentator_bad";
+
+    private List<string> unusedGoodComments = new List<string>();
+    private List<string> unusedBadComments = new List<string>();
+    private List<string> neutralComments = new List<string>() {"Average run...","Not good, not bad...", "Nearly falls down...", "More can be expected...", "It's not the day...", "Fans are cheering..."};
     [SerializeField] public TMP_Text[] commentText;
+
     void Start()
     {
         competition = Competition.Instance;
-        LoadFileLines();
+        dice = FindObjectOfType<Dice>();
+        LoadFileLines("good");
+        LoadFileLines("bad");
         // favourites = competition.players;
-       // CheckEmptyFile();
+        // CheckEmptyFile();
     }
 
     // Update is called once per frame
     void Update()
     {
-       // CheckEmptyFile();
+        // CheckEmptyFile();
     }
 
     private void CheckEmptyFile()
     {
-        if (unusedComments.Count == 0)
+        if (unusedGoodComments.Count == 0)
         {
-            LoadFileLines();
+            LoadFileLines("good");
+        }
+        else if (unusedBadComments.Count == 0)
+        {
+            LoadFileLines("bad");
         }
     }
 
     public void showComments(Player player, int partOfRun, float scoredPoints)
     {
-         
-        if ((unusedComments.Count > 0) && (scoredPoints > 18))
+        Color color = Color.white;
+        if ((scoredPoints > 22) || ((player.GetGradeModifier() < 2) && (scoredPoints > 17)))
         {
-            int randomIndex = Random.Range(0, unusedComments.Count);
-            string randomLine = unusedComments[randomIndex];
-            commentText[partOfRun-1].text = "</color=green>" +randomLine.ToString() + "<color=green>";
-            unusedComments.RemoveAt(randomIndex);  
+            if (unusedGoodComments.Count > 0)
+            {
+                color = Color.green;
+                int randomIndex = Random.Range(0, unusedGoodComments.Count);
+                string randomLine = unusedGoodComments[randomIndex];
+                commentText[partOfRun - 1].text = "</color=green>" + randomLine.ToString() + "<color=green>";
+                commentText[partOfRun - 1].color = color;
+                unusedGoodComments.RemoveAt(randomIndex);
+                player.praisesByCommentator++;
+            }
+            else
+            {
+                Debug.Log("No more unused lines/No comment.");
+            }
         }
-        else if (scoredPoints < 8)
+
+        else if ((scoredPoints < 8) || ((player.GetGradeModifier() > 1) && (scoredPoints < 13)))
         {
-            commentText[partOfRun - 1].text = "</color=red>" + "POOR RUN..." + "<color=red>";
+            if (unusedBadComments.Count > 0)
+            {
+                color = color = Color.red;
+                int randomIndex = Random.Range(0, unusedBadComments.Count);
+                string randomLine = unusedBadComments[randomIndex];
+                commentText[partOfRun - 1].text = "</color=red>" + randomLine.ToString() + "<color=red>";
+                commentText[partOfRun - 1].color = color;
+                unusedBadComments.RemoveAt(randomIndex);
+                player.praisesByCommentator--;
+            }
+            else
+            {
+                Debug.Log("No more unused lines/No comment.");
+            }
         }
+
         else
         {
-            Debug.Log("No more unused lines/No comment.");
+            // Average comment
+            // color = color = Color.white;
+            if ((player.ranking+partOfRun) % 2 == 0)
+            {
+                int index = Random.Range(0, neutralComments.Count);
+                commentText[partOfRun - 1].text = neutralComments[index].ToString();
+                commentText[partOfRun - 1].color = Color.white;
+            }
+            // 
         }
         CheckEmptyFile();
-    }
-    private void LoadFileLines()
-    {
-        TextAsset textAsset = Resources.Load<TextAsset>(textPath);
-        if (textAsset != null)
-        {
-            string[] lines = textAsset.text.Split('\n');
-            foreach (string line in lines)
-            {
-                if (!string.IsNullOrEmpty(line.Trim()))
-                {
-                    unusedComments.Add(line.Trim());
-                }
-            }
-            Debug.Log("Comments loaded");
-        }
-        else
-        {
-            Debug.LogError("Text file not found.");
-        }
+        SummaryComment(player);
+        // color = Color.white;
     }
 
-    public void ResetComments()
+    public void SummaryComment(Player player)
     {
-        for (int i = 0; i <commentText.Length; i++)
+        Color color = Color.white;
+        var state = player.myState;
+        if (competition.partsOfRun > 2)
         {
-            commentText[i].text = "";
+            switch (state)
+            {
+                case Player.PlayerState.Running:
+                    {
+                        if (player.praisesByCommentator > 0)
+                        {
+                            commentText[3].text = "GOOD!".ToString();
+                            commentText[3].color = Color.green;
+                            dice.ShowSummaryImage("good");
+                        }
+                        else if (player.praisesByCommentator < 0)
+                        {
+                            commentText[3].text = "BAD...".ToString();
+                            commentText[3].color = Color.red;
+                            dice.ShowSummaryImage("bad");
+                        }
+                        else
+                        {
+                            commentText[3].text = "AVERAGE";
+                            commentText[3].color = Color.white;
+                            dice.ShowSummaryImage("average");
+                        }
+                    }
+                    break;
+                case Player.PlayerState.OutOf15:
+                    commentText[3].text = "DISAPPOINTMENT".ToString();
+                    commentText[3].color = Color.red;
+                    dice.ShowSummaryImage("bad"); break;
+                case Player.PlayerState.DidNotFinish:
+                    commentText[3].text = "DID NOT FINISH".ToString();
+                    commentText[3].color = Color.red;
+                    dice.ShowSummaryImage("bad"); break;
+
+                default: commentText[3].text = player.myState.ToString();
+                         commentText[3].color = Color.red; break;
+
+            }
         }
-    }
-}
+
+        }
+    
+            private void LoadFileLines(string TypeOfComments)
+            {
+                TextAsset textAsset = null;
+
+                switch (TypeOfComments)
+                {
+                    case "good": textAsset = Resources.Load<TextAsset>(goodTextPath); break;
+                    case "bad": textAsset = Resources.Load<TextAsset>(badTextPath); break;
+                };
+
+                if (textAsset != null)
+                {
+                    string[] lines = textAsset.text.Split('\n');
+                    foreach (string line in lines)
+                    {
+                        if (!string.IsNullOrEmpty(line.Trim()))
+                        {
+                            if (TypeOfComments.Contains("good"))
+                            {
+                                unusedGoodComments.Add(line.Trim());
+                            }
+                            else if (TypeOfComments.Contains("bad"))
+                            {
+                                unusedBadComments.Add(line.Trim());
+
+                            }
+                        }
+
+                    }
+                    Debug.Log("Comments loaded: " + TypeOfComments);
+                }
+
+
+                else
+                {
+                    Debug.LogError("Text file not found.");
+                }
+            }
+
+            public void ResetComments()
+            {
+                for (int i = 0; i < commentText.Length; i++)
+                {
+                    commentText[i].text = "";
+                }
+            }
+        }

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public enum grade
 {
     A, B, C, D, E, F
@@ -23,10 +24,11 @@ public class Player : MonoBehaviour
     public int secondRunModifiers { get; set; } = 0;
     public float finalPerformance { get; set; }
     public int place { get; set; }
-    public float totalSeconds { get; set; }
+    public float totalSeconds { get; set; } = 0;
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
     public bool homeFactor = false;
+    public int praisesByCommentator { get; set; } = 0; 
     public PlayerState myState;
 
     // ? TODO: ADD Dominator like Albert Tomba = grade A+
@@ -194,11 +196,12 @@ public class Player : MonoBehaviour
 
     public string ConvertPointsToTime(float points)
     {
-        float realTime = FindObjectOfType<Gamemanager>().bestTimeInSec;
+        float realTime = (secondRunPoints ==0)? FindObjectOfType<Gamemanager>().bestTimeInSec 
+           : FindObjectOfType<Gamemanager>().bestTimeInSec *2; // Real best time in secs. What if 2 runs?
         // Assume that 1 point = 1/100 sec
-        float realPerformance = (points / 80.00f);
+        float realPerformance = points / 80.00f; // 80 pts to miara najlepszego wystêpu w jednej serii
         float differenceInSeconds = realTime - (realTime * realPerformance);
-        totalSeconds = realTime + differenceInSeconds * 0.0875f; // or 0.114
+        totalSeconds = realTime + (differenceInSeconds * 0.0875f); // or 0.114
         int minutes = (int)totalSeconds / 60;
         int seconds = (int)totalSeconds % 60;
         int hundredths = Mathf.RoundToInt((totalSeconds - Mathf.Floor(totalSeconds)) * 100);
@@ -211,7 +214,7 @@ public class Player : MonoBehaviour
     {
         float realDifference = FindObjectOfType<Gamemanager>().timeDifference;
         float modifier = realDifference / 40; // Assume that 10th competitor has 40 points
-                                              //string.alignment = TextAnchor.MiddleRight;
+        //string.alignment = TextAnchor.MiddleRight;
         float totalDifference = Mathf.Abs(difference) * modifier;
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;

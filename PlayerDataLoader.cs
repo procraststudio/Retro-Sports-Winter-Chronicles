@@ -19,26 +19,7 @@ public class PlayerDataLoader : MonoBehaviour
         competitorsLoaded = false;
         competition = Competition.Instance;
         tag = this.gameObject.tag;
-        //if (this.gameObject.tag == "favourites_list")
-        //{
-        //    listToLoad = competition.players;
-        //}
-        //else if (this.gameObject.tag == "outsiders_list")
-        //{
-        //    listToLoad = competition.outsiders;
-        //}
 
-        // LoadCompetitorsList(listToLoad);
-
-        // load initial lists
-    }
-
-    void Update()
-    {
-        // if ((competitorsLoaded)&&(listToLoad.Count != gameObjects.Count))
-        // {
-        //   UpdateCompetitors(listToLoad);
-        // }
     }
 
 
@@ -53,7 +34,7 @@ public class PlayerDataLoader : MonoBehaviour
                 playerDataObject = Instantiate(playerDataPrefab, playerDataParent);
                 gameObjects.Add(playerDataObject);
                 PlayerDisplay playerData = playerDataObject.GetComponent<PlayerDisplay>();
-                playerData.DisplayCompetitor(competitor);
+                playerData.DisplayCompetitor(competitor, competition.currentRun);
 
             }
             competitorsLoaded = true;

@@ -18,10 +18,8 @@ public class Weather : MonoBehaviour
     private float pause = 0.50f;
     public TMP_Text buttonText;
     [SerializeField] Sprite[] diceSides;
-    [SerializeField] TMP_Text temperatureText;
+    [SerializeField] TMP_Text[] temperatureText;
     [SerializeField] TMP_Text snowConditionText;
-    [SerializeField] GameObject[] firstDieImages;
-    [SerializeField] GameObject[] secondDieImages;
     [SerializeField] GameObject[] weatherCharts;
     [SerializeField] TMP_Text[] descriptionTexts;
     [SerializeField] GameObject precipitationImage;
@@ -91,12 +89,13 @@ public class Weather : MonoBehaviour
 
         }
         descriptionTexts[0].text = description.ToString();
-        weatherCharts[0].SetActive(true);
-        temperatureText.text = actualTemperature.ToString("F0");
+        // weatherCharts[0].SetActive(true);
+        temperatureText[0].text = actualTemperature.ToString("F0");
+        temperatureText[1].text = actualTemperature.ToString("F0");
         Debug.Log("TEMP IS: " + actualTemperature);
         ChangeButtonName("NEXT");
         temperatureRolled = true;
-        // StartCoroutine("WeatherDice");
+        //StartCoroutine("WeatherDice");
         // return actualTemperature;
     }
 
@@ -107,27 +106,26 @@ public class Weather : MonoBehaviour
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
 
-
-        firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[firstD6 - 1];
+        //firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[firstD6 - 1];
         yield return new WaitForSeconds(pause);
-        if (diceIndex < 2)
-        {
-            secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[secondD6 + 5];
-            yield return new WaitForSeconds(pause);
-        }
-        if (!temperatureRolled)
-        {
+       // if (diceIndex < 2)
+       // {
+            //secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[secondD6 + 5];
+           // yield return new WaitForSeconds(pause);
+       // }
+       // if (!temperatureRolled)
+       // {
             CalculateTemperature();
-        }
-        if (diceIndex == 1)
-        {
+       // }
+       // if (diceIndex == 1)
+       // {
             CalculatePrecipitation();
-        }
-        else if (diceIndex == 2)
-        {
+       // }
+       // else if (diceIndex == 2)
+        //{
             CalculateSnowCondition();
 
-        }
+       // }
         //thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
         // description.ShowDescription();
         // weatherCharts[0].SetActive(true);
@@ -151,7 +149,7 @@ public class Weather : MonoBehaviour
         }
         snowConditionText.text = "SNOW: " + snowCondition.ToUpper().ToString(); 
         descriptionTexts[2].text = snowCondition.ToUpper().ToString();
-        weatherCharts[2].SetActive(true);
+       // weatherCharts[2].SetActive(true);
         ChangeButtonName("PRESENTATION");
         weatherPhaseOver = true;
     }
@@ -184,7 +182,7 @@ public class Weather : MonoBehaviour
                 precipitation = "raining"; snowConditionModifier += 1; weatherModifier *= 1.20f;
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1]; break;//RAINING
             default:
-                precipitation = "no precipitation"; break;// AVERAGE
+                precipitation = "none"; break;// AVERAGE
                 // TODO case 11: CHINOOK WIND Special weather effect
 
         }
@@ -199,7 +197,7 @@ public class Weather : MonoBehaviour
 
 
         }
-        weatherCharts[1].SetActive(true);
+      //  weatherCharts[1].SetActive(true);
         ChangeButtonName("NEXT");
     }
 

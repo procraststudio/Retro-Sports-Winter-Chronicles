@@ -48,7 +48,7 @@ public class PlayerDisplay : MonoBehaviour
     }
 
 
-    public void DisplayCompetitor(Player player)
+    public void DisplayCompetitor(Player player, int actualRun)
     {
         competition = Competition.Instance;
         string boldSecondName = "<b>" + player.secondName + "</b>";
@@ -65,12 +65,17 @@ public class PlayerDisplay : MonoBehaviour
             if (player.place == 1)
             {
                 timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance).ToString();
+                competition.finalText.text += ". TOTAL SECS: " + player.totalSeconds;
+              //  if (actualRun == 2) 
+               // {
+                   // timeDisplay.text = player.ConvertPointsToTime(player.secondRunPoints).ToString();
+              //  }
             }
             else
             {
                 timeDisplay.text = player.ConvertDifference(pointsDifference).ToString();
             }
-
+            
             HighlightCurrentCompetitor(player);
             Debug.Log(competition.bestFinalPerformance - player.finalPerformance);
         }
@@ -91,25 +96,20 @@ public class PlayerDisplay : MonoBehaviour
             ShowFlag(player);
             //HighlightCurrentCompetitor(player);
         }
-
+        
         // TO DO: arrow display in 2nd run
     }
 
     public void ShowFormIndicators(Player player)
     {
-        // formIndicator.GetComponent<SpriteRenderer>().sprite = null;
 
         if (player.goodFormEffect)
         {
             formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[0];
-            // Debug.Log("SPRITE CHANGED");
-
         }
         else if (player.poorFormEffect)
         {
             formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[1];
-            // Debug.Log("SPRITE CHANGED");
-
         }
         else
         {
@@ -124,13 +124,12 @@ public class PlayerDisplay : MonoBehaviour
 
     public void HighlightCurrentCompetitor(Player player)
     {
-        //competition = Competition.Instance;
-        if ((currentCompetitorPanel != null) && (competition.myState == GameState.CompetitionPhase))
+        if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase))
+            
         {
             if (player.secondName == competition.currentCompetitor.secondName)
             {
                 currentCompetitorPanel.SetActive(true);
-
             }
             else
             {
