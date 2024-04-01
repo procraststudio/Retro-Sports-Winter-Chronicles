@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum grade
 {
-    A, B, C, D, E, F
+   X=6, A=5, B=4, C=3, D=2, E=1, F=0
 }
 
 
@@ -24,6 +24,7 @@ public class Player : MonoBehaviour
     public int secondRunModifiers { get; set; } = 0;
     public float finalPerformance { get; set; }
     public int place { get; set; }
+    public int firstRunPlace { get; set; }  
     public float totalSeconds { get; set; } = 0;
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
@@ -31,7 +32,7 @@ public class Player : MonoBehaviour
     public int praisesByCommentator { get; set; } = 0; 
     public PlayerState myState;
 
-    // ? TODO: ADD Dominator like Albert Tomba = grade A+
+    // ? TODO: ADD Dominator like Alberto Tomba = grade A+
 
     public enum PlayerState
     {
@@ -56,8 +57,13 @@ public class Player : MonoBehaviour
 
     public int CalculateAverage()
     {
-        // ORIGINAL AVERAGES: A 24, B 18, C 12, D 6, E 0 
-        if (this.grade == 'A')
+        // ORIGINAL AVERAGES: X 27, A 24, B 18, C 12, D 6, E 0 
+        if (this.grade == 'X')
+        {
+            averagePerformance = 27;
+        }
+
+        else if (this.grade == 'A')
         {
             averagePerformance = 24;
         }
@@ -85,6 +91,7 @@ public class Player : MonoBehaviour
     {
         switch (grade)
         {
+            case 'X': return 3;
             case 'A': return 3;
             case 'B': return 2;
             case 'C': return 1;
@@ -97,12 +104,12 @@ public class Player : MonoBehaviour
         if (currentRun == 1)
         {
             firstRunModifiers += modifier;
-            Debug.Log(modifier + " pts added.");
+            //Debug.Log(modifier + " pts added.");
         }
         else if (currentRun == 2)
         {
             secondRunModifiers += modifier;
-            Debug.Log(modifier + " pts added.");
+           // Debug.Log(modifier + " pts added.");
         }
     }
     public float CalculateActualRun(int currentRun)
@@ -148,7 +155,7 @@ public class Player : MonoBehaviour
 
     public void GoodFormEffect()
     {
-        if ((this.grade != 'A') && (!poorFormEffect))
+        if ((this.grade != 'X') && (!poorFormEffect))
         {
             grade--;
             ranking -= 5;
@@ -167,12 +174,18 @@ public class Player : MonoBehaviour
     }
     public void PoorFormEffect()
     {
-        if ((this.grade != 'F') && (!goodFormEffect))
+        if ((this.grade != 'F') && (this.grade !='X') && (!goodFormEffect))
         {
             grade++;
             ranking += 5;
             poorFormEffect = true;
             Debug.Log("Poor form!" + " New ranking: " + ranking);
+        }
+        else if ((this.grade=='X') && (!goodFormEffect))
+        {
+            this.grade = 'B';
+            ranking += 5;
+            poorFormEffect = true;
         }
         else if (goodFormEffect)
         {

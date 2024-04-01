@@ -22,7 +22,7 @@ public class Dice : MonoBehaviour
     public int diceIndex;
     RunDescription description;
     private float pause = 0.15f;
-    private float animatePause = 0.50f;
+    private float animatePause = 0.40f;
     private bool diceChanging;
     private int currentCompetitorImage;
 

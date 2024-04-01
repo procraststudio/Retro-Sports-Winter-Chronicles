@@ -33,6 +33,7 @@ public class Weather : MonoBehaviour
     Competition competition;
     public float weatherModifier; //affects probability of surprises 
 
+
     public void Start()
     {
         competition = Competition.Instance; 
@@ -150,6 +151,7 @@ public class Weather : MonoBehaviour
         snowConditionText.text = "SNOW: " + snowCondition.ToUpper().ToString(); 
         descriptionTexts[2].text = snowCondition.ToUpper().ToString();
        // weatherCharts[2].SetActive(true);
+       Debug.Log("WEATHER MODIFIER: " + weatherModifier);
         ChangeButtonName("PRESENTATION");
         weatherPhaseOver = true;
     }
@@ -162,7 +164,7 @@ public class Weather : MonoBehaviour
         }
         else
         {
-            competition.myState = Competition.GameState.PresentationPhase;
+            competition.ChangeState(Competition.GameState.PresentationPhase);
             Debug.Log("PRESENTATION PHASE");
         }
     }
@@ -176,10 +178,10 @@ public class Weather : MonoBehaviour
             case 4:
             case 5:
             case 6:
-                precipitation = "snowing"; snowConditionModifier -= 2; weatherModifier *= 1.40f;
+                precipitation = "snowing"; snowConditionModifier -= 2; weatherModifier *= 1.30f;
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0]; break;//SNOWING
             case 9:
-                precipitation = "raining"; snowConditionModifier += 1; weatherModifier *= 1.20f;
+                precipitation = "raining"; snowConditionModifier += 1; weatherModifier *= 1.50f;
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1]; break;//RAINING
             default:
                 precipitation = "none"; break;// AVERAGE
@@ -213,6 +215,8 @@ public class Weather : MonoBehaviour
     {
         buttonText.text = buttonName.ToString();
     }
+
+
 
 
 

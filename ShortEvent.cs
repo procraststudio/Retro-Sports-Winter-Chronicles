@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -8,6 +7,7 @@ public class ShortEvent : MonoBehaviour
     private int d6Roll = 0;
     private int eventRoll = 0;
     public bool eventRolled;
+    public bool eventResolved;
     public int saveRoll;
 
     public TMP_Text descriptionText;
@@ -23,6 +23,7 @@ public class ShortEvent : MonoBehaviour
     Weather weather;
     CommentsSystem comment;
     Gamemanager gamemanager;
+    Surprises surprise;
 
     private enum RolledEvents
     {
@@ -43,6 +44,8 @@ public class ShortEvent : MonoBehaviour
         comment = FindObjectOfType<CommentsSystem>();
         eventObject.SetActive(false);
         gamemanager = FindObjectOfType<Gamemanager>();
+        surprise = FindObjectOfType<Surprises>();
+        eventResolved = false;
 
     }
 
@@ -52,8 +55,9 @@ public class ShortEvent : MonoBehaviour
         {
             ResolveEvent();
         }
+        CloseEventWindow();
 
-        runButton.SetActive(false);
+        // runButton.SetActive(false);
 
     }
     public int GetCompetitionModifier()
@@ -65,7 +69,7 @@ public class ShortEvent : MonoBehaviour
         else
         {
             return 0;
-                };
+        };
     }
 
 
@@ -96,7 +100,7 @@ public class ShortEvent : MonoBehaviour
                 actualEvent = RolledEvents.Bump;
                 break;
             case 2:
-                saveRoll = 100 * (actualCompetitor.GetGradeModifier() - weatherModifier - GetCompetitionModifier())/ 6;
+                saveRoll = 100 * (actualCompetitor.GetGradeModifier() - weatherModifier - GetCompetitionModifier()) / 6;
                 if (saveRoll < 1)
                 {
                     saveRoll = 10;
@@ -136,13 +140,14 @@ public class ShortEvent : MonoBehaviour
 
         Debug.Log("Event described");
         eventRolled = true;
-        //ResolveEvent();
+        ResolveEvent();
     }
 
     public void ResolveEvent()
     {
         eventRolled = false;
         eventRoll = Random.Range(1, 7);
+        eventTitle.text = "EVENT".ToString();
         descriptionText.text += "\n" + "-------------------------------------------" + "\n"; // + "Roll is: " + eventRoll + ". ";
 
         switch (actualEvent)
@@ -152,10 +157,12 @@ public class ShortEvent : MonoBehaviour
             case RolledEvents.Weather: WeatherTest(); break;
             case RolledEvents.Risk: RiskTest(); break;
             case RolledEvents.Talent: TalentTest(); break;
-            case RolledEvents.Surprise: Surprise(); break;
+            case RolledEvents.Surprise: UnderdogEnters(); break;
         }
-
-        StartCoroutine("CloseEventWindow");
+        eventResolved = true;
+        //competition.eventHappened = true;
+        competition.ChangeState(Competition.GameState.CompetitionPhase);
+        //StartCoroutine("CloseEventWindow");
     }
     private void BumpTest()
     {
@@ -168,12 +175,12 @@ public class ShortEvent : MonoBehaviour
             descriptionText.text += "OH NO! " + actualCompetitor.secondName + " IS OUT";
             actualCompetitor.myState += 2; //DNF
             Debug.Log("STATE IS: " + actualCompetitor.myState.ToString());
-            competition.SurpriseEffect(actualCompetitor);
+            surprise.SurpriseEffect(actualCompetitor);
         }
     }
     private void DisqualificationTest()
     {
-        if ((eventRoll == 6) || ((eventRoll + actualCompetitor.GetGradeModifier() + weatherModifier-GetCompetitionModifier()) > 5))
+        if ((eventRoll == 6) || ((eventRoll + actualCompetitor.GetGradeModifier() + weatherModifier - GetCompetitionModifier()) > 5))
         {
             descriptionText.text += "GREAT FORM! " + actualCompetitor.secondName + " IS STILL IN THE GAME!";
         }
@@ -181,7 +188,7 @@ public class ShortEvent : MonoBehaviour
         {
             descriptionText.text += "OH... NO! " + actualCompetitor.secondName + " IS DISQUALIFIED";
             actualCompetitor.myState += 3; // DQ
-            competition.SurpriseEffect(actualCompetitor);
+            surprise.SurpriseEffect(actualCompetitor);
         }
     }
 
@@ -227,19 +234,19 @@ public class ShortEvent : MonoBehaviour
             {
                 actualCompetitor.myState = Player.PlayerState.DidNotFinish;
             }
-            competition.SurpriseEffect(actualCompetitor);
+            surprise.SurpriseEffect(actualCompetitor);
             return;
         }
 
         else if (eventRoll % 2 == 0)
         {
-            actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED!" + " +" + eventRoll + " pts.";
+            actualCompetitor.AddRunModifier(competition.currentRun, eventRoll * 2);
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED!" + " +" + (eventRoll * 2) + " pts.";
         }
         else
         {
-            actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " -" + eventRoll + " pts.";
+            actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll * 2);
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " -" + (-eventRoll * 2) + " pts.";
         }
     }
 
@@ -273,7 +280,7 @@ public class ShortEvent : MonoBehaviour
         {
             descriptionText.text += "COMPETITOR MISSED THE GATE... OUT!";
             actualCompetitor.myState = Player.PlayerState.DidNotFinish;
-            competition.SurpriseEffect(actualCompetitor);
+            surprise.SurpriseEffect(actualCompetitor);
         }
         else
         {
@@ -282,33 +289,58 @@ public class ShortEvent : MonoBehaviour
 
 
     }
-    private void Surprise()  // UNDERDOG ENTERS INTO OUTSIDERS
+    private void UnderdogEnters()  // UNDERDOG ENTERS INTO OUTSIDERS or "OUTOF15" COMPETITOR IS BACK
     {
-        if (competition.underdogs.Count > 0)
-        {
-            Player underdog = competition.underdogs[0];
-            underdog.GoodFormEffect();
-            underdog.GoodFormEffect();
-            descriptionText.text += "GOOD FORM of " + underdog.secondName.ToString() + "!";
-            competition.underdogs.Remove(underdog);
-            competition.outsiders.Insert(0, underdog); // INSERT At start
-            competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
-            competition.UpdatePlayerList(competition.underdogs, competition.underdogsList);
+        Player underdog = null;
 
-        }
-        else if (competition.outsiders.Count > 0)
+        if ((competition.currentRun > 1) && (competition.secondD6 % 2 == 0) &&
+            (competition.outOf15Competitors.Count > 0) && (competition.possibleReturnsFromOutOf15 > 0))
         {
-            int index = Random.Range(0, competition.outsiders.Count);
-            competition.outsiders[index].GoodFormEffect(); // Random OUTSIDER gets GOOD FORM
-            descriptionText.text += "GOOD FORM of " + competition.outsiders[index].secondName + "!";
+            underdog = competition.outOf15Competitors[0];
+            underdog.myState = Player.PlayerState.Running; 
+            descriptionText.text += underdog.secondName.ToString() + " IS BACK!";
+            competition.outOf15Competitors.Remove(underdog);
+            competition.outsiders.Insert(0, underdog);
+            competition.possibleReturnsFromOutOf15--;
+        }
+
+        else
+        {
+            if (competition.underdogs.Count > 0)
+            {
+                underdog = competition.underdogs[0];
+                underdog.GoodFormEffect();
+                underdog.GoodFormEffect();
+                descriptionText.text += "GOOD FORM of " + underdog.secondName.ToString() + "!";
+                competition.underdogs.Remove(underdog);
+                competition.outsiders.Insert(0, underdog); // INSERT At start
+                competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
+                competition.UpdatePlayerList(competition.underdogs, competition.underdogsList);
+
+            }
+            else if (competition.outsiders.Count > 0)
+            {
+                int index = Random.Range(0, competition.outsiders.Count);
+                competition.outsiders[index].GoodFormEffect(); // Random OUTSIDER gets GOOD FORM
+                descriptionText.text += "GOOD FORM of " + competition.outsiders[index].secondName + "!";
+            }
         }
         competition.UpdateLists();
     }
-    public IEnumerator CloseEventWindow()
+    private void CloseEventWindow()
     {
-        yield return new WaitForSeconds(3.00f);
-        eventObject.SetActive(false);
-        runButton.SetActive(true);
+        if ((eventResolved) && (Input.GetMouseButtonDown(0)))
+        {
+            eventObject.SetActive(false);
+            eventResolved = false;
+            // competition.eventHappened = false;
+            //competition.ChangeState(Competition.GameState.CompetitionPhase);
+        }
+
+        // yield return new WaitForSeconds(2.00f);
+
+
+        // runButton.SetActive(true);
 
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -38,6 +39,7 @@ public class Competition : MonoBehaviour
     [SerializeField] GameObject outOf15Section;
     [SerializeField] GameObject didNotFinishSection;
     [SerializeField] GameObject disqualifiedSection;
+    [SerializeField] GameObject endOfRunList;
     [SerializeField] GameObject[] listsSection;
 
     [Header("Panels")]
@@ -61,7 +63,9 @@ public class Competition : MonoBehaviour
     public List<Player> secondRunClassification = new List<Player>();
     public Player currentCompetitor { get; set; }
     public int currentCompetitorNo;
+    public int possibleReturnsFromOutOf15 = 0;
     public int currentRun = 1;
+    public int numberOfFavourites;
     public GameObject dicePanel;
     Dice dice;
     Surprises surprise;
@@ -72,14 +76,20 @@ public class Competition : MonoBehaviour
     Decoration decoration;
     public bool competitionIsOver = false;
     public float bestFinalPerformance;
+    public float bestFirstRunPerformance;
     public float bestRunPerformance;
-    public GameState myState;
-    private bool eventHappened = false;
+    public GameState myState { get; set; }
+    public bool eventHappened = false;
     private bool decorationSpawned = false;
     Gamemanager gamemanager;
-    public float firstSectorMostPoints = 20f; // average from weaker competitors runs
+    public float firstSectorMostPoints = 20f; // average from early competitors runs
     public float secondSectorMostPoints = 20f;
     public float thirdSectorMostPoints = 20f;
+    public CalculatePerformance _calculatePerformance;
+    public static event Action<GameState> OnBeforeStateChanged;
+    public static event Action<GameState> OnAfterStateChanged;
+    public Canvas canvasGroup;
+
 
     public enum GameState
     {
@@ -87,9 +97,10 @@ public class Competition : MonoBehaviour
         PresentationPhase = 1,
         StartPhase = 2,
         CompetitionPhase = 3,
-        EventPhase = 4,
-        EndOfRun = 5,
-        DecorationPhase = 6,
+        CheckSurprisePhase = 4,
+        EventPhase = 5,
+        EndOfRun = 6,
+        DecorationPhase = 7,
     }
     private void Awake()
     {
@@ -106,7 +117,7 @@ public class Competition : MonoBehaviour
 
     void Start()
     {
-        myState = GameState.WeatherPhase;
+        ChangeState(GameState.WeatherPhase);
         gamemanager = FindObjectOfType<Gamemanager>();
         players = gamemanager.favourites;
         outsiders = gamemanager.outsiders;
@@ -115,12 +126,7 @@ public class Competition : MonoBehaviour
         decoration = FindObjectOfType<Decoration>();
         currentCompetitorNo = players.Count - 1;
         dice = FindObjectOfType<Dice>();
-        //description = FindObjectOfType<RunDescription>();
         UpdatePlayerList(players, startingList);
-        // FindObjectOfType<PlayerDataLoader>().LoadCompetitorsList(players);
-        //startersSection.GetComponent<PlayerDataLoader>().LoadCompetitorsList(players);
-        //outsidersSection.GetComponent<PlayerDataLoader>().LoadCompetitorsList(outsiders);
-
         UpdatePlayerList(outsiders, outsidersList);
         UpdatePlayerList(underdogs, underdogsList);
         surprise = FindObjectOfType<Surprises>();
@@ -131,14 +137,15 @@ public class Competition : MonoBehaviour
         currentCompetitor = null;
         competitionIsOver = false;
         competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        _calculatePerformance = FindObjectOfType<CalculatePerformance>();
+        numberOfFavourites = players.Count;
         //currentRun = 1;
 
     }
 
     void Update()
     {
-
-        GameStatesManager();
+        // GameStatesManager();
         HandleNextRun();
 
         if (Input.GetKeyDown(KeyCode.Return))
@@ -150,179 +157,47 @@ public class Competition : MonoBehaviour
 
     public void Run()
     {
+        //SpawnEndOfRunClassification();
         if (competitionIsOver)
         {
             DecorationPhase(); return;
         }
-        else if (myState == GameState.EndOfRun)
-        {
-            PrepareNextRun(); return;
-        }
         surprise.surpriseEffect = false;
         surprise.disqualification = false;
-        dice.ResetDice();
+        dicePanel.GetComponent<Dice>().ResetDice();
         currentCompetitor = players[currentCompetitorNo];
         _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
         partsOfRun++;
-        //  SURPRISE CHECK
-        surprise.CheckSurprise(currentCompetitor);
-        //SurpriseEffect(currentCompetitor);
 
-        if ((currentCompetitorNo >= 0) && (!surprise.surpriseEffect))
+        //if (partsOfRun == 3)
+        //{
+        //    firstD6 = 4;
+        //    secondD6 = 4;
+        //    thirdD6 = 6;
+        //}
+        //else
+        //{
+        firstD6 = Random.Range(1, 7);
+        secondD6 = Random.Range(1, 7);
+        thirdD6 = Random.Range(1, 7);
+        //}
+        competitionRoll = firstD6 + secondD6;
+        surprise.CheckSurprise(currentCompetitor); //SURPRISE CHECK
+
+        CheckEvent(currentCompetitor);           // EVENT CHECK
+        dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
+        if ((currentCompetitorNo >= 0) && (currentCompetitor.myState == Player.PlayerState.Running)
+             && (!surprise.surpriseEffect) && (myState == GameState.CompetitionPhase)) // and Event resolved with no surprise
         {
-            currentCompetitor = players[currentCompetitorNo];
-            firstD6 = Random.Range(1, 7);
-            secondD6 = Random.Range(1, 7);
-            thirdD6 = Random.Range(1, 7);
-            dice.StartCoroutine("showDice");
-            //dice.showDice();
-            competitionRoll = firstD6 + secondD6;
-            CheckEvent(currentCompetitor);
-
-            switch (competitionRoll)
-            {
-                case 2:
-                    currentCompetitor.PoorFormEffect();
-                    calculatePerformance(currentCompetitor, -1, thirdD6); break; //DISASTER
-                case 3: currentCompetitor.PoorFormEffect(); calculatePerformance(currentCompetitor, 0, thirdD6); break; // MEDIOCRE
-                case 4:
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
-                    { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 0, thirdD6); }
-                    break;
-
-                case 5:
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                    { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                    break; // POOR
-                case 6:
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                    { calculatePerformance(currentCompetitor, 3, thirdD6); }
-                    else if ((currentCompetitor.grade == 'E'))
-                    { calculatePerformance(currentCompetitor, 1, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                    break; // BELOW AVERAGE
-
-                case 7:
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                    else if ((currentCompetitor.grade == 'C'))
-                    { calculatePerformance(currentCompetitor, 3, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 2, thirdD6); }
-                    break; //AVERAGE
-
-                case 8:
-                    if (currentCompetitor.CheckHomeFactor()) //HOME FACTOR +thirdD6
-                    {
-                        currentCompetitor.AddRunModifier(currentRun, thirdD6);
-                        Debug.Log("HOME FACTOR: +" + thirdD6);
-                    }
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B'))
-                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                    else if ((currentCompetitor.grade == 'C'))
-                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
-
-                    else { calculatePerformance(currentCompetitor, 3, thirdD6); };
-                    break; //GOOD
-
-                case 9:
-                    if ((currentCompetitor.grade == 'A') || (currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C'))
-                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                    else if ((currentCompetitor.grade == 'D'))
-                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                    else { calculatePerformance(currentCompetitor, 3, thirdD6); }; break; //PRETTY GOOD
-
-                case 10:
-                    if ((currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C') || (currentCompetitor.grade == 'D'))
-                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                    else if ((currentCompetitor.grade == 'E'))
-                    { calculatePerformance(currentCompetitor, 4, thirdD6); }
-                    else if ((currentCompetitor.grade == 'A')) { calculatePerformance(currentCompetitor, 6, thirdD6); };
-                    break; // VERY GOOD
-
-                case 11:
-                    currentCompetitor.GoodFormEffect();
-                    if ((currentCompetitor.grade == 'E'))
-                    { calculatePerformance(currentCompetitor, 5, thirdD6); }
-                    else if (currentCompetitor.grade == 'A')
-                    {
-                        calculatePerformance(currentCompetitor, 6, thirdD6 + 1);
-                    }
-                    else { calculatePerformance(currentCompetitor, 6, thirdD6); }; break; //GREAT!
-                case 12:
-                    if (currentCompetitor.grade == 'A')
-                    {
-                        calculatePerformance(currentCompetitor, 7, thirdD6 + 3);
-                    }
-                    else
-                    {
-                        currentCompetitor.GoodFormEffect();
-                        calculatePerformance(currentCompetitor, 7, thirdD6);
-                    };
-                    break; // CRIT SUCCESS
-            }
-            //CheckEvent(currentCompetitor);
+            // dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
+            _calculatePerformance.GetPerformanceModifier(currentCompetitor, competitionRoll);
+            _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
             EndRun();
         }
-    } // RUN MECHANICS
-
-    public void CalculateSectorTime(Player player, float sectorPoints)
-    {
-        if (player.myState == Player.PlayerState.Running)
-        {
-            float differenceInPoints = 0;
-            switch (partsOfRun)
-            {
-                case 1:
-                    if (sectorPoints > firstSectorMostPoints)
-                    {
-                        differenceInPoints = firstSectorMostPoints - sectorPoints;
-                        firstSectorMostPoints = sectorPoints;
-                        Debug.Log("1st SECTOR RECORD: " + sectorPoints);
-                        Debug.Log("DIFFERENCE: " + differenceInPoints);
-                        // GREEN ARROW UP 
-                    }
-                    else
-                    {
-                        differenceInPoints = firstSectorMostPoints - sectorPoints;
-                    }
-                    break;
-                case 2:
-                    if (sectorPoints > secondSectorMostPoints)
-                    {
-                        differenceInPoints = secondSectorMostPoints - sectorPoints;
-                        secondSectorMostPoints = sectorPoints;
-                        Debug.Log("2nd SECTOR RECORD: " + sectorPoints);
-                    }
-                    else
-                    {
-                        differenceInPoints = secondSectorMostPoints - sectorPoints;
-                    }
-                    break;
-                case 3:
-                    if (sectorPoints > thirdSectorMostPoints)
-                    {
-                        differenceInPoints = thirdSectorMostPoints - sectorPoints;
-                        thirdSectorMostPoints = sectorPoints;
-                        Debug.Log("3rd SECTOR RECORD: " + sectorPoints);
-                    }
-                    else
-                    {
-                        differenceInPoints = thirdSectorMostPoints - sectorPoints;
-                    }
-                    break;
-            }
-            // SHOW DIFFERENCE
-            Debug.Log(player.ConvertDifference(differenceInPoints));
-            dicePanel.GetComponent<Dice>().UpdateTimeGap(player, differenceInPoints);
-            dicePanel.GetComponent<CommentsSystem>().showComments(player, partsOfRun, sectorPoints);
-        }
-
     }
-
     public void EndRun()
     {
+        ChangeState(GameState.CompetitionPhase);
         if (partsOfRun > 2)
         {
             if (currentRun < 2)
@@ -331,9 +206,7 @@ public class Competition : MonoBehaviour
                 {
                     finishers.Add(currentCompetitor);
                 }
-
             }
-
             else if (currentRun > 1)
             {
                 bool playerExists = false;
@@ -343,7 +216,6 @@ public class Competition : MonoBehaviour
                     {
                         playerExists = true;
                     }
-
                 }
                 if (!playerExists)
                 {
@@ -351,9 +223,10 @@ public class Competition : MonoBehaviour
                 }
             }
             eventHappened = false;
-            players.RemoveAt(players.Count - 1);
+
+            //players.RemoveAt(players.Count - 1);
+            RemoveCurrentCompetitor();
             UpdatePlayerList(players, startingList);
-            //UpdateLists();
             currentCompetitor.CalculateFinal();
             updateResults();
             UpdateLists();
@@ -364,68 +237,8 @@ public class Competition : MonoBehaviour
         {
             UpdateLists();
         }
-    }
-
-
-    public void calculatePerformance(Player player, int modifier, int thirdDie)
-    {
-        _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
-        float currentPlayerPoints;
-
-        switch (modifier)
-        {
-            case -1:
-                if (modifier > -6) { player.AddRunModifier(currentRun, -6); }
-                else { player.AddRunModifier(currentRun, thirdDie * (-2)); }; break;
-            // description.StoreDescription(Color.red, "DISASTER");
-            case 0: player.AddRunModifier(currentRun, thirdDie * (-2)); break;
-            case 1: player.AddRunModifier(currentRun, thirdDie * (-1)); break;
-            case 2: player.AddRunModifier(currentRun, (thirdDie + 1) / -2); break;
-            case 3:
-                if (thirdDie < 3) { player.AddRunModifier(currentRun, Random.Range(-4, -1)); }
-                else if (thirdDie > 4) { player.AddRunModifier(currentRun, Random.Range(1, 4)); }
-                else { player.AddRunModifier(currentRun, 0); }; break;
-            case 4:
-                if (thirdDie < 3) { player.AddRunModifier(currentRun, Random.Range(-3, 0)); }
-                else if (thirdDie > 4) { player.AddRunModifier(currentRun, Random.Range(2, 5)); }
-                else { player.AddRunModifier(currentRun, 0); }; break;
-            case 5: player.AddRunModifier(currentRun, (thirdDie + 1) / 2); break;
-            case 6: player.AddRunModifier(currentRun, thirdDie); break;
-            case 7:
-                if (modifier < 6) { player.AddRunModifier(currentRun, 6); }
-                else { player.AddRunModifier(currentRun, thirdDie * 2); }
-                break;
-        }
-
-        // player.CalculateAverage();
-
-        if (currentRun == 1)
-        {
-            currentPlayerPoints = player.firstRunPoints;
-        }
-        else
-        {
-            currentPlayerPoints = player.secondRunPoints;
-        }
-
-        player.CalculateActualRun(currentRun);
-
-        if (currentRun == 1)
-        {
-            CalculateSectorTime(player, player.firstRunPoints - currentPlayerPoints);
-        }
-        else
-        {
-            CalculateSectorTime(player, player.secondRunPoints - currentPlayerPoints);
-        }
-        player.CalculateFinal();
-        showResults(currentCompetitor);
-        player.homeFactor = false;
-        // player.actualRunPoints = 0;
 
     }
-
-
     public void showResults(Player player)
     {
         if (player.myState == Player.PlayerState.Running)
@@ -453,22 +266,9 @@ public class Competition : MonoBehaviour
             }
         }
     }
-    // public void showStarters(List<Player> players)
-    //{
-    //for (int i = 0; i < players.Count; i++)
-    // {
-    //  startingList.text = players[i].secondName + " (" + players[i].nationality + ")" + " . GRADE: " + players[i].grade + "\n";
-    // }
-
-    // }
 
     public void UpdatePlayerList(List<Player> list, TMP_Text listText)
     {
-        // listText.text = "";
-        //  string[] lines = listText.text.Split('\n');
-        // int highlightedRowIndex = list.Count;
-        //TMP_Text textComponent = listText;
-
         if (listText.ToString().Contains("startingList"))
         {
             listText.text = "";
@@ -505,9 +305,27 @@ public class Competition : MonoBehaviour
     }
     public void UpdateLists()
     {
+        finishersSection.SetActive(true);
+        endOfRunList.SetActive(false);
         for (int i = 0; i < listsSection.Length; i++)
         {
             listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
+        }
+    }
+    public void ShowFirstRunList()
+    {
+        if (currentRun > 1)
+        {
+            endOfRunList.SetActive(true);
+            finishersSection.SetActive(false);
+            for (int i = 0; i < listsSection.Length; i++)
+            {
+                listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
+            }
+        }
+        else
+        {
+            UpdateLists();
         }
     }
 
@@ -527,8 +345,6 @@ public class Competition : MonoBehaviour
         {
             bestFinalPerformance = finishers[0].finalPerformance;
         }
-        //bestRunPerformance = finishers[0].CalculateActualRun(currentRun);
-        //Debug.Log("BEST: " + bestFinalPerformance);
 
         for (int i = 0; i < finishers.Count; i++)
 
@@ -546,86 +362,6 @@ public class Competition : MonoBehaviour
                 resultsList.text += "<color=white>" + TimeDisplay(finishers[i]) + "<color=white>";
             }
 
-
-            //if (currentRun == 2)
-            //{
-            //    secondRunResults.text = TimeDisplay(finishers[i]);
-            //}
-        }
-    }
-
-    public void SurpriseEffect(Player player)
-    {
-        surprise.surpriseEffect = true;
-        var state = player.myState;
-
-        switch (state)
-        {
-            case Player.PlayerState.OutOf15: outOf15Competitors.Add(player); break;
-            case Player.PlayerState.DidNotFinish: didNotFinish.Add(player); break;
-            case Player.PlayerState.Disqualified: disqualified.Add(player); break;
-        }
-        Player playerToDelete = player;
-
-        for (int i = finishers.Count - 1; i >= 0; i--)
-        {
-            if (finishers[i].secondName == playerToDelete.secondName)
-            {
-                finishers.RemoveAt(i); // Usuwa obiekt z listy FINISH gdyby wczeœniej tam siê znalaz³
-            }
-        }
-
-        UpdatePlayerList(didNotFinish, didNotFinishList);
-        UpdatePlayerList(disqualified, disqualifiedList);
-        // SUMMARY COMMENT
-        FindObjectOfType<CommentsSystem>().SummaryComment(player);
-        // UPDATE LISTS
-        int d6Roll = Random.Range(1, 7);
-        Player surpriseCompetitor;
-        if (surprise.surpriseEffect)
-        {
-            if ((underdogs.Count > 0) && (d6Roll == 1) || (outsiders.Count == 0))// IF 1 ON D6: BIG SURPRISE, UNDERDOG ENTERS
-            {
-                surpriseCompetitor = underdogs[0];
-                underdogs.Remove(surpriseCompetitor);
-            }
-
-            else
-            {
-                if (underdogs.Count == 0)
-                {
-                    Debug.Log("No more underdogs");
-                    surpriseCompetitor = outsiders[0];
-                    outsiders.Remove(surpriseCompetitor);
-                }
-                else
-                {
-                    surpriseCompetitor = outsiders[0];
-                    outsiders.Remove(surpriseCompetitor);
-                }
-            }
-
-            if (!competitionIsOver) // if not decoration phase
-            {
-                players.RemoveAt(players.Count - 1); // ??podwójne usuwanie po 3 sektorze
-                players.Add(surpriseCompetitor);
-            }
-            CheckIfEmptyLists();
-            UpdatePlayerList(players, startingList);
-            UpdatePlayerList(outsiders, outsidersList);
-            UpdateLists();
-            UpdatePlayerList(underdogs, underdogsList);
-            UpdatePlayerList(outOf15Competitors, outOf15List);
-            updateResults();
-            // UpdatePlayerList(didNotFinish, didNotFinishList);
-            // UpdatePlayerList(disqualified, disqualifiedList);
-
-            // UpdateLists();
-            partsOfRun = 0;
-            eventHappened = false;
-            // descriptionText.color = Color.red; descriptionText.text = "SURPRISE! OUT OF 15!";
-            finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
-            Debug.Log(player.secondName + " IS OUT OF 15/DQ/DNF! " + surpriseCompetitor.secondName + " ENTERS!");
         }
     }
 
@@ -650,12 +386,8 @@ public class Competition : MonoBehaviour
     {
         if ((competitionIsOver) && (!decorationSpawned))
         {
-            // finalText.text = "";
-            //currentCompetitor = null;
-            // FINAL COMMENTS appear
-            // RUN button text = DECORATATION
-            //runButton.GetComponentInChildren<TextMeshPro>().text = "DECORATION";
-            myState = GameState.DecorationPhase;
+            // TODO: FINAL COMMENTS appear
+            ChangeState(GameState.DecorationPhase);
             GameObject newObject = Instantiate(DecorationPanel);
             newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
             newObject.transform.localPosition = new Vector3(7.17f, 0.00f, 0.00f);
@@ -680,10 +412,6 @@ public class Competition : MonoBehaviour
         }
         else
         {
-            //Player bestInSecondRun = finishers.OrderByDescending(player => player.secondRunPoints).FirstOrDefault();
-            //Debug.Log("BEST IN 2nd ROUND WAS: " + bestInSecondRun.name);
-            //pointsDifference = bestInSecondRun.secondRunPoints - player.secondRunPoints;
-            //return player.ConvertDifference(pointsDifference) + "\n";
             if (currentRun == 2)
             {
                 if (player.secondRunPoints != 0)
@@ -700,18 +428,17 @@ public class Competition : MonoBehaviour
                 return player.ConvertPointsToTime(player.finalPerformance) + "\n";
             }
         }
-        // player.ConvertPointsToTime(timeDifference) + "\n";
     }
 
 
     void CheckEvent(Player player)
     {
-        if ((!eventHappened) && ((firstD6 == secondD6) && (firstD6 + secondD6 != 2) && (firstD6 + secondD6 != 12)))
+        if ((!eventHappened) && (!surprise.surpriseEffect) && (partsOfRun != 0) && (firstD6 == secondD6) && (firstD6 + secondD6 != 2) && (firstD6 + secondD6 != 12))
         {
             eventHappened = true;
             var shortEvent = FindObjectOfType<ShortEvent>();
             Debug.Log("EVENT!");
-            //finalText.text += "\n" + "EVENT! ";
+            ChangeState(GameState.EventPhase);
             shortEvent.GetEventType();
         }
     }
@@ -720,141 +447,127 @@ public class Competition : MonoBehaviour
         if ((partsOfRun == 0) && (players.Count == 0))// (finishers.Count==10))// && (currentRun < Gamemanager.numbersOfRun))
         {
             currentRun++;
-            if (currentRun > Gamemanager.numbersOfRun)
+            if (currentRun > Gamemanager.numbersOfRun) // DECORATION PHASE starts
             {
                 competitionIsOver = true;
-                // finalText.text = "";
                 currentCompetitor = null;
+                SpawnEndOfRunClassification();
                 // FINAL COMMENTS appear
-                // RUN button text = DECORATATION
                 runButton.GetComponentInChildren<TextMeshProUGUI>().text = "DECORATION".ToString();
-                // DecorationPhase();
             }
 
             else
             {
-                myState = GameState.EndOfRun;
+                ChangeState(GameState.EndOfRun);
+                firstRunClassification.AddRange(finishers);
                 competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
-                runButton.GetComponentInChildren<TextMeshProUGUI>().text = "NEXT RUN".ToString();
-
-                //players.AddRange(finishers);
-                //firstRunClassification.AddRange(finishers);
-                //// CLEAR finishers list, create constant 1st run list, create empty 2nd run list
-                //UpdatePlayerList(players, startingList);
-                //UpdateLists();
-                //currentCompetitorNo = players.Count - 1;
-                //List<Player> blackHorses = new List<Player>();
-                //blackHorses.AddRange(outsiders);
-                //blackHorses.AddRange(underdogs);
-                //blackHorses.AddRange(outOf15Competitors);
-                //// COMMENTATOR PRAISES RESET
-                //foreach (var player in players)
-                //{
-                //    player.praisesByCommentator = 0;
-
-                //}
-                //foreach (var player in blackHorses)
-                //{
-                //    player.firstRunPoints = finishers[finishers.Count - 1].firstRunPoints - 3;
-                //}
-                //finishers.Clear();
-                //UpdateLists();
-                //Debug.Log("NEXT RUN PREPARED!");
-                //Debug.Log("BLACKHORSES POINTS: " + blackHorses[0].firstRunPoints);
-                // possible weather change, +/- weather modifier
+                // runButton.GetComponentInChildren<TextMeshProUGUI>().text = "NEXT RUN".ToString();
+                players.AddRange(finishers);
+                bestFirstRunPerformance = finishers[0].firstRunPoints;
+                possibleReturnsFromOutOf15 = outOf15Competitors.Count;
+                // TODO:  create empty 2nd run list
+                // TODO: change weather, decrease surprise/weather effect
+                UpdatePlayerList(players, startingList);
+                UpdateLists();
+                currentCompetitorNo = players.Count - 1;
+                List<Player> blackHorses = new List<Player>();
+                blackHorses.AddRange(outsiders);
+                blackHorses.AddRange(underdogs);
+                blackHorses.AddRange(outOf15Competitors);
+                // COMMENTATOR PRAISES RESET
+                foreach (var player in players)
+                {
+                    player.praisesByCommentator = 0;
+                    player.firstRunPlace = player.place;
+                }
+                foreach (var player in blackHorses)
+                {
+                    player.firstRunPoints = finishers[finishers.Count - 1].firstRunPoints - 3;
+                }
+                finishers.Clear();
+                UpdateLists();
+                Debug.Log("NEXT RUN PREPARED!");
+                Debug.Log("BLACKHORSES POINTS: " + blackHorses[0].firstRunPoints);
+                SpawnEndOfRunClassification();
+                //possible weather change, +/ -weather modifier
             }
 
         }
 
     }
 
-    public void PrepareNextRun()
-    {
-        players.AddRange(finishers);
-        firstRunClassification.AddRange(finishers);
-        // CLEAR finishers list, create constant 1st run list, create empty 2nd run list
-        UpdatePlayerList(players, startingList);
-        UpdateLists();
-        currentCompetitorNo = players.Count - 1;
-        List<Player> blackHorses = new List<Player>();
-        blackHorses.AddRange(outsiders);
-        blackHorses.AddRange(underdogs);
-        blackHorses.AddRange(outOf15Competitors);
-        // COMMENTATOR PRAISES RESET
-        foreach (var player in players)
-        {
-            player.praisesByCommentator = 0;
 
-        }
-        foreach (var player in blackHorses)
+    public void ChangeState(GameState newState)
+    {
+        OnBeforeStateChanged?.Invoke(newState);
+        myState = newState;
+        switch (newState)
         {
-            player.firstRunPoints = finishers[finishers.Count - 1].firstRunPoints - 3;
+            case GameState.WeatherPhase:
+                weatherPanel.SetActive(true);
+                runButton.SetActive(false);
+                dicePanel.SetActive(false);
+                presentationPanel.SetActive(false); break;
+
+            case GameState.PresentationPhase:
+                weatherPanel.SetActive(false);
+                setupButton.SetActive(false);
+                runButton.SetActive(false);
+                presentationPanel.SetActive(true);
+                dicePanel.SetActive(false); break;
+
+            case GameState.CompetitionPhase:
+                presentationPanel.SetActive(false);
+                endOfRunList.SetActive(false);
+                runButton.SetActive(true);
+                dicePanel.SetActive(true); break;
+
+            case GameState.CheckSurprisePhase:
+                presentationPanel.SetActive(false);
+                runButton.SetActive(false);
+                dicePanel.SetActive(true); break;
+
+            case GameState.EventPhase:
+                weatherPanel.SetActive(false);
+                setupButton.SetActive(false);
+                presentationPanel.SetActive(false);
+                runButton.SetActive(false);
+                dicePanel.SetActive(true); break;
+
+            case GameState.EndOfRun:
+                weatherPanel.SetActive(false);
+                setupButton.SetActive(false);
+                presentationPanel.SetActive(false);
+                runButton.SetActive(true);
+                endOfRunList.SetActive(true);
+                dicePanel.SetActive(false); break;
+
+            case GameState.DecorationPhase:
+                weatherPanel.SetActive(false);
+                setupButton.SetActive(false);
+                presentationPanel.SetActive(false);
+                runButton.SetActive(false);
+                dicePanel.SetActive(false);
+                competitorPanel.SetActive(false); break;
+
+            default: throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
-        finishers.Clear();
-        UpdateLists();
-        myState = GameState.CompetitionPhase;
-        Debug.Log("NEXT RUN PREPARED!");
-        Debug.Log("BLACKHORSES POINTS: " + blackHorses[0].firstRunPoints);
-        // possible weather change, +/- weather modifier
+        OnAfterStateChanged?.Invoke(newState);
+        Debug.Log($"New state: {newState}");
+    }
+
+    public void RemoveCurrentCompetitor()
+    {
+        if (!surprise.surpriseEffect)
+        {
+            players.RemoveAt(players.Count - 1);
+        }
 
     }
 
-
-    void GameStatesManager()
+    public void SpawnEndOfRunClassification()
     {
-        if (myState == GameState.WeatherPhase)
-        {
-            weatherPanel.SetActive(true);
-            runButton.SetActive(false);
-            dicePanel.SetActive(false);
-            presentationPanel.SetActive(false);
-
-        }
-        else if (myState == GameState.PresentationPhase)
-        {
-            weatherPanel.SetActive(false);
-            setupButton.SetActive(false);
-            runButton.SetActive(false);
-            presentationPanel.SetActive(true);
-            dicePanel.SetActive(false);
-        }
-        else if (myState == GameState.CompetitionPhase)
-        {
-            presentationPanel.SetActive(false);
-            //  eventButton.SetActive(false);
-            runButton.SetActive(true);
-            dicePanel.SetActive(true);
-
-        }
-        else if (myState == GameState.EventPhase)
-        {
-            weatherPanel.SetActive(false);
-            setupButton.SetActive(false);
-            presentationPanel.SetActive(false);
-            runButton.SetActive(false);
-            dicePanel.SetActive(false);
-        }
-        else if (myState == GameState.EndOfRun)
-        {
-            weatherPanel.SetActive(false);
-            setupButton.SetActive(false);
-            presentationPanel.SetActive(false);
-            runButton.SetActive(true);
-            dicePanel.SetActive(true);
-        }
-        else if (myState == GameState.DecorationPhase)
-        {
-            weatherPanel.SetActive(false);
-            setupButton.SetActive(false);
-            presentationPanel.SetActive(false);
-            runButton.SetActive(false);
-            dicePanel.SetActive(false);
-            competitorPanel.SetActive(false);
-        }
-
-
-
-
+        canvasGroup.GetComponent<MoveObject>().MoveToCenter();
     }
 }
 

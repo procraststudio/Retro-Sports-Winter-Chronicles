@@ -10,6 +10,7 @@ public class PlayerDisplay : MonoBehaviour
     [SerializeField] TMP_Text competitorGrade;
     [SerializeField] TMP_Text competitorExperience;
     [SerializeField] TMP_Text competitorRanking;
+    [SerializeField] TMP_Text competitorSurpriseChance;
     [SerializeField] TMP_Text position;
     [SerializeField] TMP_Text timeDisplay;
     public TMP_Text secondName;
@@ -24,23 +25,19 @@ public class PlayerDisplay : MonoBehaviour
     public string flagsFolderPath = "flags/";
     private Sprite flagSprite;
     Competition competition;
+    Surprises surprise;
 
 
     public void Start()
     {
-        //player = null;
         competition = Competition.Instance;
-        // formIndicator.GetComponent<SpriteRenderer>().sprite = null;
-        //competitorName.text = "";
-        // competitorGrade.text = "";
-        // competitorExperience.text = "";
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
-        //currentCompetitorPanel.SetActive(false);
+        surprise = FindObjectOfType<Surprises>();
     }
 
     public void Update()
     {
-        if ((currentCompetitorPanel != null) && ((competition.partsOfRun == 1) || (competition.partsOfRun == 2)||
+        if ((currentCompetitorPanel != null) && ((competition.partsOfRun == 1) || (competition.partsOfRun == 2) ||
              competition.myState == GameState.PresentationPhase))
         {
             currentCompetitorPanel.SetActive(false);
@@ -52,32 +49,14 @@ public class PlayerDisplay : MonoBehaviour
     {
         competition = Competition.Instance;
         string boldSecondName = "<b>" + player.secondName + "</b>";
-        // currentCompetitorPanel.SetActive(false);
-        // float pointsDifference = competition.bestFinalPerformance - player.finalPerformance;
-        // FINISHERS
-        if (gameObject.CompareTag("finishers_list"))
+        if ((gameObject.CompareTag("finishers_list")) || (gameObject.CompareTag("firstRun_list")))
         {
-            float pointsDifference = competition.bestFinalPerformance - player.finalPerformance;
-            position.text = player.place.ToString();
+            ShowPosition(player);
             ShowFlag(player);
             arrowIndicator = null;
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
-            if (player.place == 1)
-            {
-                timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance).ToString();
-                competition.finalText.text += ". TOTAL SECS: " + player.totalSeconds;
-              //  if (actualRun == 2) 
-               // {
-                   // timeDisplay.text = player.ConvertPointsToTime(player.secondRunPoints).ToString();
-              //  }
-            }
-            else
-            {
-                timeDisplay.text = player.ConvertDifference(pointsDifference).ToString();
-            }
-            
+            TimeDisplay(player);
             HighlightCurrentCompetitor(player);
-            Debug.Log(competition.bestFinalPerformance - player.finalPerformance);
         }
         else if (gameObject.CompareTag("losers"))
         {
@@ -94,10 +73,12 @@ public class PlayerDisplay : MonoBehaviour
             competitorRanking.text = player.ranking.ToString();
             ShowFormIndicators(player);
             ShowFlag(player);
-            //HighlightCurrentCompetitor(player);
+            if (competitorSurpriseChance != null)
+            {
+                competitorSurpriseChance.text = player.ranking.ToString(); //surprise.DisplaySurpriseChance(player).ToString(); //("F0"); // + "%"
+            }
         }
-        
-        // TO DO: arrow display in 2nd run
+
     }
 
     public void ShowFormIndicators(Player player)
@@ -117,24 +98,67 @@ public class PlayerDisplay : MonoBehaviour
         }
     }
 
-    public void ShowFlag(Player player)
+    public void ShowPosition(Player player)
     {
-        playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
+        if (gameObject.CompareTag("firstRun_list"))
+        {
+            position.text = player.firstRunPlace.ToString();
+        }
+        else
+        {
+            position.text = player.place.ToString();
+        }
     }
 
-    public void HighlightCurrentCompetitor(Player player)
+    public void TimeDisplay(Player player)
     {
-        if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase))
-            
+        float pointsDifference = competition.bestFinalPerformance - player.finalPerformance;
+
+        if (gameObject.CompareTag("firstRun_list"))
         {
-            if (player.secondName == competition.currentCompetitor.secondName)
+            if (player.firstRunPlace == 1)
             {
-                currentCompetitorPanel.SetActive(true);
+                timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints).ToString();
             }
             else
             {
-                currentCompetitorPanel.SetActive(false);
+                timeDisplay.text = player.ConvertDifference(competition.bestFirstRunPerformance - player.firstRunPoints).ToString();
+            }
+        }
+
+        else
+        {
+            if (player.place == 1)
+            {
+                timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance).ToString();
+            }
+            else
+            {
+                timeDisplay.text = player.ConvertDifference(pointsDifference).ToString();
+            }
+
+        }
+    }
+
+        public void ShowFlag(Player player)
+        {
+            playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
+        }
+
+        public void HighlightCurrentCompetitor(Player player)
+        {
+            if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase)
+                && (competition.myState != GameState.EndOfRun))
+
+            {
+                if (player.secondName == competition.currentCompetitor.secondName)
+                {
+                    currentCompetitorPanel.SetActive(true);
+                }
+                else
+                {
+                    currentCompetitorPanel.SetActive(false);
+                }
             }
         }
     }
-}

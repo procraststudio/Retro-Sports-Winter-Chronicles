@@ -26,33 +26,35 @@ void Start()
     {
         competition = Competition.Instance;
         typeOfCompetition = "alpine skiing";
-        competitionName = "CALGARY 1988 Alpine Ski: Slalom MEN. RUN: ";    // "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
+        competitionName = "1988 Alpine Ski: Downhill WOMEN. RUN: ";    // "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
         venueNation = "CAN";
         numbersOfRun = 2;
-        surprisesModifier = 0.50f;  //1.00f; // default should be 1.00f, slalom 2.00
+        surprisesModifier = 0.5f;  //1.00f; // default should be 1.00f, slalom: 2.00
         temperatureMin = -11.00f;
         temperatureMax = -4.00f;
         // FAVOURITES:
-        Player player01 = new Player("Alberto", "Tomba", 1, 'A', 1, "ITA");
-        Player player02 = new Player("Gunther", "Mader", 2, 'B', 2, "AUT");
-        Player player03 = new Player("Felix", "McGrath", 3, 'B', 1, "USA");
-        Player player04 = new Player("Paul", "Frommelt", 4, 'B', 2, "LIE");
-        Player player05 = new Player("Armin", "Bittner", 5, 'B', 1, "FRG");
-        Player player06 = new Player("Hubert", "Strolz", 6, 'B', 2, "AUT");
-        Player player07 = new Player("Bernhard", "Gstrein", 7, 'B', 1, "AUT");
-        Player player08 = new Player("Jonas", "Nilsson", 8, 'B', 2, "SWE");
-        Player player09 = new Player("Pirmin", "Zurbriggen", 9, 'C', 3, "SUI");
-        Player player10 = new Player("Grega", "Benedik", 10, 'C', 2, "YUG");
+        Player player01 = new Player("Michela", "Figini", 1, 'X', 2, "SUI");
+        Player player02 = new Player("Brigitte", "Oertli", 2, 'X', 2, "SUI");
+        Player player03 = new Player("Maria", "Walliser", 3, 'A', 2, "USA");
+        Player player04 = new Player("Veronika", "Wallinger", 4, 'B', 2, "AUT");
+        Player player05 = new Player("Karen", "Percy", 5, 'B', 1, "CAN");
+        Player player06 = new Player("Sigrid", "Wolf", 6, 'B', 2, "AUT");
+        Player player07 = new Player("Beatrice", "Gafner", 7, 'B', 0, "SUI");
+        Player player08 = new Player("Marina", "Kiehl", 8, 'B', 2, "FRG");
+        Player player09 = new Player("Regine", "Moesenlechner", 9, 'C', 3, "FRG");
+        Player player10 = new Player("Petra", "Kronberger", 10, 'C', 0, "AUT");
         // OUTSIDERS:
-        Player player11 = new Player("Tetsuya", "Okabe", 11, 'C', 1, "JPN");
-        Player player12 = new Player("Thomas", "Stangassinger", 12, 'C', 1, "AUT");
-        Player player13 = new Player("Richard", "Pramotton", 13, 'C', 1, "ITA");
-        Player player14 = new Player("Carlo", "Gerosa", 14, 'C', 1, "ITA");
-        Player player15 = new Player("Dietmar", "Kohlbichler", 15, 'C', 1, "AUT");
+        Player player11 = new Player("Kerrin", "Lee", 11, 'C', 1, "CAN");
+        Player player12 = new Player("Laurie", "Graham", 12, 'C', 3, "CAN");
+        Player player13 = new Player("Katrin", "Gutensohn", 13, 'C', 1, "AUT");
+        Player player14 = new Player("Chantal", "Bournissen", 14, 'C', 1, "SUI");
+        Player player15 = new Player("Elisabeth", "Kirchler", 15, 'C', 2, "AUT");
         // UNDERDOGS:
-        Player player16 = new Player("Bojan", "Krizaj", 16, 'D', 3, "YUG");
-        Player player17 = new Player("Finn Christian", "Jagge", 17, 'E', 0, "NOR");
-        Player player18 = new Player("Peter", "Jurko", 18, 'E', 0, "TCH");
+        Player player16 = new Player("Deborah", "Compagnoni", 16, 'D', 0, "ITA");
+        Player player17 = new Player("Golnur", "Postnikova", 17, 'E', 0, "URS");
+        Player player18 = new Player("Carole", "Merle", 18, 'E', 2, "FRA");
+
+
 
         favourites = new List<Player> { player01, player02, player03, player04, player05,
         player06, player07, player08, player09, player10};
@@ -63,6 +65,7 @@ void Start()
         bestTimeInSec = 49.42f;         // DH 119.63f; 2 runs: average from 2 best runs
         tenthTime =    50.51f;       // DH 122.69f; przy 15 faworytach to czas 15-go?
         timeDifference = tenthTime - bestTimeInSec;
+        numberOfFavourites = favourites.Count;
 
     }
 

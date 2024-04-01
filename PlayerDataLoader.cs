@@ -83,6 +83,17 @@ public class PlayerDataLoader : MonoBehaviour
         {
             listToLoad = competition.disqualified;
         }
+        else if (gameObject.CompareTag("firstRun_list"))
+        {
+            if (competition.firstRunClassification.Count > 0)
+            {
+                listToLoad = competition.firstRunClassification;
+            }
+            //else
+            //{
+            //    listToLoad = competition.finishers;
+            //}
+        }
 
 
         return listToLoad;

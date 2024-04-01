@@ -40,7 +40,7 @@ public class Presentation : MonoBehaviour
 
     void Update()
     {
-       // CheckEndPhase();
+      // CheckEndPhase();
     }
 
     public void GenerateFavourites()
@@ -57,24 +57,33 @@ public class Presentation : MonoBehaviour
         {
             for (int i = 0; i < favourites.Count; i++)
             {
-                //CHECK HOW MANY 'A' COMPETITORS
-                if ((favourites[i].grade == 'A') && (noOfBigFavourites <3))
-                {
-                    bigFavourites.Add(favourites[i]);
-                    noOfBigFavourites++;
-                   
+
+                    //CHECK HOW MANY 'X' COMPETITORS
+                    if ((favourites[i].grade == 'X') && (noOfBigFavourites < 3))
+                    {
+                        bigFavourites.Add(favourites[i]);
+                        noOfBigFavourites++;
+                    }
                 }
-            }
-            for (int i = 0; i < favourites.Count; i++)
-            {
-                if ((favourites[i].grade == 'B') && (noOfBigFavourites < 3))
+                for (int i = 0; i < favourites.Count; i++)
                 {
-                    bigFavourites.Add(favourites[i]);
-                    noOfBigFavourites++;
+                    if ((favourites[i].grade == 'A') && (noOfBigFavourites < 3))
+                    {
+                        bigFavourites.Add(favourites[i]);
+                        noOfBigFavourites++;
+                    }
+
+                }
+                for (int i = 0; i < favourites.Count; i++)
+                {
+                    if ((favourites[i].grade == 'B') && (noOfBigFavourites < 3))
+                    {
+                        bigFavourites.Add(favourites[i]);
+                        noOfBigFavourites++;
+                    }
 
                 }
 
-            }
 
                 switch (noOfBigFavourites)
             {
@@ -96,30 +105,14 @@ public class Presentation : MonoBehaviour
                     break;
             }
 
-            //if (favouritesGenerated < 3)
-            //{
-            //    if (favourites[i].grade == 'A')
-            //    {
-            //        actualFavourite = favourites[i];
-            //        showPlayerData(favouritesGenerated, actualFavourite);
-            //        showComments(favouritesGenerated);
-            //        // TO DO: Some time delay
-            //        favouritesGenerated++;
-            //    }
-
-
-
-
             presentationPhaseOver = true;
             buttonText.text = "START".ToString();
         }
 
-
-
-
         else
         {
-            competition.myState = GameState.CompetitionPhase;
+            // competition.myState = GameState.CompetitionPhase;
+            competition.ChangeState(GameState.CompetitionPhase);  
         }
 
     }

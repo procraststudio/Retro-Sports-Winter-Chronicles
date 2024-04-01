@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,7 +13,7 @@ public class Decoration : MonoBehaviour
     public GameObject podiumImage;
     [SerializeField] TMP_Text[] winnersNames;
     //[SerializeField] private Competition competition;
-    Competition competition ; 
+    Competition competition;
     [SerializeField] GameObject ExitButton;
     [SerializeField] AudioClip fanfairSound;
 
@@ -26,18 +25,17 @@ public class Decoration : MonoBehaviour
     void Start()
     {
         //decorationPanel.SetActive(false);
-       // competition = FindObjectOfType<Competition>();
-        competition = Competition.Instance;  
+        // competition = FindObjectOfType<Competition>();
+        competition = Competition.Instance;
         thirdPlacePanel.SetActive(false);
         secondPlacePanel.SetActive(false);
-        winnerPanel.SetActive(false);   
+        winnerPanel.SetActive(false);
         podiumImage.SetActive(false);
-
-         winner = competition.finishers[0];
-         secondPlayer = competition.finishers[1];
-         thirdPlayer = competition.finishers[2];
+        winner = competition.finishers[0];
+        secondPlayer = competition.finishers[1];
+        thirdPlayer = competition.finishers[2];
         //TO DO: Decoration effects
-        
+
         StartCoroutine("DecorateMedalists");
     }
 
@@ -45,11 +43,11 @@ public class Decoration : MonoBehaviour
 
 
     public IEnumerator DecorateMedalists()
-    {  
+    {
         yield return new WaitForSeconds(2.00f);
         podiumImage.SetActive(true);
         yield return new WaitForSeconds(2.00f);
-        
+
         thirdPlacePanel.SetActive(true);
         winnersNames[0].text = thirdPlayer.secondName.ToUpper();
         flags[0].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + thirdPlayer.nationality);
@@ -60,9 +58,10 @@ public class Decoration : MonoBehaviour
         flags[1].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + secondPlayer.nationality);
         yield return new WaitForSeconds(2.00f);
         winnerPanel.SetActive(true);
-        winnersNames[2].text = winner.secondName.ToUpper() ;
+        winnersNames[2].text = winner.secondName.ToUpper();
         flags[2].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + winner.nationality);
-        ExitButton.SetActive(true);    
+        yield return new WaitForSeconds(2.00f);
+        ExitButton.SetActive(true);
 
     }
 
