@@ -96,7 +96,7 @@ public class ShortEvent : MonoBehaviour
                 Debug.Log("SAVE ROLL: " + saveRoll);//Convert.ToInt32(((actualCompetitor.experience - weatherModifier)/6)*100);
                 description += "BUMP!".ToUpper() + "\n" +
                     saveRoll.ToString() + "%: the competitor stays on the route" + "\n"
-                    + (100 - saveRoll).ToString() + "%: OUT, DNF!";
+                    + (100 - saveRoll).ToString() + "%: OUT, DNF! ";
                 actualEvent = RolledEvents.Bump;
                 break;
             case 2:
@@ -107,7 +107,7 @@ public class ShortEvent : MonoBehaviour
                 }
                 description += "CURVE!".ToUpper() + "\n" +
                     saveRoll.ToString() + "%: no DQ" + "\n"
-                    + (100 - saveRoll).ToString() + "%: DISQUALIFIED!";
+                    + (100 - saveRoll).ToString() + "%: DISQUALIFIED! ";
                 actualEvent = RolledEvents.Curve;
                 break;
             case 3:
@@ -172,7 +172,7 @@ public class ShortEvent : MonoBehaviour
         }
         else
         {
-            descriptionText.text += "OH NO! " + actualCompetitor.secondName + " IS OUT";
+            descriptionText.text += "OH NO! " + actualCompetitor.secondName + " IS OUT! ";
             actualCompetitor.myState += 2; //DNF
             Debug.Log("STATE IS: " + actualCompetitor.myState.ToString());
             surprise.SurpriseEffect(actualCompetitor);
@@ -182,11 +182,11 @@ public class ShortEvent : MonoBehaviour
     {
         if ((eventRoll == 6) || ((eventRoll + actualCompetitor.GetGradeModifier() + weatherModifier - GetCompetitionModifier()) > 5))
         {
-            descriptionText.text += "GREAT FORM! " + actualCompetitor.secondName + " IS STILL IN THE GAME!";
+            descriptionText.text += "GREAT FORM! " + actualCompetitor.secondName + " IS STILL IN THE GAME! ";
         }
         else
         {
-            descriptionText.text += "OH... NO! " + actualCompetitor.secondName + " IS DISQUALIFIED";
+            descriptionText.text += "OH... NO! " + actualCompetitor.secondName + " IS DISQUALIFIED! ";
             actualCompetitor.myState += 3; // DQ
             surprise.SurpriseEffect(actualCompetitor);
         }
@@ -196,7 +196,7 @@ public class ShortEvent : MonoBehaviour
     {
         if ((weather.precipitation.Contains("snowing")) || (weather.precipitation.Contains("raining")))
         {
-            descriptionText.text += "DANGEROUS BUMP...";
+            descriptionText.text += "DANGEROUS BUMP... ";
             BumpTest();
         }
         else
@@ -204,13 +204,13 @@ public class ShortEvent : MonoBehaviour
             if (competition.players.Count < 8)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, 5);
-                descriptionText.text += "CLEARED RUN! ACCELERATION! +5 points";
+                descriptionText.text += "CLEARED RUN! ACCELERATION! +5 points. ";
             }
 
             else
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, -5);
-                descriptionText.text += "POOR STRATEGY! -5 points";
+                descriptionText.text += "POOR STRATEGY! -5 points. ";
             }
         }
     }
@@ -221,7 +221,7 @@ public class ShortEvent : MonoBehaviour
 
         if ((eventRoll == 1) && (actualCompetitor.grade >= 'C'))
         {
-            descriptionText.text += "COMPETITOR TAKES RISK... OH NO... OUT!";
+            descriptionText.text += "COMPETITOR TAKES RISK... OH NO... OUT! ";
             if (competition.players.Count < 8)
             {
                 actualCompetitor.myState = Player.PlayerState.OutOf15;
@@ -241,12 +241,12 @@ public class ShortEvent : MonoBehaviour
         else if (eventRoll % 2 == 0)
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll * 2);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED!" + " +" + (eventRoll * 2) + " pts.";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED!" + " +" + (eventRoll * 2) + " pts. ";
         }
         else
         {
             actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll * 2);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " -" + (-eventRoll * 2) + " pts.";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " -" + (-eventRoll * 2) + " pts. ";
         }
     }
 
@@ -258,33 +258,33 @@ public class ShortEvent : MonoBehaviour
             if (eventRoll == 1)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, -6);
-                descriptionText.text += "HORRIBLE MISTAKE by " + actualCompetitor.secondName + ".  -6pts.";
+                descriptionText.text += "HORRIBLE MISTAKE by " + actualCompetitor.secondName + ".  -6pts. ";
             }
             else if (eventRoll == 6)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, 6);
-                descriptionText.text += "GREAT SPEED of " + actualCompetitor.secondName + "!" + "  +6pts.";
+                descriptionText.text += "GREAT SPEED of " + actualCompetitor.secondName + "!" + "  +6pts. ";
             }
             else
             {
-                descriptionText.text += actualCompetitor.secondName + " nearly falls down. It was close...";
+                descriptionText.text += actualCompetitor.secondName + " nearly falls down. It was close... ";
             }
         }
         else if (weather.snowCondition.Contains("hard"))
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
-            descriptionText.text += "GREAT ROUTE CONDITION. " + "  +" + eventRoll + "points";
+            descriptionText.text += "GREAT ROUTE CONDITION. " + "  +" + eventRoll + "points. ";
         }
 
         else if (gamemanager.competitionName.Contains("Slalom"))
         {
-            descriptionText.text += "COMPETITOR MISSED THE GATE... OUT!";
+            descriptionText.text += "COMPETITOR MISSED THE GATE... OUT! ";
             actualCompetitor.myState = Player.PlayerState.DidNotFinish;
             surprise.SurpriseEffect(actualCompetitor);
         }
         else
         {
-            descriptionText.text += "GREAT RUN. Crowd goes wild!";
+            descriptionText.text += "GREAT RUN. Crowd goes wild! ";
         }
 
 
@@ -298,7 +298,7 @@ public class ShortEvent : MonoBehaviour
         {
             underdog = competition.outOf15Competitors[0];
             underdog.myState = Player.PlayerState.Running; 
-            descriptionText.text += underdog.secondName.ToString() + " IS BACK!";
+            descriptionText.text += underdog.secondName.ToString() + " IS BACK! ";
             competition.outOf15Competitors.Remove(underdog);
             competition.outsiders.Insert(0, underdog);
             competition.possibleReturnsFromOutOf15--;
@@ -311,7 +311,7 @@ public class ShortEvent : MonoBehaviour
                 underdog = competition.underdogs[0];
                 underdog.GoodFormEffect();
                 underdog.GoodFormEffect();
-                descriptionText.text += "GOOD FORM of " + underdog.secondName.ToString() + "!";
+                descriptionText.text += "GOOD FORM of " + underdog.secondName.ToString() + "! ";
                 competition.underdogs.Remove(underdog);
                 competition.outsiders.Insert(0, underdog); // INSERT At start
                 competition.UpdatePlayerList(competition.outsiders, competition.outsidersList);
@@ -322,7 +322,7 @@ public class ShortEvent : MonoBehaviour
             {
                 int index = Random.Range(0, competition.outsiders.Count);
                 competition.outsiders[index].GoodFormEffect(); // Random OUTSIDER gets GOOD FORM
-                descriptionText.text += "GOOD FORM of " + competition.outsiders[index].secondName + "!";
+                descriptionText.text += "GOOD FORM of " + competition.outsiders[index].secondName + "! ";
             }
         }
         competition.UpdateLists();

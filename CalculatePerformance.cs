@@ -59,7 +59,7 @@ public class CalculatePerformance : MonoBehaviour
                 if (currentCompetitor.CheckHomeFactor()) //HOME FACTOR +thirdD6
                 {
                     currentCompetitor.AddRunModifier(competition.currentRun, thirdD6);
-                    Debug.Log("HOME FACTOR: +" + thirdD6);
+                    Debug.Log("HOME FACTOR: +" + thirdD6*2);
                 }
                 if (currentCompetitor.grade > 3)
                 { calculatePerformance(currentCompetitor, 5, thirdD6); }

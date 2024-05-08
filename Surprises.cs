@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
+using DG.Tweening;
 
 public class Surprises : MonoBehaviour
 {
@@ -21,6 +22,8 @@ public class Surprises : MonoBehaviour
     public TMP_Text eventTitle;
     Competition competition;
     public float surpriseMod;
+    ScreenShake shake;
+    Dice dice;
 
     void Start()
     {
@@ -30,7 +33,9 @@ public class Surprises : MonoBehaviour
         gamemanager = FindObjectOfType<Gamemanager>();
         weather = FindObjectOfType<Weather>();
         currentEvent = FindObjectOfType<ShortEvent>();
+        dice = FindObjectOfType<Dice>();    
         competition = Competition.Instance;
+        shake = FindObjectOfType<ScreenShake>();
         // favouritesCount = gamemanager.numberOfFavourites;
 
     }
@@ -100,7 +105,9 @@ public class Surprises : MonoBehaviour
     {
         surpriseEffect = true;
         var state = player.myState;
-
+       // shake.start = true; // TODO: Screen shake
+        dice.competitorImage[dice.currentCompetitorImage].transform.DOShakePosition(1.5f, 30.0f, 20, 50f, true, true);
+        dice.competitorImage[dice.currentCompetitorImage].GetComponent<SpriteRenderer>().DOFade(0.0f, 1.5f);
         switch (state)
         {
             case Player.PlayerState.OutOf15: competition.outOf15Competitors.Add(player); break;
@@ -136,24 +143,12 @@ public class Surprises : MonoBehaviour
 
             if (!competition.competitionIsOver) // if not decoration phase
             {
-                competition.players.RemoveAt(competition.players.Count - 1);// ??podwójne usuwanie po 3 sektorze
+                competition.players.RemoveAt(competition.players.Count - 1);
                 competition.players.Add(surpriseCompetitor);
             }
             competition.CheckIfEmptyLists();
-
-
-            //competition.UpdatePlayerList(competition.players, startingList);
-            //competition.UpdatePlayerList(competition.outsiders, outsidersList);
-
-            //competition.UpdatePlayerList(competition.underdogs, underdogsList);
-            //competition.UpdatePlayerList(competition.outOf15Competitors, outOf15List);
-            //competition.updateResults();
-
-            //competition.UpdatePlayerList(competition.didNotFinish, didNotFinishList);
-            //competition.UpdatePlayerList(competition.disqualified, disqualifiedList);
-
             competition.UpdateLists();
-            competition.partsOfRun = 0;  // ?????
+            competition.partsOfRun = 0; // check this
             competition.finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
             competition.eventHappened = false;
             Debug.Log(player.secondName + " IS OUT OF 15/DQ/DNF! " + surpriseCompetitor.secondName + " ENTERS!");
@@ -165,8 +160,6 @@ public class Surprises : MonoBehaviour
     {
         int surpriseCh = player.ranking * (int)surpriseMod;
         return surpriseCh;
-
-
     }
     private IEnumerator CloseWindow()
     {

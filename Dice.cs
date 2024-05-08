@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using DG.Tweening;
 using Random = UnityEngine.Random;
 
 public class Dice : MonoBehaviour
@@ -14,7 +15,7 @@ public class Dice : MonoBehaviour
     [SerializeField] GameObject[] timeGapBackground;
     [SerializeField] TMP_Text[] timeGapTexts;
     [SerializeField] GameObject[] commentatorIcon;
-    [SerializeField] GameObject[] competitorImage;
+    [SerializeField] public GameObject[] competitorImage;
     [SerializeField] GameObject summaryImage;
     [SerializeField] Sprite[] summarySprites;
     [SerializeField] Sprite[] skiersIcons;
@@ -24,7 +25,9 @@ public class Dice : MonoBehaviour
     private float pause = 0.15f;
     private float animatePause = 0.40f;
     private bool diceChanging;
-    private int currentCompetitorImage;
+    public int currentCompetitorImage;
+    public Sprite currentSkierIcon;
+   
 
 
     void Start()
@@ -35,6 +38,7 @@ public class Dice : MonoBehaviour
         description = FindObjectOfType<RunDescription>();
         diceChanging = false;
         currentCompetitorImage = 0;
+        currentSkierIcon = skiersIcons[0];
         ResetTimeGapBackgrounds();
         ResetDice();
     }
@@ -70,20 +74,26 @@ public class Dice : MonoBehaviour
     public int GenerateObject(int length)
     {
         var index = Random.Range(0, length);
+        currentSkierIcon = skiersIcons[index];
         return index;
     }
 
     public IEnumerator animateEffect()
     {
         // MIX THE IMAGES
-        // GameObject[] array = skiersIcons; 
-
         competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
+        // TODO Moving effect
         yield return new WaitForSeconds(animatePause);
         competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
         yield return new WaitForSeconds(animatePause);
         competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
         currentCompetitorImage++;
+    }
+
+    public void MoveEffect(GameObject obj)
+    {
+       // obj.transform.DOMoveX(0.02f, 0.3f, false);
+
     }
 
     public void ResetDice()
@@ -135,6 +145,7 @@ public class Dice : MonoBehaviour
         for (int i = 0; i < competitorImage.Length; i++)
         {
             competitorImage[i].GetComponent<SpriteRenderer>().sprite = null;
+            competitorImage[i].GetComponent<SpriteRenderer>().DOFade(1.0f, 0.01f);
         }
         summaryImage.GetComponent<SpriteRenderer>().sprite = null;
         currentCompetitorImage = 0;

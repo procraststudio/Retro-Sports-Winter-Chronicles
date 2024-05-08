@@ -25,8 +25,9 @@ public class MoveObject : MonoBehaviour
         }
     }
 
-    public void MoveToCenter ()
+    public IEnumerator MoveToCenter ()
     {
+        yield return new WaitForSeconds(2.0f);
         rectTransform.transform.localPosition = new Vector3(0f, -800f, 0f);
         rectTransform.DOAnchorPos(new Vector2(0f, 122.0f), 1.0f, false).SetEase(Ease.OutElastic);
         endOfFirstRunDisplayed=true;  

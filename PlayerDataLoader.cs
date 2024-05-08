@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,12 +5,15 @@ public class PlayerDataLoader : MonoBehaviour
 {
     public GameObject playerDataPrefab;
     public GameObject playerDataObject;
+    public GameObject header;
     public Transform playerDataParent;
     public List<Player> listToLoad = new List<Player>();
     public List<GameObject> gameObjects;
     Competition competition;
     public bool competitorsLoaded;
     private string nameOfTheList;
+    public bool listFrozen = false;
+   
 
 
     void Start()
@@ -25,10 +27,11 @@ public class PlayerDataLoader : MonoBehaviour
 
     public void LoadCompetitorsList()
     {
-       CheckListToLoad();
+        CheckListToLoad();
 
-        if ((listToLoad.Count > 0)&&(!competitorsLoaded))
+        if ((listToLoad.Count > 0) && (!competitorsLoaded))
         {
+            ActivateHeaders();
             foreach (Player competitor in listToLoad)
             {
                 playerDataObject = Instantiate(playerDataPrefab, playerDataParent);
@@ -43,18 +46,20 @@ public class PlayerDataLoader : MonoBehaviour
 
     public void UpdateCompetitors()
     {
-        foreach (GameObject obj in gameObjects)
+        if (!listFrozen)
         {
-            Destroy(obj);
-            competitorsLoaded = false;
+            foreach (GameObject obj in gameObjects)
+            {
+                Destroy(obj);
+                competitorsLoaded = false;
+            }
+            LoadCompetitorsList();
         }
-        LoadCompetitorsList();
-
     }
 
     public List<Player> CheckListToLoad()
     {
-        
+
         if (gameObject.CompareTag("favourites_list"))
         {
             listToLoad = competition.players;
@@ -85,19 +90,36 @@ public class PlayerDataLoader : MonoBehaviour
         }
         else if (gameObject.CompareTag("firstRun_list"))
         {
-            if (competition.firstRunClassification.Count > 0)
+            if ((competition.firstRunClassification.Count > 0) && (!listFrozen))
             {
                 listToLoad = competition.firstRunClassification;
             }
-            //else
-            //{
-            //    listToLoad = competition.finishers;
-            //}
+            else if (competition.currentRun > 1)
+            {
+                listFrozen = true;
+            }
+
+        }
+        else if (gameObject.CompareTag("secondRun_list"))
+        {
+            if ((competition.secondRunClassification.Count > 0) && (!listFrozen))
+            {
+                listToLoad = competition.secondRunClassification;
+            }
+             else if (competition.currentRun > 2)
+            {
+                listFrozen = true;
+            }
+
         }
 
+            return listToLoad;
 
-        return listToLoad;
-      
+    }
+
+    public void ActivateHeaders()
+    {
+        header.SetActive(true); 
     }
 }
 

@@ -49,7 +49,8 @@ public class PlayerDisplay : MonoBehaviour
     {
         competition = Competition.Instance;
         string boldSecondName = "<b>" + player.secondName + "</b>";
-        if ((gameObject.CompareTag("finishers_list")) || (gameObject.CompareTag("firstRun_list")))
+        if ((gameObject.CompareTag("finishers_list")) || (gameObject.CompareTag("firstRun_list")) ||
+            (gameObject.CompareTag("secondRun_list")))
         {
             ShowPosition(player);
             ShowFlag(player);
@@ -104,6 +105,10 @@ public class PlayerDisplay : MonoBehaviour
         {
             position.text = player.firstRunPlace.ToString();
         }
+        else if (gameObject.CompareTag("secondRun_list"))
+        {
+            position.text = player.secondRunPlace.ToString();
+        }
         else
         {
             position.text = player.place.ToString();
@@ -118,19 +123,34 @@ public class PlayerDisplay : MonoBehaviour
         {
             if (player.firstRunPlace == 1)
             {
-                timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints).ToString();
+                timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints").ToString();
             }
             else
             {
                 timeDisplay.text = player.ConvertDifference(competition.bestFirstRunPerformance - player.firstRunPoints).ToString();
             }
         }
+        else if (gameObject.CompareTag("secondRun_list"))
+        {
+            if (player.secondRunPlace == 1)
+            {
+                timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance - player.firstRunPoints, "secondRunPoints").ToString();
+            }
+            else
+            {
+                timeDisplay.text = player.ConvertDifference(competition.bestSecondRunPerformance - player.secondRunPoints).ToString();
+            }
+        }
 
         else
         {
-            if (player.place == 1)
+            if ((player.place == 1) && (competition.currentRun < 2))
             {
-                timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance).ToString();
+               timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints").ToString();
+            }
+            else if ((player.place == 1) && (competition.currentRun > 1))
+            {
+                timeDisplay.text = player.ConvertPointsToTime(player.finalPerformance, "finalPoints").ToString();
             }
             else
             {
@@ -140,25 +160,25 @@ public class PlayerDisplay : MonoBehaviour
         }
     }
 
-        public void ShowFlag(Player player)
-        {
-            playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
-        }
+    public void ShowFlag(Player player)
+    {
+        playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
+    }
 
-        public void HighlightCurrentCompetitor(Player player)
-        {
-            if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase)
-                && (competition.myState != GameState.EndOfRun))
+    public void HighlightCurrentCompetitor(Player player)
+    {
+        if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase)
+            && (competition.myState != GameState.EndOfRun))
 
+        {
+            if (player.secondName == competition.currentCompetitor.secondName)
             {
-                if (player.secondName == competition.currentCompetitor.secondName)
-                {
-                    currentCompetitorPanel.SetActive(true);
-                }
-                else
-                {
-                    currentCompetitorPanel.SetActive(false);
-                }
+                currentCompetitorPanel.SetActive(true);
+            }
+            else
+            {
+                currentCompetitorPanel.SetActive(false);
             }
         }
     }
+}

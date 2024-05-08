@@ -1,5 +1,7 @@
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -39,7 +41,8 @@ public class Competition : MonoBehaviour
     [SerializeField] GameObject outOf15Section;
     [SerializeField] GameObject didNotFinishSection;
     [SerializeField] GameObject disqualifiedSection;
-    [SerializeField] GameObject endOfRunList;
+    [SerializeField] GameObject endOfFirstRunList;
+    [SerializeField] GameObject endOfSecondRunList;
     [SerializeField] GameObject[] listsSection;
 
     [Header("Panels")]
@@ -50,6 +53,7 @@ public class Competition : MonoBehaviour
     [SerializeField] private GameObject DecorationPanel;
 
     public GameObject runButton;
+    public GameObject tabSection;
     public List<Player> players = new List<Player>();
     public List<Player> finishers = new List<Player>();
     public List<Player> currentClassification = new List<Player>();
@@ -77,6 +81,7 @@ public class Competition : MonoBehaviour
     public bool competitionIsOver = false;
     public float bestFinalPerformance;
     public float bestFirstRunPerformance;
+    public float bestSecondRunPerformance;  
     public float bestRunPerformance;
     public GameState myState { get; set; }
     public bool eventHappened = false;
@@ -89,6 +94,8 @@ public class Competition : MonoBehaviour
     public static event Action<GameState> OnBeforeStateChanged;
     public static event Action<GameState> OnAfterStateChanged;
     public Canvas canvasGroup;
+    CultureInfo ci = new CultureInfo("en-US");
+    public Camera mainCam;
 
 
     public enum GameState
@@ -136,17 +143,21 @@ public class Competition : MonoBehaviour
         // disqualified = new List<Player> { };    
         currentCompetitor = null;
         competitionIsOver = false;
-        competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        //competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        competitionName.text = gamemanager.competitionType.competitionDate.ToString("d MMMM yyyy", ci) +", "+
+            gamemanager.competitionType.competitionVenueName.ToString() + ", " +
+            gamemanager.competitionType.competitionName.ToString() ;  
         _calculatePerformance = FindObjectOfType<CalculatePerformance>();
         numberOfFavourites = players.Count;
         //currentRun = 1;
+        //shake = FindObjectOfType<ScreenShake>();
 
     }
 
     void Update()
     {
         // GameStatesManager();
-        HandleNextRun();
+        //HandleNextRun();
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
@@ -158,6 +169,9 @@ public class Competition : MonoBehaviour
     public void Run()
     {
         //SpawnEndOfRunClassification();
+        // shake.start = true;
+        Camera.main.GetComponent<ScreenShake>().CameraShake();
+        mainCam.transform.DOShakePosition(2.0f, 100.0f, 10, 10f, true, true);
         if (competitionIsOver)
         {
             DecorationPhase(); return;
@@ -182,9 +196,11 @@ public class Competition : MonoBehaviour
         thirdD6 = Random.Range(1, 7);
         //}
         competitionRoll = firstD6 + secondD6;
-        surprise.CheckSurprise(currentCompetitor); //SURPRISE CHECK
-
-        CheckEvent(currentCompetitor);           // EVENT CHECK
+        if ((outsiders.Count > 0) || (underdogs.Count > 0))
+        {
+            surprise.CheckSurprise(currentCompetitor); //SURPRISE CHECK
+            CheckEvent(currentCompetitor);           // EVENT CHECK
+        }
         dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
         if ((currentCompetitorNo >= 0) && (currentCompetitor.myState == Player.PlayerState.Running)
              && (!surprise.surpriseEffect) && (myState == GameState.CompetitionPhase)) // and Event resolved with no surprise
@@ -220,6 +236,8 @@ public class Competition : MonoBehaviour
                 if (!playerExists)
                 {
                     finishers.Add(currentCompetitor);
+                    secondRunClassification.Add(currentCompetitor);
+                    UpdateSecondRun();
                 }
             }
             eventHappened = false;
@@ -229,9 +247,11 @@ public class Competition : MonoBehaviour
             UpdatePlayerList(players, startingList);
             currentCompetitor.CalculateFinal();
             updateResults();
+            
             UpdateLists();
             currentCompetitorNo--;
             partsOfRun = 0;
+            HandleNextRun(); // przesuniête tutaj z UPDATE();   
         }
         else
         {
@@ -244,8 +264,8 @@ public class Competition : MonoBehaviour
         if (player.myState == Player.PlayerState.Running)
         {
             finalText.text += "\n" + player.secondName +
-            ": AVERAGE: " + player.averagePerformance +
-            ", RUN MODIFIERS: " + player.actualModifiers(currentRun).ToString("F2") + ", SUM: ";
+            ": AVG: " + player.averagePerformance +
+            ", RUN MOD: " + player.actualModifiers(currentRun).ToString("F2") + ", SUM: ";
             if (currentRun == 2)
             {
                 finalText.text += player.secondRunPoints.ToString();
@@ -306,7 +326,8 @@ public class Competition : MonoBehaviour
     public void UpdateLists()
     {
         finishersSection.SetActive(true);
-        endOfRunList.SetActive(false);
+        endOfFirstRunList.SetActive(false);
+        endOfSecondRunList.SetActive(false);
         for (int i = 0; i < listsSection.Length; i++)
         {
             listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
@@ -316,16 +337,45 @@ public class Competition : MonoBehaviour
     {
         if (currentRun > 1)
         {
-            endOfRunList.SetActive(true);
+            endOfFirstRunList.SetActive(true);
+            endOfSecondRunList.SetActive(false);
+            finishersSection.SetActive(false);
+            for (int i = 0; i < listsSection.Length; i++)
+            {
+                listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
+            }
+            endOfFirstRunList.GetComponent<PlayerDataLoader>().listFrozen = true;
+        }
+        else
+        {
+            UpdateLists();
+        }
+    }
+
+    public void ShowSecondRunList()
+    {
+        if (currentRun>1)
+        {
+            endOfFirstRunList.SetActive(false);
+            endOfSecondRunList.SetActive(true);
             finishersSection.SetActive(false);
             for (int i = 0; i < listsSection.Length; i++)
             {
                 listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
             }
         }
-        else
+    }
+
+    public void UpdateSecondRun()
+    {
+        secondRunClassification.Sort((a, b) => b.secondRunPoints.CompareTo(a.secondRunPoints));
+        for (int i = 0; i < secondRunClassification.Count; i++)
         {
-            UpdateLists();
+            secondRunClassification[i].secondRunPlace = i + 1;
+        }
+        if (secondRunClassification.Count > 0)
+        {
+            bestSecondRunPerformance = secondRunClassification[0].secondRunPoints;
         }
     }
 
@@ -361,7 +411,6 @@ public class Competition : MonoBehaviour
                 finishersList.text += fullText;
                 resultsList.text += "<color=white>" + TimeDisplay(finishers[i]) + "<color=white>";
             }
-
         }
     }
 
@@ -403,7 +452,7 @@ public class Competition : MonoBehaviour
         {
             if (player.place == 1)
             {
-                return player.ConvertPointsToTime(player.finalPerformance); // + "\n";
+                return player.ConvertPointsToTime(player.finalPerformance, "finalPoints"); // + "\n";
             }
             else
             {
@@ -416,16 +465,16 @@ public class Competition : MonoBehaviour
             {
                 if (player.secondRunPoints != 0)
                 {
-                    return player.ConvertPointsToTime(player.firstRunPoints) + "......" + player.ConvertPointsToTime(player.secondRunPoints) + "\n";
+                    return player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints") + "......" + player.ConvertPointsToTime(player.secondRunPoints, "secondRunPoints") + "\n";
                 }
                 else
                 {
-                    return player.ConvertPointsToTime(player.firstRunPoints) + "......" + "\n";
+                    return player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints") + "......" + "\n";
                 }
             }
             else
             {
-                return player.ConvertPointsToTime(player.finalPerformance) + "\n";
+                return player.ConvertPointsToTime(player.finalPerformance, "finalPoints") + "\n";
             }
         }
     }
@@ -450,7 +499,7 @@ public class Competition : MonoBehaviour
             if (currentRun > Gamemanager.numbersOfRun) // DECORATION PHASE starts
             {
                 competitionIsOver = true;
-                currentCompetitor = null;
+                //currentCompetitor = null;
                 SpawnEndOfRunClassification();
                 // FINAL COMMENTS appear
                 runButton.GetComponentInChildren<TextMeshProUGUI>().text = "DECORATION".ToString();
@@ -459,14 +508,17 @@ public class Competition : MonoBehaviour
             else
             {
                 ChangeState(GameState.EndOfRun);
+                tabSection.SetActive(true);
                 firstRunClassification.AddRange(finishers);
                 competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
                 // runButton.GetComponentInChildren<TextMeshProUGUI>().text = "NEXT RUN".ToString();
                 players.AddRange(finishers);
                 bestFirstRunPerformance = finishers[0].firstRunPoints;
+                //bestSecondRunPerformance = secondRunClassification[0].secondRunPoints;
                 possibleReturnsFromOutOf15 = outOf15Competitors.Count;
-                // TODO:  create empty 2nd run list
+
                 // TODO: change weather, decrease surprise/weather effect
+                ConditionsChange();
                 UpdatePlayerList(players, startingList);
                 UpdateLists();
                 currentCompetitorNo = players.Count - 1;
@@ -491,9 +543,7 @@ public class Competition : MonoBehaviour
                 SpawnEndOfRunClassification();
                 //possible weather change, +/ -weather modifier
             }
-
         }
-
     }
 
 
@@ -518,7 +568,7 @@ public class Competition : MonoBehaviour
 
             case GameState.CompetitionPhase:
                 presentationPanel.SetActive(false);
-                endOfRunList.SetActive(false);
+                endOfFirstRunList.SetActive(false);
                 runButton.SetActive(true);
                 dicePanel.SetActive(true); break;
 
@@ -539,7 +589,7 @@ public class Competition : MonoBehaviour
                 setupButton.SetActive(false);
                 presentationPanel.SetActive(false);
                 runButton.SetActive(true);
-                endOfRunList.SetActive(true);
+                endOfFirstRunList.SetActive(true);
                 dicePanel.SetActive(false); break;
 
             case GameState.DecorationPhase:
@@ -567,8 +617,55 @@ public class Competition : MonoBehaviour
 
     public void SpawnEndOfRunClassification()
     {
-        canvasGroup.GetComponent<MoveObject>().MoveToCenter();
+        bool objectDuplicated = false;
+        if ((!objectDuplicated)&&(competitionIsOver))
+        {
+            GameObject listToCopy = finishersSection;
+            GameObject copiedObject = Instantiate(listToCopy);
+            copiedObject.transform.SetParent(canvasGroup.transform, false);
+           // copiedObject.transform.localPosition= new Vector3(0.0f, 0.0f, 0.00f);
+            //copiedObject.transform.localPosition = new Vector3(690.0f, 508.0f, 0.00f);
+            //copiedObject.DOAnchorPos(new Vector2(690.0f, 508.0f), 1.0f, false).SetEase(Ease.OutElastic);
+            objectDuplicated = true;
+            //canvasGroup.GetComponent<MoveObject>().rectTransform = copiedObject.GetComponent<RectTransform>();
+            //rectTransform.DOAnchorPos(new Vector2(690.0f, 508.0f), 1.0f, false).SetEase(Ease.OutElastic);
+            //canvasGroup.GetComponent<MoveObject>().StartCoroutine("MoveToCenter");
+        }
+
+        //    finishersSection.SetActive(true);
+        //   // GameObject finalChart = finishersSection.Clone;
+
+        //    RectTransform obj = finishersSection.GetComponent<RectTransform>();    
+        //   // obj.transform.localPosition = new Vector3(0f, 0f, 0f);
+        //    obj.transform.DOMove(new Vector3(0f, 0f, 0f), 0.2f);
+        //    obj.DOAnchorPos(new Vector2(0f, 122.0f), 1.0f, false).SetEase(Ease.OutElastic);
+        //}
+        else
+        {
+            canvasGroup.GetComponent<MoveObject>().StartCoroutine("MoveToCenter");
+        }
     }
+    
+    public void ConditionsChange()
+    {
+        float probabilityToChange = Random.Range(0.40f, 1.21f);
+        float timeModifier = probabilityToChange < 0.60 ? Random.Range(-0.09f, -0.05f) :
+                             probabilityToChange > 1.00 ? Random.Range(-0.04f, 0.09f) :
+                             -0.05f;//AVERAGE IS 0.80
+        gamemanager.surprisesModifier *= probabilityToChange;
+        gamemanager.ModifyTimes(timeModifier);
+        Debug.Log("CONDITITINS CHANGE: " + probabilityToChange.ToString("F2"));
+        Debug.Log("TIME MODIFIER: " + timeModifier.ToString("F2"));
+        Debug.Log("NEW BEST TIME: " + gamemanager.bestTimeInSec.ToString("F2"));
+        var shortEvent = FindObjectOfType<ShortEvent>();
+        shortEvent.eventObject.SetActive(true);
+        shortEvent.eventTitle.text = "CONDITIONS CHANGE";
+        shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckPrecipitationChange(probabilityToChange);  
+        shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
+        shortEvent.eventResolved = true;
+       
+    }
+
 }
 
 

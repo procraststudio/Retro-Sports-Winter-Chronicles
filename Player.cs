@@ -24,7 +24,8 @@ public class Player : MonoBehaviour
     public int secondRunModifiers { get; set; } = 0;
     public float finalPerformance { get; set; }
     public int place { get; set; }
-    public int firstRunPlace { get; set; }  
+    public int firstRunPlace { get; set; }
+    public int secondRunPlace { get; set; }
     public float totalSeconds { get; set; } = 0;
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
@@ -138,24 +139,25 @@ public class Player : MonoBehaviour
         {
             return firstRunModifiers;
         }
-        else
+        else if (currentRun== 2)
         {
             return secondRunModifiers;
         }
+        else { return 0; }  
     }
 
     public float CalculateFinal()
     {
         finalPerformance = firstRunPoints + secondRunPoints; // + Random.Range(0.00f, 1.00f);
         //finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
-
+        
         return finalPerformance;
     }
 
 
     public void GoodFormEffect()
     {
-        if ((this.grade != 'X') && (!poorFormEffect))
+        if ((this.grade != 'X') &&(this.grade != 'A') && (!poorFormEffect))
         {
             grade--;
             ranking -= 5;
@@ -207,12 +209,13 @@ public class Player : MonoBehaviour
         myState = state;
     }
 
-    public string ConvertPointsToTime(float points)
+    public string ConvertPointsToTime(float points, string typeOfPoints)
     {
-        float realTime = (secondRunPoints ==0)? FindObjectOfType<Gamemanager>().bestTimeInSec 
-           : FindObjectOfType<Gamemanager>().bestTimeInSec *2; // Real best time in secs. What if 2 runs?
+        float realTime = (!typeOfPoints.Contains("finalPoints")) ? FindObjectOfType<Gamemanager>().bestTimeInSec
+           : FindObjectOfType<Gamemanager>().bestTimeInSec * 2;//bestOverallTime; //;//*(timeModifier); // Real best time in secs. What if 2 runs?
         // Assume that 1 point = 1/100 sec
-        float realPerformance = points / 80.00f; // 80 pts to miara najlepszego wystêpu w jednej serii
+        float realPerformance = (!typeOfPoints.Contains("finalPoints")) ? points / 80.00f
+        :  points / 160.00f;// 80 pts to miara najlepszego wystêpu w jednej serii
         float differenceInSeconds = realTime - (realTime * realPerformance);
         totalSeconds = realTime + (differenceInSeconds * 0.0875f); // or 0.114
         int minutes = (int)totalSeconds / 60;
@@ -220,7 +223,6 @@ public class Player : MonoBehaviour
         int hundredths = Mathf.RoundToInt((totalSeconds - Mathf.Floor(totalSeconds)) * 100);
 
         string formattedTime = string.Format(" {0:00}:{1:00}.{2:00}", minutes.ToString(), seconds, hundredths);
-
         return formattedTime;
     }
     public string ConvertDifference(float difference)
@@ -242,7 +244,8 @@ public class Player : MonoBehaviour
          if (difference < 0) {
            string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
         }
-
+         // TODO: FIX +0.100 bug, SHOULD BE: +1.00, +1.100 should be +2.00
+         
         return formattedTime;
     }
 
