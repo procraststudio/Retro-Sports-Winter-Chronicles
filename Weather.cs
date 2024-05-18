@@ -14,7 +14,7 @@ public class Weather : MonoBehaviour
     public int firstD6;
     public int secondD6;
     public bool temperatureRolled;
-    private float pause = 0.50f;
+    private float pause = 1.00f;
     public TMP_Text buttonText;
     [SerializeField] Sprite[] diceSides;
     [SerializeField] TMP_Text[] temperatureText;
@@ -24,6 +24,9 @@ public class Weather : MonoBehaviour
     [SerializeField] GameObject precipitationImage;
     [SerializeField] Sprite[] precipitationSprites;
     [SerializeField] GameObject[] chartIndicator;
+    [SerializeField] GameObject[] weatherSections;
+    [SerializeField] GameObject setupButton;
+    [SerializeField] TMP_Text surprisesModifierText;
     public string precipitation { get; set; }
     public string snowCondition { get; set; }
     private int snowConditionModifier;
@@ -59,11 +62,11 @@ public class Weather : MonoBehaviour
         {
             case 2:
                 actualTemperature += Random.Range(-13.00f, -7.10f);
-                description = "EXTREME COLD" + "\n" + "+2 to snow condition roll";
+                description = "EXTREME COLD"; //+ "\n" + "+2 to snow condition roll";
                 snowConditionModifier += 2; weatherModifier *= 1.50f; break;//EXTREME COLD
             case 3:
                 actualTemperature += Random.Range(-7.00f, -5.10f);
-                description = "VERY COLD" + "\n" + "+1 to snow condition roll";
+                description = "VERY COLD"; // + "\n" + "+1 to snow condition roll";
                 snowConditionModifier += 1; weatherModifier *= 1.30f; precipitationModifier -= 1; break;//VERY COLD
             case 4:
                 actualTemperature += Random.Range(-5.00f, -3.10f);
@@ -79,11 +82,11 @@ public class Weather : MonoBehaviour
                 description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; break;// HOT
             case 11:
                 actualTemperature += Random.Range(5.10f, 7.00f);
-                description = "VERY HOT" + "\n" + "-1 to snow condition roll";
+                description = "VERY HOT";// + "\n" + "-1 to snow condition roll";
                 snowConditionModifier -= 1; weatherModifier *= 0.70f; precipitationModifier += 2; break;// VERY HOT
             case 12:
                 actualTemperature += Random.Range(7.10f, 13.00f);
-                description = "EXTREME HOT" + "\n" + "-2 to snow condition roll";
+                description = "EXTREME HOT"; // + "\n" + "-2 to snow condition roll";
                 snowConditionModifier -= 2; weatherModifier *= 0.50f; precipitationModifier += 3;
                 break;// EXTREME HOT
             default:
@@ -102,40 +105,24 @@ public class Weather : MonoBehaviour
         // return actualTemperature;
     }
 
-    public IEnumerator WeatherDice()
+    public IEnumerator GenerateWeather()
     {
-        //ResetWeatherCharts();
-        diceChanging = true;
-        firstD6 = Random.Range(1, 7);
-        secondD6 = Random.Range(1, 7);
-
-        //firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[firstD6 - 1];
+        setupButton.SetActive(false);
         yield return new WaitForSeconds(pause);
-        // if (diceIndex < 2)
-        // {
-        //secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[secondD6 + 5];
-        // yield return new WaitForSeconds(pause);
-        // }
-        // if (!temperatureRolled)
-        // {
         CalculateTemperature();
-        // }
-        // if (diceIndex == 1)
-        // {
+        weatherSections[0].SetActive(true);
+        yield return new WaitForSeconds(pause);
         CalculatePrecipitation();
-        // }
-        // else if (diceIndex == 2)
-        //{
+        weatherSections[1].SetActive(true);
+        yield return new WaitForSeconds(pause);
         CalculateSnowCondition();
+        weatherSections[2].SetActive(true);
+        yield return new WaitForSeconds(pause);
 
-        // }
-        //thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
-        // description.ShowDescription();
-        // weatherCharts[0].SetActive(true);
-        // TO DO:  MoveChartIndicator(firstD6 + secondD6, 0);
-        diceChanging = false;
-        diceIndex++;
-
+        weatherSections[3].SetActive(true);
+        surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        yield return new WaitForSeconds(pause);
+        setupButton.SetActive(true);
     }
 
     private void CalculateSnowCondition()
@@ -150,7 +137,7 @@ public class Weather : MonoBehaviour
         {
             snowCondition = "hard";//HARD SHOW }
         }
-        snowConditionText.text = "SNOW: " + snowCondition.ToUpper().ToString();
+        snowConditionText.text = snowCondition.ToUpper().ToString();
         descriptionTexts[2].text = snowCondition.ToUpper().ToString();
         // weatherCharts[2].SetActive(true);
         Debug.Log("WEATHER MODIFIER: " + weatherModifier);
@@ -162,7 +149,7 @@ public class Weather : MonoBehaviour
     {
         if (!weatherPhaseOver)
         {
-            StartCoroutine("WeatherDice");
+            StartCoroutine("GenerateWeather");
         }
         else
         {
@@ -214,23 +201,16 @@ public class Weather : MonoBehaviour
         descriptionTexts[1].text = precipitation.ToUpper().ToString();
         if (precipitation.Contains("snowing"))
         {
-            descriptionTexts[1].text += "\n" + "-2 to snow condition roll";
+            // descriptionTexts[1].text += "\n" + "-2 to snow condition roll";
         }
         else if (precipitation.Contains("raining"))
         {
-            descriptionTexts[1].text += "\n" + "+1 to snow condition roll";
+            // descriptionTexts[1].text += "\n" + "+1 to snow condition roll";
         }
         //  weatherCharts[1].SetActive(true);
         ChangeButtonName("NEXT");
     }
 
-    public void ResetWeatherCharts()
-    {
-        for (int i = 0; i < weatherCharts.Length; i++)
-        {
-            weatherCharts[i].SetActive(false);
-        }
-    }
 
     public void ChangeButtonName(string buttonName)
     {

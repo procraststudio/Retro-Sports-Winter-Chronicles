@@ -1,8 +1,6 @@
 using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class MoveObject : MonoBehaviour
 {
@@ -13,27 +11,30 @@ public class MoveObject : MonoBehaviour
     private void Start()
     {
 
-     //  MoveToCenter();
-        
+        //  MoveToCenter();
+
     }
 
     private void Update()
     {
-        if ((endOfFirstRunDisplayed) && (Input.GetMouseButtonDown(0))) {
-            rectTransform.transform.DOMove( new Vector3(0f, -800f, 0f), 1.0f);
-            endOfFirstRunDisplayed=false;
+        if ((endOfFirstRunDisplayed) && (Input.GetMouseButtonDown(0)))
+        {
+            rectTransform.transform.DOMove(new Vector3(0f, -800f, 0f), 1.0f);
+            endOfFirstRunDisplayed = false;
         }
     }
 
-    public IEnumerator MoveToCenter ()
+    public IEnumerator MoveToCenter()
     {
         yield return new WaitForSeconds(2.0f);
-        rectTransform.transform.localPosition = new Vector3(0f, -800f, 0f);
-        rectTransform.DOAnchorPos(new Vector2(0f, 122.0f), 1.0f, false).SetEase(Ease.OutElastic);
-        endOfFirstRunDisplayed=true;  
+        rectTransform.transform.localPosition = new Vector3(0f, -300f, 0.0f);
+        // rectTransform.transform.Rotate(Vector3.forward, 180.0f * Time.deltaTime);
+
+        rectTransform.DOAnchorPos(new Vector2(0f, 274.0f), 2.0f, false).SetEase(Ease.OutElastic);
+        endOfFirstRunDisplayed = true;
     }
 
-    
+
 }
 
 

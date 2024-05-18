@@ -30,7 +30,7 @@ public class Gamemanager : MonoBehaviour
 void Start()
     {
         competition = Competition.Instance;
-        competitionType = new CompetitionType {competitionName ="Slalom Women", competitionDate = new DateTime (1986,2,23), competitionVenueName ="Calgary"  };
+        competitionType = new CompetitionType {competitionName ="Slalom Women", competitionDate = new DateTime (1986,2,23), competitionVenueName ="Sestriere"  };
 
        // typeOfCompetition = "alpine skiing";
         // TODO: select competition type, number of runs, surprises modifier, ??number of competitors

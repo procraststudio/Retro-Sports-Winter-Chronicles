@@ -65,7 +65,7 @@ public class Dice : MonoBehaviour
 
         // description.ShowDescription();
         // SHOW COMMENTATOR FACE
-        commentatorIcon[diceIndex].SetActive(true);
+       // commentatorIcon[diceIndex].SetActive(true);
         diceChanging = false;
         diceIndex++;
     }
@@ -153,7 +153,7 @@ public class Dice : MonoBehaviour
 
     public void ShowSummaryImage(string description)
     {
-        commentatorIcon[3].SetActive(true);
+        //commentatorIcon[3].SetActive(true);
         switch (description)
         {
             case ("good"): summaryImage.GetComponent<SpriteRenderer>().sprite = summarySprites[0]; break;

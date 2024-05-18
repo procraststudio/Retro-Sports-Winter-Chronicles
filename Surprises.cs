@@ -105,9 +105,10 @@ public class Surprises : MonoBehaviour
     {
         surpriseEffect = true;
         var state = player.myState;
-       // shake.start = true; // TODO: Screen shake
-        dice.competitorImage[dice.currentCompetitorImage].transform.DOShakePosition(1.5f, 30.0f, 20, 50f, true, true);
-        dice.competitorImage[dice.currentCompetitorImage].GetComponent<SpriteRenderer>().DOFade(0.0f, 1.5f);
+       // shake.start = true; 
+       // shake IMAGE
+        //dice.competitorImage[dice.currentCompetitorImage].transform.DOShakePosition(1.5f, 30.0f, 20, 50f, true, true);
+        //dice.competitorImage[dice.currentCompetitorImage].GetComponent<SpriteRenderer>().DOFade(0.0f, 1.5f);
         switch (state)
         {
             case Player.PlayerState.OutOf15: competition.outOf15Competitors.Add(player); break;
