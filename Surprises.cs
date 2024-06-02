@@ -1,9 +1,9 @@
 using System.Collections;
 using TMPro;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
-using DG.Tweening;
 
 public class Surprises : MonoBehaviour
 {
@@ -24,6 +24,7 @@ public class Surprises : MonoBehaviour
     public float surpriseMod;
     ScreenShake shake;
     Dice dice;
+    [SerializeField] private GameObject scrollViewInfo;
 
     void Start()
     {
@@ -33,7 +34,7 @@ public class Surprises : MonoBehaviour
         gamemanager = FindObjectOfType<Gamemanager>();
         weather = FindObjectOfType<Weather>();
         currentEvent = FindObjectOfType<ShortEvent>();
-        dice = FindObjectOfType<Dice>();    
+        dice = FindObjectOfType<Dice>();
         competition = Competition.Instance;
         shake = FindObjectOfType<ScreenShake>();
         // favouritesCount = gamemanager.numberOfFavourites;
@@ -105,8 +106,8 @@ public class Surprises : MonoBehaviour
     {
         surpriseEffect = true;
         var state = player.myState;
-       // shake.start = true; 
-       // shake IMAGE
+        // shake.start = true; 
+        // shake IMAGE
         //dice.competitorImage[dice.currentCompetitorImage].transform.DOShakePosition(1.5f, 30.0f, 20, 50f, true, true);
         //dice.competitorImage[dice.currentCompetitorImage].GetComponent<SpriteRenderer>().DOFade(0.0f, 1.5f);
         switch (state)
@@ -149,9 +150,15 @@ public class Surprises : MonoBehaviour
             }
             competition.CheckIfEmptyLists();
             competition.UpdateLists();
+            dice.panelActivate(competition.partsOfRun);
+            dice.panelSurpriseEffect(competition.partsOfRun-1);   
             competition.partsOfRun = 0; // check this
-            competition.finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
+            //competition.finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
+           // scrollViewInfo.GetComponent<ScrollViewManager>().AddMessage()
             competition.eventHappened = false;
+            string msg = "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!" + "\n";
+            competition.messageWindow.GetComponent<ScrollViewManager>().AddMessage(msg);
+            //competition.message = "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!"+"\n";
             Debug.Log(player.secondName + " IS OUT OF 15/DQ/DNF! " + surpriseCompetitor.secondName + " ENTERS!");
             competition.EndRun();
         }

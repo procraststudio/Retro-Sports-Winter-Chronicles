@@ -94,9 +94,9 @@ public class ShortEvent : MonoBehaviour
                     saveRoll = 10;
                 }
                 Debug.Log("SAVE ROLL: " + saveRoll);//Convert.ToInt32(((actualCompetitor.experience - weatherModifier)/6)*100);
-                description += "BUMP!".ToUpper() + "\n" +
-                    saveRoll.ToString() + "%: the competitor stays on the route" + "\n"
-                    + (100 - saveRoll).ToString() + "%: OUT, DNF! ";
+                description += "BUMP!".ToUpper(); // + "\n" +
+                   // saveRoll.ToString() + "%: the competitor stays on the route" + "\n"
+                   // + (100 - saveRoll).ToString() + "%: OUT, DNF! ";
                 actualEvent = RolledEvents.Bump;
                 break;
             case 2:
@@ -105,31 +105,31 @@ public class ShortEvent : MonoBehaviour
                 {
                     saveRoll = 10;
                 }
-                description += "CURVE!".ToUpper() + "\n" +
-                    saveRoll.ToString() + "%: no DQ" + "\n"
-                    + (100 - saveRoll).ToString() + "%: DISQUALIFIED! ";
+                description += "CURVE!".ToUpper(); // + "\n" +
+                   // saveRoll.ToString() + "%: no DQ" + "\n"
+                   // + (100 - saveRoll).ToString() + "%: DISQUALIFIED! ";
                 actualEvent = RolledEvents.Curve;
                 break;
             case 3:
 
-                description += "WEATHER EFFECT!".ToUpper() + "\n" + "If snowing/raining: BUMP. " +
-                    "OTHERWISE: If 7 or less competitors to run: CLEARED RUN" + "\n" +
-                    "If 8 or more: POOR STRATEGY";
+                description += "WEATHER EFFECT!".ToUpper(); // + "\n" + "If snowing/raining: BUMP. " +
+                    //"OTHERWISE: If 7 or less competitors to run: CLEARED RUN" + "\n" +
+                   // "If 8 or more: POOR STRATEGY";
                 actualEvent = RolledEvents.Weather;
                 break;
             case 4:
-                description += "TAKING RISK!".ToUpper() + "\n" + "Roll d6. If result EVEN: +d6 points. " +
-                    "\n" + "If result ODD: -d6 points." + "\n" + "If d6 is 1 and GRADE C or worse: OUT OF 15/DNF/DQ.";
+                description += "TAKING RISK!".ToUpper(); // + "\n" + "Roll d6. If result EVEN: +d6 points. " +
+                  //  "\n" + "If result ODD: -d6 points." + "\n" + "If d6 is 1 and GRADE C or worse: OUT OF 15/DNF/DQ.";
                 actualEvent = RolledEvents.Risk;
                 break;
             case 5:
-                description += "EXPERIENCE MATTERS".ToUpper() + "\n" + "Roll d6. If EXP 0 or 3 see d6. " +
-                    "\n" + "If 1: -6 points, if 6: +6 points." + "\n" + "OTHERWISE: If HARD snow +d6 points.";
+                description += "EXPERIENCE MATTERS".ToUpper(); // + "\n" + "Roll d6. If EXP 0 or 3 see d6. " +
+                   // "\n" + "If 1: -6 points, if 6: +6 points." + "\n" + "OTHERWISE: If HARD snow +d6 points.";
                 actualEvent = RolledEvents.Talent;
                 break;
             case 6:
-                description += "BIG SURPRISE!".ToUpper() + "\n" + "If 2nd run: competitor from OUT OF 15 is back. " +
-                    "\n" + "OTHERWISE: UNDERDOG (with +2 grade) enters.";
+                description += "BIG SURPRISE!".ToUpper(); // + "\n" + "If 2nd run: competitor from OUT OF 15 is back. " +
+                   // "\n" + "OTHERWISE: UNDERDOG (with +2 grade) enters.";
                 actualEvent = RolledEvents.Surprise;
                 break;
 
@@ -148,7 +148,7 @@ public class ShortEvent : MonoBehaviour
         eventRolled = false;
         eventRoll = Random.Range(1, 7);
         eventTitle.text = "EVENT".ToString();
-        descriptionText.text += "\n" + "-------------------------------------------" + "\n"; // + "Roll is: " + eventRoll + ". ";
+        descriptionText.text += "\n" + ">>>>>" ; // + "Roll is: " + eventRoll + ". ";
 
         switch (actualEvent)
         {
@@ -196,7 +196,7 @@ public class ShortEvent : MonoBehaviour
     {
         if ((weather.precipitation.Contains("snowing")) || (weather.precipitation.Contains("raining")))
         {
-            descriptionText.text += "DANGEROUS BUMP... ";
+            descriptionText.text += "OOPS! DANGEROUS BUMP... ";
             BumpTest();
         }
         else
@@ -217,7 +217,7 @@ public class ShortEvent : MonoBehaviour
 
     private void RiskTest()
     {
-        descriptionText.text += "ROLL IS: " + eventRoll + ". ";
+        //descriptionText.text += "ROLL IS: " + eventRoll + ". ";
 
         if ((eventRoll == 1) && (actualCompetitor.grade >= 'C'))
         {
@@ -246,13 +246,13 @@ public class ShortEvent : MonoBehaviour
         else
         {
             actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll * 2);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " -" + (-eventRoll * 2) + " pts. ";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " " + (-eventRoll * 2) + " pts. ";
         }
     }
 
     private void TalentTest()
     {
-        descriptionText.text += "ROLL IS: " + eventRoll + ". ";
+        //descriptionText.text += "ROLL IS: " + eventRoll + ". ";
         if ((actualCompetitor.experience == 0) || (actualCompetitor.experience == 3))
         {
             if (eventRoll == 1)

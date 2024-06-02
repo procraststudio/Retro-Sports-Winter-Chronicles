@@ -1,7 +1,8 @@
+using DG.Tweening;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using DG.Tweening;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class Dice : MonoBehaviour
@@ -19,6 +20,7 @@ public class Dice : MonoBehaviour
     [SerializeField] GameObject summaryImage;
     [SerializeField] Sprite[] summarySprites;
     [SerializeField] Sprite[] skiersIcons;
+    [SerializeField] GameObject[] panelsSections;
     public bool diceActive;
     public int diceIndex;
     RunDescription description;
@@ -27,8 +29,7 @@ public class Dice : MonoBehaviour
     private bool diceChanging;
     public int currentCompetitorImage;
     public Sprite currentSkierIcon;
-   
-
+    public RectTransform rectTransform;
 
     void Start()
     {
@@ -41,6 +42,7 @@ public class Dice : MonoBehaviour
         currentSkierIcon = skiersIcons[0];
         ResetTimeGapBackgrounds();
         ResetDice();
+
     }
 
 
@@ -55,8 +57,10 @@ public class Dice : MonoBehaviour
 
     public IEnumerator showDice()
     {
+        int sectorNumber = competition.partsOfRun;
         diceChanging = true;
-        StartCoroutine("animateEffect");
+        // StartCoroutine("animateEffect");
+        panelActivate(sectorNumber);
         firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.firstD6 - 1];
         yield return new WaitForSeconds(pause);
         secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.secondD6 + 5];
@@ -64,8 +68,8 @@ public class Dice : MonoBehaviour
         thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
 
         // description.ShowDescription();
-        // SHOW COMMENTATOR FACE
-       // commentatorIcon[diceIndex].SetActive(true);
+
+        // commentatorIcon[diceIndex].SetActive(true);
         diceChanging = false;
         diceIndex++;
     }
@@ -92,7 +96,7 @@ public class Dice : MonoBehaviour
 
     public void MoveEffect(GameObject obj)
     {
-       // obj.transform.DOMoveX(0.02f, 0.3f, false);
+        // obj.transform.DOMoveX(0.02f, 0.3f, false);
 
     }
 
@@ -104,10 +108,12 @@ public class Dice : MonoBehaviour
             {
                 allDices[i].GetComponent<SpriteRenderer>().sprite = null;
             }
-            for (int i = 0; i < commentatorIcon.Length; i++)
-            {
-                commentatorIcon[i].SetActive(false);
-            }
+
+            //for (int i = 0; i < panelsSections.Length; i++)
+            //{
+            //    panelsSections[i].GetComponent<Image>().color = new Color(255, 255, 255, 100f);
+            //}
+
             timeGapTexts[0].text = "";
             timeGapTexts[1].text = "";
             timeGapTexts[2].text = "";
@@ -161,6 +167,28 @@ public class Dice : MonoBehaviour
             default: summaryImage.GetComponent<SpriteRenderer>().sprite = summarySprites[1]; break;
         }
     }
+
+    public void panelActivate(int sectorNumber)
+    {
+        switch (sectorNumber)
+        {
+            case 1:
+                panelsSections[0].SetActive(false); panelsSections[1].SetActive(true); panelsSections[2].SetActive(true); break;
+            case 2:
+                panelsSections[0].SetActive(true); panelsSections[1].SetActive(false); panelsSections[2].SetActive(true); break;
+            case 3:
+                panelsSections[0].SetActive(true); panelsSections[1].SetActive(true); panelsSections[2].SetActive(false); break;
+        }
+    }
+
+    public void panelSurpriseEffect(int sectorNumber) //TODO: RED COLOR
+    {
+       // panelsSections[sectorNumber].GetComponent<Image>().color = new Color(255, 0, 0, 140f);
+        // panelsSections[sectorNumber].GetComponent<RectTransform>().DOAnchorPos(new Vector2(0f, 274.0f), 2.0f, false).SetEase(Ease.OutElastic);
+        panelsSections[sectorNumber].GetComponentInParent<RectTransform>().DOShakePosition(1.5f, 100.0f, 10, 10f, true, true);
+      //  panelsSections[sectorNumber].GetComponent<Image>().DOFade(100f, 2f);
+    }
+
 
 
 }

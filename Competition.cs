@@ -17,7 +17,7 @@ public class Competition : MonoBehaviour
     public int performance;
     public int partsOfRun;
     public TextMeshProUGUI textMeshPro;
-    [SerializeField] public TMP_Text finalText;
+    //[SerializeField] public TMP_Text finalText; // scrollViewText
     [SerializeField] TMP_Text startingList;
     [SerializeField] public TMP_Text outsidersList;
     [SerializeField] public TMP_Text underdogsList;
@@ -29,9 +29,11 @@ public class Competition : MonoBehaviour
     [SerializeField] TMP_Text secondRunResults;
     [SerializeField] TMP_Text[] timeDifferenceText;
     [SerializeField] TMP_Text competitionName;
+    public string message;
     [SerializeField] private GameObject setupButton;
     [SerializeField] private GameObject eventButton;
     [SerializeField] private PlayerDisplay _playerDisplay;
+    [SerializeField] public GameObject messageWindow;
 
     [Header("List Sections")]
     [SerializeField] GameObject startersSection;
@@ -50,6 +52,7 @@ public class Competition : MonoBehaviour
     public GameObject presentationPanel;
     public GameObject eventPanel;
     public GameObject competitorPanel;
+    public GameObject scrollViewPanel;
     [SerializeField] private GameObject DecorationPanel;
 
     public GameObject runButton;
@@ -81,7 +84,7 @@ public class Competition : MonoBehaviour
     public bool competitionIsOver = false;
     public float bestFinalPerformance;
     public float bestFirstRunPerformance;
-    public float bestSecondRunPerformance;  
+    public float bestSecondRunPerformance;
     public float bestRunPerformance;
     public GameState myState { get; set; }
     public bool eventHappened = false;
@@ -143,10 +146,11 @@ public class Competition : MonoBehaviour
         // disqualified = new List<Player> { };    
         currentCompetitor = null;
         competitionIsOver = false;
-        //competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
-        competitionName.text = gamemanager.competitionType.competitionDate.ToString("d MMMM yyyy", ci) +", "+
-            gamemanager.competitionType.competitionVenueName.ToString() + ", " +
-            gamemanager.competitionType.competitionName.ToString() ;  
+        competitionName.text = gamemanager.competitionName.ToString() + ". RUN " + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        //DateTime DISPLAY:
+        //competitionName.text = gamemanager.competitionType.competitionDate.ToString("d MMMM yyyy", ci) +", "+
+        //   gamemanager.competitionType.competitionVenueName.ToString() + ", " +
+        //   gamemanager.competitionType.competitionName.ToString() ;  
         _calculatePerformance = FindObjectOfType<CalculatePerformance>();
         numberOfFavourites = players.Count;
         //currentRun = 1;
@@ -183,18 +187,10 @@ public class Competition : MonoBehaviour
         _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
         partsOfRun++;
 
-        //if (partsOfRun == 3)
-        //{
-        //    firstD6 = 4;
-        //    secondD6 = 4;
-        //    thirdD6 = 6;
-        //}
-        //else
-        //{
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
         thirdD6 = Random.Range(1, 7);
-        //}
+       
         competitionRoll = firstD6 + secondD6;
         if ((outsiders.Count > 0) || (underdogs.Count > 0))
         {
@@ -247,7 +243,7 @@ public class Competition : MonoBehaviour
             UpdatePlayerList(players, startingList);
             currentCompetitor.CalculateFinal();
             updateResults();
-            
+
             UpdateLists();
             currentCompetitorNo--;
             partsOfRun = 0;
@@ -261,30 +257,36 @@ public class Competition : MonoBehaviour
     }
     public void showResults(Player player)
     {
-        if (player.myState == Player.PlayerState.Running)
+
+        if (player.myState == Player.PlayerState.Running) //"\n"
         {
-            finalText.text += "\n" + player.secondName +
-            ": AVG: " + player.averagePerformance +
-            ", RUN MOD: " + player.actualModifiers(currentRun).ToString("F2") + ", SUM: ";
+            message = player.secondName.ToString() +
+            ":" + "\n" + "AVG: " + player.averagePerformance.ToString() +
+            "\n" + "RUN MOD: " + player.actualModifiers(currentRun).ToString("F2") + "\n" +
+            "SECTOR SUM: "+ (player.averagePerformance + player.actualModifiers(currentRun)).ToString("F2")+
+            "\n" +"SUM: ";
             if (currentRun == 2)
             {
-                finalText.text += player.secondRunPoints.ToString();
+                message += player.secondRunPoints.ToString("F2");
             }
             else
             {
-                finalText.text += player.firstRunPoints.ToString("F2");
+                message += player.firstRunPoints.ToString("F2");
             }
-            finalText.text += ". TOTAL: " + player.finalPerformance.ToString("F2");
+            message += "\n" + "TOTAL: " + player.finalPerformance.ToString("F2") + "\n";
 
         }
         else if ((myState == GameState.PresentationPhase) && (didNotStarted != null))
         {
-            finalText.text += "DID NOT STARTED: ";
+            scrollViewPanel.SetActive(true);
+            message = "DID NOT STARTED: ";
             foreach (Player item in didNotStarted)
             {
-                finalText.text += item.secondName.ToString() + " ";
+                message += item.secondName.ToString() + " ";
             }
         }
+        messageWindow.GetComponent<ScrollViewManager>().AddMessage(message);
+
     }
 
     public void UpdatePlayerList(List<Player> list, TMP_Text listText)
@@ -354,7 +356,7 @@ public class Competition : MonoBehaviour
 
     public void ShowSecondRunList()
     {
-        if (currentRun>1)
+        if (currentRun > 1)
         {
             endOfFirstRunList.SetActive(false);
             endOfSecondRunList.SetActive(true);
@@ -557,6 +559,7 @@ public class Competition : MonoBehaviour
                 weatherPanel.SetActive(true);
                 runButton.SetActive(false);
                 dicePanel.SetActive(false);
+                scrollViewPanel.SetActive(false);
                 presentationPanel.SetActive(false); break;
 
             case GameState.PresentationPhase:
@@ -570,7 +573,8 @@ public class Competition : MonoBehaviour
                 presentationPanel.SetActive(false);
                 endOfFirstRunList.SetActive(false);
                 runButton.SetActive(true);
-                dicePanel.SetActive(true); break;
+                dicePanel.SetActive(true);
+                scrollViewPanel.SetActive(true); break;
 
             case GameState.CheckSurprisePhase:
                 presentationPanel.SetActive(false);
@@ -590,6 +594,7 @@ public class Competition : MonoBehaviour
                 presentationPanel.SetActive(false);
                 runButton.SetActive(true);
                 endOfFirstRunList.SetActive(true);
+                scrollViewPanel.SetActive(true);
                 dicePanel.SetActive(false); break;
 
             case GameState.DecorationPhase:
@@ -598,7 +603,8 @@ public class Competition : MonoBehaviour
                 presentationPanel.SetActive(false);
                 runButton.SetActive(false);
                 dicePanel.SetActive(false);
-                competitorPanel.SetActive(false); break;
+                competitorPanel.SetActive(false);
+                scrollViewPanel.SetActive(false); break;
 
             default: throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
@@ -618,12 +624,12 @@ public class Competition : MonoBehaviour
     public void SpawnEndOfRunClassification()
     {
         bool objectDuplicated = false;
-        if ((!objectDuplicated)&&(competitionIsOver))
+        if ((!objectDuplicated) && (competitionIsOver))
         {
             GameObject listToCopy = finishersSection;
             GameObject copiedObject = Instantiate(listToCopy);
             copiedObject.transform.SetParent(canvasGroup.transform, false);
-           // copiedObject.transform.localPosition= new Vector3(0.0f, 0.0f, 0.00f);
+            // copiedObject.transform.localPosition= new Vector3(0.0f, 0.0f, 0.00f);
             //copiedObject.transform.localPosition = new Vector3(690.0f, 508.0f, 0.00f);
             //copiedObject.DOAnchorPos(new Vector2(690.0f, 508.0f), 1.0f, false).SetEase(Ease.OutElastic);
             objectDuplicated = true;
@@ -645,7 +651,7 @@ public class Competition : MonoBehaviour
             canvasGroup.GetComponent<MoveObject>().StartCoroutine("MoveToCenter");
         }
     }
-    
+
     public void ConditionsChange()
     {
         float probabilityToChange = Random.Range(0.40f, 1.21f);
@@ -659,11 +665,11 @@ public class Competition : MonoBehaviour
         Debug.Log("NEW BEST TIME: " + gamemanager.bestTimeInSec.ToString("F2"));
         var shortEvent = FindObjectOfType<ShortEvent>();
         shortEvent.eventObject.SetActive(true);
-        shortEvent.eventTitle.text = "CONDITIONS CHANGE";
-        shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckPrecipitationChange(probabilityToChange);  
-        shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
+        // shortEvent.eventTitle.text = "CONDITIONS CHANGE";
+        shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckPrecipitationChange(probabilityToChange);
+        //shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
         shortEvent.eventResolved = true;
-       
+
     }
 
 }

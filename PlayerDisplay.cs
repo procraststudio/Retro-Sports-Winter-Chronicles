@@ -68,7 +68,7 @@ public class PlayerDisplay : MonoBehaviour
 
         else
         {
-            competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
+            competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper()+ "  " + player.nationality;
             competitorGrade.text = player.grade.ToString();
             competitorExperience.text = player.experience.ToString();
             competitorRanking.text = player.ranking.ToString();

@@ -14,6 +14,8 @@ public class GameStart : MonoBehaviour
     public List<GameObject> winterGames = new List<GameObject>();
     public bool winterOlympicsMode = false;
     public CanvasGroup canvasGroup;
+    [SerializeField] public CompetitionType [] availableCompetitions;
+    public static CompetitionType currentCompetition;
 
     void Start()
     {
@@ -61,6 +63,7 @@ public class GameStart : MonoBehaviour
     }
     public void StartAlpineSki()
     {
+        currentCompetition = availableCompetitions[0]; 
         SceneManager.LoadScene(1);
     }
     public void BackToMenu()

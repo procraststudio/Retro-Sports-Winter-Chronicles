@@ -19,6 +19,7 @@ public class Weather : MonoBehaviour
     [SerializeField] Sprite[] diceSides;
     [SerializeField] TMP_Text[] temperatureText;
     [SerializeField] TMP_Text snowConditionText;
+    [SerializeField] TMP_Text precipitationText;
     [SerializeField] GameObject[] weatherCharts;
     [SerializeField] TMP_Text[] descriptionTexts;
     [SerializeField] GameObject precipitationImage;
@@ -43,7 +44,6 @@ public class Weather : MonoBehaviour
         diceIndex = 0;
         precipitation = string.Empty;
         temperatureRolled = false;
-        //   ResetWeatherCharts();
         weatherPhaseOver = false;
         weatherModifier = 1.00f; //default
         venueLoader = FindObjectOfType<Gamemanager>().GetComponent<VenueLoader>();
@@ -138,7 +138,8 @@ public class Weather : MonoBehaviour
             snowCondition = "hard";//HARD SHOW }
         }
         snowConditionText.text = snowCondition.ToUpper().ToString();
-        descriptionTexts[2].text = snowCondition.ToUpper().ToString();
+
+        descriptionTexts[1].text = snowCondition.ToUpper().ToString();
         // weatherCharts[2].SetActive(true);
         Debug.Log("WEATHER MODIFIER: " + weatherModifier);
         ChangeButtonName("PRESENTATION");
@@ -177,7 +178,22 @@ public class Weather : MonoBehaviour
         }
         else
         {
-            precipitation = "sunny"; // OR OVERCAST
+            if (chance > 47)
+            {
+                precipitation = "very windy";
+            }
+            else if ((chance > 41) && (chance < 48))
+            {
+                precipitation = "overcast";
+            }
+            else if ((chance > 35) && (chance < 42))
+            {
+                precipitation = "windy";
+            }
+            else
+            {
+                precipitation = "sunny";
+            }
         }
         //TO DO if roll==30 Chinook wind - special effect
 
@@ -198,16 +214,9 @@ public class Weather : MonoBehaviour
         //        // TODO case 11: CHINOOK WIND Special weather effect
 
         //}
-        descriptionTexts[1].text = precipitation.ToUpper().ToString();
-        if (precipitation.Contains("snowing"))
-        {
-            // descriptionTexts[1].text += "\n" + "-2 to snow condition roll";
-        }
-        else if (precipitation.Contains("raining"))
-        {
-            // descriptionTexts[1].text += "\n" + "+1 to snow condition roll";
-        }
-        //  weatherCharts[1].SetActive(true);
+        descriptionTexts[2].text = precipitation.ToUpper().ToString();
+        precipitationText.text = precipitation.ToUpper().ToString();
+
         ChangeButtonName("NEXT");
     }
 
@@ -219,13 +228,13 @@ public class Weather : MonoBehaviour
 
     public string CheckPrecipitationChange(float chance)
     {
-        string weatherChangeInfo = "WEATHER DIDN'T CHANGE ";
+        string weatherChangeInfo = ">>>>>WEATHER DIDN'T CHANGE ";
         if (chance > 1.00f)
         {
             if ((precipitation.Contains("snowing")) || (precipitation.Contains("raining")))
             {
                 Debug.Log("SNOW/RAIN STOPPED");
-                weatherChangeInfo = "SNOW/RAIN STOPPED. ";
+                weatherChangeInfo = ">>>>>SNOW/RAIN STOPPED. ";
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = null;
                 weatherModifier -= 0.20f;
                 precipitation = "";
@@ -234,7 +243,7 @@ public class Weather : MonoBehaviour
         else if ((chance < 0.60f) && (chance > 0.46f) && (!precipitation.Contains("snowing")))
         {
             Debug.Log("SNOW STARTED");
-            weatherChangeInfo = "SNOW STARTED. ";
+            weatherChangeInfo = ">>>>SNOW STARTED. ";
             snowConditionModifier -= 1;
             weatherModifier *= 1.20f;
             precipitation = "snowing";
@@ -244,11 +253,12 @@ public class Weather : MonoBehaviour
         else if ((chance < 0.47f) && (!precipitation.Contains("raining")))
         {
             Debug.Log("IT STARTED TO RAIN");
-            weatherChangeInfo = "IT STARTED TO RAIN. ";
+            weatherChangeInfo = ">>>>IT STARTED TO RAIN. ";
             snowConditionModifier += 1;
             weatherModifier *= 1.40f;
             precipitation = "raining";
             precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1];
+            descriptionTexts[1].text = precipitation.ToUpper().ToString();
         }
         return weatherChangeInfo;
     }

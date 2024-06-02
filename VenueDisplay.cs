@@ -30,7 +30,7 @@ public class VenueDisplay : MonoBehaviour
     {
         venueName.text = venue.venueName.ToString();
         venueNation.text = venue.venueNation.ToString();
-        temperatureAverage.text = venue.averageTemperature.ToString();
+       // temperatureAverage.text = venue.averageTemperature.ToString();
         DisplayVenueFlag(venue);
     }
 
