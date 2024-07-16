@@ -30,7 +30,7 @@ public class MoveObject : MonoBehaviour
         rectTransform.transform.localPosition = new Vector3(0f, -300f, 0.0f);
         // rectTransform.transform.Rotate(Vector3.forward, 180.0f * Time.deltaTime);
 
-        rectTransform.DOAnchorPos(new Vector2(0f, 274.0f), 2.0f, false).SetEase(Ease.OutElastic);
+        rectTransform.DOAnchorPos(new Vector2(0f, 340.0f), 2.0f, false).SetEase(Ease.OutElastic);
         endOfFirstRunDisplayed = true;
     }
 

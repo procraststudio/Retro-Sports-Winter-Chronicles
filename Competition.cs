@@ -279,10 +279,10 @@ public class Competition : MonoBehaviour
         else if ((myState == GameState.PresentationPhase) && (didNotStarted != null))
         {
             scrollViewPanel.SetActive(true);
-            message = "DID NOT STARTED: ";
+            message = "DID NOT STARTED: "+"\n";
             foreach (Player item in didNotStarted)
             {
-                message += item.secondName.ToString() + " ";
+                message +=">>> "+ item.secondName.ToString() + " ";
             }
         }
         messageWindow.GetComponent<ScrollViewManager>().AddMessage(message);

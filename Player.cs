@@ -58,7 +58,7 @@ public class Player : MonoBehaviour
 
     public int CalculateAverage()
     {
-        // ORIGINAL AVERAGES: X 27, A 24, B 18, C 12, D 6, E 0 
+        // ORIGINAL AVERAGES: X 27, A 24, B 19, C 14, D 9, E 4 
         if (this.grade == 'X')
         {
             averagePerformance = 27;
@@ -74,15 +74,15 @@ public class Player : MonoBehaviour
         }
         else if (grade == 'C')
         {
-            averagePerformance = 14;
+            averagePerformance = 15;
         }
         else if (grade == 'D')
         {
-            averagePerformance = 9;
+            averagePerformance = 11;
         }
         else if (grade == 'E')
         {
-            averagePerformance = 4;
+            averagePerformance = 8;
         }
 
         return averagePerformance;
@@ -234,6 +234,12 @@ public class Player : MonoBehaviour
         int minutes = (int)totalDifference / 60;
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);
+
+        if (hundredths ==100) // FIX +0.100 bug, SHOULD BE: +1.00, +1.100 should be +2.00
+        {
+            hundredths = 0;
+            seconds += 1;
+        }
         string formattedTime = (minutes > 0)  ?
 
         string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
@@ -244,9 +250,11 @@ public class Player : MonoBehaviour
          if (difference < 0) {
            string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
         }
-         // TODO: FIX +0.100 bug, SHOULD BE: +1.00, +1.100 should be +2.00
+         
          
         return formattedTime;
     }
+
+    
 
 }

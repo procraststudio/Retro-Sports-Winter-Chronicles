@@ -21,7 +21,7 @@ public class VenueLoader : MonoBehaviour
 
         if (venuesList != null && venuesList.Count > 0)
         {
-            string targetVenueName = GetComponent<Gamemanager>().sampleCompetitions[1].competitionVenueName.ToString();   //   Competition.  //"Calgary";
+            string targetVenueName = GetComponent<Gamemanager>().thisCompetition.competitionVenueName.ToString();   //   Competition.  //"Calgary";
             //string targetVenueName = GameStart.currentCompetition.competitionVenueName.ToString();
             actualVenue = venuesList.Find(venue => venue.venueName == targetVenueName);
 

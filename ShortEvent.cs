@@ -273,7 +273,7 @@ public class ShortEvent : MonoBehaviour
         else if (weather.snowCondition.Contains("hard"))
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
-            descriptionText.text += "GREAT ROUTE CONDITION. " + "  +" + eventRoll + "points. ";
+            descriptionText.text += "GREAT ROUTE CONDITION. " + "  +" + eventRoll + " points";
         }
 
         else if (gamemanager.competitionName.Contains("Slalom"))

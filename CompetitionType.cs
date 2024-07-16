@@ -10,8 +10,9 @@ public class CompetitionType : ScriptableObject
     public string competitionName;
     public DateTime competitionDate;
     public string competitionVenueName;
+    public string competitorsDatabase;
     public int numberOfRuns;
-    public Player[] competitorsPack;
+    //public GameObject competitorsPack;
     public float bestTimeinSec;
     public float tenthTimeinSec;
 

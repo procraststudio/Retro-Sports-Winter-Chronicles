@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using TMPro;
-using Unity.Burst.Intrinsics;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
 
 public class CommentsSystem : MonoBehaviour
 {
@@ -11,10 +10,9 @@ public class CommentsSystem : MonoBehaviour
     Dice dice;
     private string goodTextPath = "commentator_good";
     private string badTextPath = "commentator_bad";
-
     private List<string> unusedGoodComments = new List<string>();
     private List<string> unusedBadComments = new List<string>();
-    private List<string> neutralComments = new List<string>() {"Average run...","Not good, not bad...", "Nearly falls down...", "More can be expected...", "It's not the day...", "Fans are cheering..."};
+    private List<string> neutralComments = new List<string>() { "Average run...", "Not good, not bad...", "Nearly falls down...", "More can be expected...", "It's not the day...", "Fans are cheering..." };
     [SerializeField] public TMP_Text[] commentText;
 
     void Start()
@@ -23,11 +21,8 @@ public class CommentsSystem : MonoBehaviour
         dice = FindObjectOfType<Dice>();
         LoadFileLines("good");
         LoadFileLines("bad");
-        // favourites = competition.players;
-        // CheckEmptyFile();
     }
 
-    // Update is called once per frame
     void Update()
     {
         // CheckEmptyFile();
@@ -52,6 +47,7 @@ public class CommentsSystem : MonoBehaviour
         {
             if (unusedGoodComments.Count > 0)
             {
+                ShowCommentBackground(partOfRun - 1);
                 color = Color.green;
                 int randomIndex = Random.Range(0, unusedGoodComments.Count);
                 string randomLine = unusedGoodComments[randomIndex];
@@ -70,6 +66,7 @@ public class CommentsSystem : MonoBehaviour
         {
             if (unusedBadComments.Count > 0)
             {
+                ShowCommentBackground(partOfRun - 1);
                 color = color = Color.red;
                 int randomIndex = Random.Range(0, unusedBadComments.Count);
                 string randomLine = unusedBadComments[randomIndex];
@@ -88,11 +85,12 @@ public class CommentsSystem : MonoBehaviour
         {
             // Average comment
             // color = color = Color.white;
-            if ((player.ranking+partOfRun) % 2 == 0)
+            if ((player.ranking + partOfRun) % 2 == 0)
             {
                 int index = Random.Range(0, neutralComments.Count);
                 commentText[partOfRun - 1].text = neutralComments[index].ToString();
                 commentText[partOfRun - 1].color = Color.white;
+                ShowCommentBackground(partOfRun - 1);
             }
             // 
         }
@@ -140,58 +138,59 @@ public class CommentsSystem : MonoBehaviour
                     commentText[3].color = Color.red;
                     dice.ShowSummaryImage("bad"); break;
 
-                default: commentText[3].text = player.myState.ToString();
-                         commentText[3].color = Color.red; break;
-
+                default:
+                    commentText[3].text = player.myState.ToString();
+                    commentText[3].color = Color.red; break;
             }
         }
+    }
 
-        }
-    
-            private void LoadFileLines(string TypeOfComments)
+    private void LoadFileLines(string TypeOfComments)
+    {
+        TextAsset textAsset = null;
+
+        switch (TypeOfComments)
+        {
+            case "good": textAsset = Resources.Load<TextAsset>(goodTextPath); break;
+            case "bad": textAsset = Resources.Load<TextAsset>(badTextPath); break;
+        };
+
+        if (textAsset != null)
+        {
+            string[] lines = textAsset.text.Split('\n');
+            foreach (string line in lines)
             {
-                TextAsset textAsset = null;
-
-                switch (TypeOfComments)
+                if (!string.IsNullOrEmpty(line.Trim()))
                 {
-                    case "good": textAsset = Resources.Load<TextAsset>(goodTextPath); break;
-                    case "bad": textAsset = Resources.Load<TextAsset>(badTextPath); break;
-                };
-
-                if (textAsset != null)
-                {
-                    string[] lines = textAsset.text.Split('\n');
-                    foreach (string line in lines)
+                    if (TypeOfComments.Contains("good"))
                     {
-                        if (!string.IsNullOrEmpty(line.Trim()))
-                        {
-                            if (TypeOfComments.Contains("good"))
-                            {
-                                unusedGoodComments.Add(line.Trim());
-                            }
-                            else if (TypeOfComments.Contains("bad"))
-                            {
-                                unusedBadComments.Add(line.Trim());
-
-                            }
-                        }
-
+                        unusedGoodComments.Add(line.Trim());
                     }
-                    Debug.Log("Comments loaded: " + TypeOfComments);
-                }
-
-
-                else
-                {
-                    Debug.LogError("Text file not found.");
+                    else if (TypeOfComments.Contains("bad"))
+                    {
+                        unusedBadComments.Add(line.Trim());
+                    }
                 }
             }
-
-            public void ResetComments()
-            {
-                for (int i = 0; i < commentText.Length; i++)
-                {
-                    commentText[i].text = "";
-                }
-            }
+            Debug.Log("Comments loaded: " + TypeOfComments);
         }
+
+        else
+        {
+            Debug.LogError("Text file not found.");
+        }
+    }
+
+    public void ResetComments()  //AND COMMENTS BACKGROUNDS
+    {
+        for (int i = 0; i < commentText.Length; i++)
+        {
+            commentText[i].text = "";
+        }
+    }
+
+    public void ShowCommentBackground(int index)
+    {
+        dice.ShowCommentBackground(index);
+    }
+}

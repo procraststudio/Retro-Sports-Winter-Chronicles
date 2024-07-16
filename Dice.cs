@@ -19,8 +19,12 @@ public class Dice : MonoBehaviour
     [SerializeField] public GameObject[] competitorImage;
     [SerializeField] GameObject summaryImage;
     [SerializeField] Sprite[] summarySprites;
-    [SerializeField] Sprite[] skiersIcons;
+    //[SerializeField] Sprite[] skiersIcons;
+    [SerializeField] Sprite[] imagesForSurprise;
+    [SerializeField] Sprite[] defaultBackgroundImages;
     [SerializeField] GameObject[] panelsSections;
+    [SerializeField] GameObject[] backgroundImagesSections;
+    [SerializeField] GameObject[] commentBackgrounds;
     public bool diceActive;
     public int diceIndex;
     RunDescription description;
@@ -39,7 +43,7 @@ public class Dice : MonoBehaviour
         description = FindObjectOfType<RunDescription>();
         diceChanging = false;
         currentCompetitorImage = 0;
-        currentSkierIcon = skiersIcons[0];
+       // currentSkierIcon = skiersIcons[0];
         ResetTimeGapBackgrounds();
         ResetDice();
 
@@ -66,39 +70,29 @@ public class Dice : MonoBehaviour
         secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.secondD6 + 5];
         yield return new WaitForSeconds(pause);
         thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
-
-        // description.ShowDescription();
-
-        // commentatorIcon[diceIndex].SetActive(true);
         diceChanging = false;
         diceIndex++;
     }
 
 
-    public int GenerateObject(int length)
-    {
-        var index = Random.Range(0, length);
-        currentSkierIcon = skiersIcons[index];
-        return index;
-    }
+    //public int GenerateObject(int length)
+    //{
+    //    var index = Random.Range(0, length);
+    //    currentSkierIcon = skiersIcons[index];
+    //    return index;
+    //}
 
-    public IEnumerator animateEffect()
-    {
-        // MIX THE IMAGES
-        competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-        // TODO Moving effect
-        yield return new WaitForSeconds(animatePause);
-        competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-        yield return new WaitForSeconds(animatePause);
-        competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-        currentCompetitorImage++;
-    }
-
-    public void MoveEffect(GameObject obj)
-    {
-        // obj.transform.DOMoveX(0.02f, 0.3f, false);
-
-    }
+    //public IEnumerator animateEffect()
+    //{
+    //    // MIX THE IMAGES
+    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
+    //    // TODO Moving effect
+    //    yield return new WaitForSeconds(animatePause);
+    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
+    //    yield return new WaitForSeconds(animatePause);
+    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
+    //    currentCompetitorImage++;
+    //}
 
     public void ResetDice()
     {
@@ -108,16 +102,12 @@ public class Dice : MonoBehaviour
             {
                 allDices[i].GetComponent<SpriteRenderer>().sprite = null;
             }
-
-            //for (int i = 0; i < panelsSections.Length; i++)
-            //{
-            //    panelsSections[i].GetComponent<Image>().color = new Color(255, 255, 255, 100f);
-            //}
-
             timeGapTexts[0].text = "";
             timeGapTexts[1].text = "";
             timeGapTexts[2].text = "";
             ResetTimeGapBackgrounds();
+            ResetBackgrounds();
+            ResetCommentsBackgrounds(); 
             ResetCompetitorsImages();
             FindObjectOfType<CommentsSystem>().ResetComments();
             diceIndex = 0;
@@ -168,7 +158,7 @@ public class Dice : MonoBehaviour
         }
     }
 
-    public void panelActivate(int sectorNumber)
+    public void panelActivate(int sectorNumber) // COVERING INACTIVE SECTORS
     {
         switch (sectorNumber)
         {
@@ -181,13 +171,39 @@ public class Dice : MonoBehaviour
         }
     }
 
-    public void panelSurpriseEffect(int sectorNumber) //TODO: RED COLOR
+    public void panelSurpriseEffect(int sectorNumber) //TODO: RED/GREY COLOR
     {
-       // panelsSections[sectorNumber].GetComponent<Image>().color = new Color(255, 0, 0, 140f);
+        // panelsSections[sectorNumber].GetComponent<Image>().color = new Color(255, 0, 0, 140f);
         // panelsSections[sectorNumber].GetComponent<RectTransform>().DOAnchorPos(new Vector2(0f, 274.0f), 2.0f, false).SetEase(Ease.OutElastic);
-        panelsSections[sectorNumber].GetComponentInParent<RectTransform>().DOShakePosition(1.5f, 100.0f, 10, 10f, true, true);
-      //  panelsSections[sectorNumber].GetComponent<Image>().DOFade(100f, 2f);
+        backgroundImagesSections[sectorNumber].GetComponent<SpriteRenderer>().sprite = imagesForSurprise[0];
+        backgroundImagesSections[sectorNumber].GetComponent<SpriteRenderer>().DOColor(Color.red, 1.0f);
+        panelsSections[sectorNumber].GetComponentInParent<RectTransform>().DOShakePosition(1.0f, 70.0f, 10, 10f, true, true);
+        //  panelsSections[sectorNumber].GetComponent<Image>().DOFade(100f, 2f);
     }
+
+    public void ResetBackgrounds() 
+    {
+        for (int i = 0; i < backgroundImagesSections.Length; i++)
+        {
+            backgroundImagesSections[i].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[i];
+            backgroundImagesSections[i].GetComponent<SpriteRenderer>().DOColor(Color.white, 0.1f);
+        }
+    }
+
+    public void ShowCommentBackground(int index)
+    {
+        commentBackgrounds[index].SetActive(true);  
+    }
+
+    public void ResetCommentsBackgrounds()
+    {
+        for (int i = 0; i < commentBackgrounds.Length; i++)
+        {
+            commentBackgrounds[i].SetActive(false);
+        }
+    }
+
+
 
 
 

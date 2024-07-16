@@ -47,6 +47,8 @@ public class Weather : MonoBehaviour
         weatherPhaseOver = false;
         weatherModifier = 1.00f; //default
         venueLoader = FindObjectOfType<Gamemanager>().GetComponent<VenueLoader>();
+        firstD6 = Random.Range(1, 7);
+        secondD6 = Random.Range(1, 7);
     }
 
     public void CalculateTemperature()
@@ -57,6 +59,7 @@ public class Weather : MonoBehaviour
         actualTemperature = averageTemp;
         // float averageTemperature = Random.Range(minTemp, maxTemp);
         string description = "";
+        Debug.Log("TEMPERATURE ROLL: " + (firstD6 + secondD6));
 
         switch (firstD6 + secondD6)
         {
@@ -90,7 +93,7 @@ public class Weather : MonoBehaviour
                 snowConditionModifier -= 2; weatherModifier *= 0.50f; precipitationModifier += 3;
                 break;// EXTREME HOT
             default:
-                actualTemperature += Random.Range(-1.10f, 1.10f);
+                actualTemperature += Random.Range(-2.00f, 2.00f);
                 description = "AVERAGE"; break;// AVERAGE
 
         }
@@ -119,8 +122,13 @@ public class Weather : MonoBehaviour
         weatherSections[2].SetActive(true);
         yield return new WaitForSeconds(pause);
 
-        weatherSections[3].SetActive(true);
-        surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        
+        //surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        if (weatherModifier != 1.0)
+        {
+            weatherSections[3].SetActive(true);
+            surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        }
         yield return new WaitForSeconds(pause);
         setupButton.SetActive(true);
     }

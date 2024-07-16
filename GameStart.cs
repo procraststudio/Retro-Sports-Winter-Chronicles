@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using static UnityEditor.Progress;
 
@@ -27,7 +28,7 @@ public class GameStart : MonoBehaviour
     
     void Update()
     {
-        
+       
     }
     public void PlayEvent()
     {
@@ -61,9 +62,10 @@ public class GameStart : MonoBehaviour
         DisciplinesPanel.SetActive(true);
 
     }
-    public void StartAlpineSki()
+    public void StartCompetition(CompetitionType actualCompetition)
     {
-        currentCompetition = availableCompetitions[0]; 
+        //var competitionIndex = availableCompetitions[click];
+        currentCompetition = actualCompetition; 
         SceneManager.LoadScene(1);
     }
     public void BackToMenu()
@@ -74,7 +76,12 @@ public class GameStart : MonoBehaviour
         WinterGamesPanel.SetActive(false);
 
     }
-    public void QuitGame()
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        Debug.Log("Clicked on: " + eventData.pointerCurrentRaycast.gameObject.name);
+    }
+
+public void QuitGame()
     {
         Application.Quit();
     }
