@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class CompetitionTypeDisplay : MonoBehaviour
 {
@@ -13,20 +10,23 @@ public class CompetitionTypeDisplay : MonoBehaviour
 
     void Start()
     {
-       competitionName.text = competitionType.competitionName.ToString(); 
+        competitionName.text = competitionType.competitionName.ToString();
         gameStart = FindObjectOfType<GameStart>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void StartThisCompetition()
     {
-       gameStart.StartCompetition(competitionType);
+        gameStart.StartCompetition(competitionType);
     }
+
+   
 }
 
 

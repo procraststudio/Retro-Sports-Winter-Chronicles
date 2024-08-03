@@ -1,6 +1,5 @@
 using System.Collections;
 using TMPro;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -57,7 +56,6 @@ public class Surprises : MonoBehaviour
 
         if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance))
         {
-
             surpriseEffect = true;
             eventWindow.SetActive(true);
             eventTitle.text = "SURPRISE!".ToString();
@@ -73,6 +71,8 @@ public class Surprises : MonoBehaviour
                     surpriseInfo.text = player.secondName.ToUpper() + " FALLS DOWN! OUT!";
                     player.myState = Player.PlayerState.DidNotFinish;
                 }
+                
+                gamemanager.surprisesModifier -= 0.03f; //LOWER SURPRISE CHANCE
             }
 
             else
@@ -84,6 +84,7 @@ public class Surprises : MonoBehaviour
             }
             Debug.Log("SURPRISE! NEW STATE " + player.myState);
             SurpriseEffect(player);
+            gamemanager.surprisesModifier -= 0.02f; //LOWER SURPRISE CHANCE
             StartCoroutine("CloseWindow");
         }
 
@@ -151,10 +152,10 @@ public class Surprises : MonoBehaviour
             competition.CheckIfEmptyLists();
             competition.UpdateLists();
             dice.panelActivate(competition.partsOfRun);
-            dice.panelSurpriseEffect(competition.partsOfRun-1);   
+            dice.panelSurpriseEffect(competition.partsOfRun - 1);
             competition.partsOfRun = 0; // check this
-            //competition.finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
-           // scrollViewInfo.GetComponent<ScrollViewManager>().AddMessage()
+                                        //competition.finalText.text += "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!";
+                                        // scrollViewInfo.GetComponent<ScrollViewManager>().AddMessage()
             competition.eventHappened = false;
             string msg = "\n" + player.secondName + " IS OUT OF 15/DQ/DNF!" + "\n" + surpriseCompetitor.secondName + " ENTERS!" + "\n";
             competition.messageWindow.GetComponent<ScrollViewManager>().AddMessage(msg);
@@ -173,16 +174,8 @@ public class Surprises : MonoBehaviour
     {
         yield return new WaitForSeconds(2.00f);
         eventWindow.SetActive(false);
-
         // competition.eventHappened = false;
         competition.ChangeState(Competition.GameState.CompetitionPhase);
-
-
-        // 
-
-
-        // runButton.SetActive(true);
-
     }
 
 }

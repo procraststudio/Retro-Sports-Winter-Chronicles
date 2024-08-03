@@ -84,6 +84,10 @@ public class Player : MonoBehaviour
         {
             averagePerformance = 8;
         }
+        else if (grade == 'F')
+        {
+            averagePerformance = 6;
+        }
 
         return averagePerformance;
 

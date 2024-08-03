@@ -244,6 +244,7 @@ public class Weather : MonoBehaviour
                 Debug.Log("SNOW/RAIN STOPPED");
                 weatherChangeInfo = ">>>>>SNOW/RAIN STOPPED. ";
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = null;
+                descriptionTexts[1].text = "";
                 weatherModifier -= 0.20f;
                 precipitation = "";
             }

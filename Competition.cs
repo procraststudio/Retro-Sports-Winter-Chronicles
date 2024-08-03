@@ -146,7 +146,8 @@ public class Competition : MonoBehaviour
         // disqualified = new List<Player> { };    
         currentCompetitor = null;
         competitionIsOver = false;
-        competitionName.text = gamemanager.competitionName.ToString() + ". RUN " + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        competitionName.text = gamemanager.competitionName.ToString() + " RUN " + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+        AlpineCombinedModifiers();
         //DateTime DISPLAY:
         //competitionName.text = gamemanager.competitionType.competitionDate.ToString("d MMMM yyyy", ci) +", "+
         //   gamemanager.competitionType.competitionVenueName.ToString() + ", " +
@@ -512,7 +513,8 @@ public class Competition : MonoBehaviour
                 ChangeState(GameState.EndOfRun);
                 tabSection.SetActive(true);
                 firstRunClassification.AddRange(finishers);
-                competitionName.text = gamemanager.competitionName.ToString() + currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+                competitionName.text = gamemanager.competitionName.ToString() + " "+currentRun.ToString() + "/" + Gamemanager.numbersOfRun;
+                AlpineCombinedModifiers();
                 // runButton.GetComponentInChildren<TextMeshProUGUI>().text = "NEXT RUN".ToString();
                 players.AddRange(finishers);
                 bestFirstRunPerformance = finishers[0].firstRunPoints;
@@ -658,7 +660,7 @@ public class Competition : MonoBehaviour
         float timeModifier = probabilityToChange < 0.60 ? Random.Range(-0.09f, -0.05f) :
                              probabilityToChange > 1.00 ? Random.Range(-0.04f, 0.09f) :
                              -0.05f;//AVERAGE IS 0.80
-        gamemanager.surprisesModifier *= probabilityToChange;
+        gamemanager.surprisesModifier *= probabilityToChange * 0.90f;
         gamemanager.ModifyTimes(timeModifier);
         Debug.Log("CONDITITINS CHANGE: " + probabilityToChange.ToString("F2"));
         Debug.Log("TIME MODIFIER: " + timeModifier.ToString("F2"));
@@ -669,6 +671,22 @@ public class Competition : MonoBehaviour
         shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckPrecipitationChange(probabilityToChange);
         //shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
         shortEvent.eventResolved = true;
+
+    }
+    public void AlpineCombinedModifiers()
+    {
+        if (gamemanager.thisCompetition.IsCombined == true)
+        {
+            if (currentRun == 1)
+            {
+                competitionName.text += " " + gamemanager.thisCompetition.firstCombinedCompetition.ToString();
+            }
+            else if (currentRun == 2)
+            {
+                competitionName.text += " " + gamemanager.thisCompetition.secondCombinedCompetition.ToString();
+                gamemanager.competitionName = "Slalom";
+            }
+        }
 
     }
 

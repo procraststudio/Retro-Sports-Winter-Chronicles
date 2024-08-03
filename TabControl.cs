@@ -1,27 +1,36 @@
+using DG.Tweening.Core.Easing;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class TabControl : MonoBehaviour
 {
+    Competition competition;
+    Gamemanager gamemanager;
     [SerializeField] GameObject tabLayer;
     public GameObject[] tabButtons;
     [SerializeField] GameObject[] listsToShow;
+    [SerializeField] TMP_Text[] namesOfTabButtons;
 
 
     void Start()
     {
-        tabLayer.SetActive(false);
+       // tabLayer.SetActive(false);
+        gamemanager = FindObjectOfType<Gamemanager>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        ChangeButtonsNames();
     }
 
-    public void ShowList()
+    public void ChangeButtonsNames()
     {
-
+        if (gamemanager.thisCompetition.IsCombined == true)
+        {
+            namesOfTabButtons[0].text = gamemanager.thisCompetition.firstCombinedCompetition.ToString();
+            namesOfTabButtons[1].text = gamemanager.thisCompetition.secondCombinedCompetition.ToString();
+        }
     }
 }

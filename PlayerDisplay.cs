@@ -76,7 +76,7 @@ public class PlayerDisplay : MonoBehaviour
             ShowFlag(player);
             if (competitorSurpriseChance != null)
             {
-                competitorSurpriseChance.text = player.ranking.ToString(); //surprise.DisplaySurpriseChance(player).ToString(); //("F0"); // + "%"
+                competitorSurpriseChance.text = surprise.DisplaySurpriseChance(player).ToString(); //("F0"); // + "%"
             }
         }
 

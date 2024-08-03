@@ -15,6 +15,9 @@ public class CompetitionType : ScriptableObject
     //public GameObject competitorsPack;
     public float bestTimeinSec;
     public float tenthTimeinSec;
+    public bool IsCombined;
+    public string firstCombinedCompetition;
+    public string secondCombinedCompetition;
 
 
     //public CompetitionType(string competitionName, DateTime date, string venueName, Player[] competitors, float bestTime, float tenthTime)
@@ -32,7 +35,8 @@ public enum typesOfCompetitions
 {
     alpineSki,
     biathlon,
-    skiJumping
+    skiJumping,
+    bobsleigh
 }
 
 public class WorldCupCompetition
