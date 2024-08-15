@@ -42,6 +42,7 @@ public class Player : MonoBehaviour
         OutOf15 = 2,
         DidNotFinish = 3,  //DNF
         Disqualified = 4,  //DQ
+        Injured = 5, // INJ
     }
 
 

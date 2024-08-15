@@ -1,5 +1,6 @@
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -23,7 +24,9 @@ public class Surprises : MonoBehaviour
     public float surpriseMod;
     ScreenShake shake;
     Dice dice;
+    private int surpriseRoll;
     [SerializeField] private GameObject scrollViewInfo;
+    [SerializeField] AudioClip [] sounds;
 
     void Start()
     {
@@ -37,7 +40,6 @@ public class Surprises : MonoBehaviour
         competition = Competition.Instance;
         shake = FindObjectOfType<ScreenShake>();
         // favouritesCount = gamemanager.numberOfFavourites;
-
     }
 
 
@@ -49,17 +51,19 @@ public class Surprises : MonoBehaviour
         surpriseMod = gamemanager.surprisesModifier * weather.weatherModifier;
         realSurpriseChance = player.ranking * surpriseMod;
         playerSurpriseChance.text = realSurpriseChance.ToString("F0");
-        int surpriseRoll = Random.Range(1, 101);
+        surpriseRoll = Random.Range(1, 101);
         surpriseRollIndicator.text = surpriseRoll.ToString();
         Debug.Log("SURPRISE CHANCE: " + realSurpriseChance);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
+        CheckCriticalRoll(player);
 
-        if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance))
+        if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance) && (!player.goodFormEffect))
         {
             surpriseEffect = true;
             eventWindow.SetActive(true);
             eventTitle.text = "SURPRISE!".ToString();
-            if (gamemanager.competitionName.Contains("Slalom") && (surpriseRoll % 2 == 0))
+            SoundManager.PlayOneSound("disqualified");
+            if ((gamemanager.competitionName.Contains("Slalom") || (gamemanager.competitionName.Contains("Super G")) && (surpriseRoll % 2 == 0)))
             {
                 if (((int)realSurpriseChance + player.ranking) % 5 == 0)
                 {
@@ -79,6 +83,7 @@ public class Surprises : MonoBehaviour
             {
                 // eventTitle.text = "SURPRISE!".ToString();
                 surpriseInfo.text = player.secondName.ToUpper() + " IS SLOW: OUT OF 15!";
+                SoundManager.PlayOneSound("outof15");
                 player.PoorFormEffect();
                 player.myState = Player.PlayerState.OutOf15;
             }
@@ -176,6 +181,26 @@ public class Surprises : MonoBehaviour
         eventWindow.SetActive(false);
         // competition.eventHappened = false;
         competition.ChangeState(Competition.GameState.CompetitionPhase);
+    }
+    public void CheckCriticalRoll(Player player)
+    {
+        if ((competition.firstD6 == 1) && (competition.secondD6 == 1) && (competition.thirdD6 == 1))
+        {
+            surpriseRoll = 100;
+            surpriseEffect = true;
+            dice.SpawnComboInfo("DISASTER!");
+            eventWindow.SetActive(true);
+            eventTitle.text = "DISASTER! POSSIBLE INJURY!".ToString();
+            SoundManager.PlayOneSound("disqualified");
+            surpriseInfo.text = player.secondName.ToUpper() + " HITS THE GROUND! TRAGEDY!";
+            player.myState = Player.PlayerState.DidNotFinish;
+            SurpriseEffect(player);
+            StartCoroutine("CloseWindow");
+
+            return;
+
+        }
+       
     }
 
 }

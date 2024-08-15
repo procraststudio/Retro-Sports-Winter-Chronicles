@@ -19,14 +19,16 @@ public class PlayerDisplay : MonoBehaviour
     [SerializeField] GameObject formIndicator;
     [SerializeField] GameObject arrowIndicator;
     [SerializeField] GameObject playerFlag;
+    [SerializeField] GameObject headGraphic;
     [SerializeField] Sprite[] formIndicators;
+    [SerializeField] Sprite[] headImages;
     //public TextMeshProUGUI nationalityText; 
     public SpriteRenderer flagRenderer;
     public string flagsFolderPath = "flags/";
     private Sprite flagSprite;
     Competition competition;
     Surprises surprise;
-
+    private bool headsDisplayChecked = false;
 
     public void Start()
     {
@@ -48,12 +50,15 @@ public class PlayerDisplay : MonoBehaviour
     public void DisplayCompetitor(Player player, int actualRun)
     {
         competition = Competition.Instance;
+        DisplayHeadImage();
+
         string boldSecondName = "<b>" + player.secondName + "</b>";
         if ((gameObject.CompareTag("finishers_list")) || (gameObject.CompareTag("firstRun_list")) ||
             (gameObject.CompareTag("secondRun_list")))
         {
             ShowPosition(player);
             ShowFlag(player);
+
             arrowIndicator = null;
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
             TimeDisplay(player);
@@ -68,7 +73,7 @@ public class PlayerDisplay : MonoBehaviour
 
         else
         {
-            competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper()+ "  " + player.nationality;
+            competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
             competitorGrade.text = player.grade.ToString();
             competitorExperience.text = player.experience.ToString();
             competitorRanking.text = player.ranking.ToString();
@@ -146,7 +151,7 @@ public class PlayerDisplay : MonoBehaviour
         {
             if ((player.place == 1) && (competition.currentRun < 2))
             {
-               timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints").ToString();
+                timeDisplay.text = player.ConvertPointsToTime(player.firstRunPoints, "firstRunPoints").ToString();
             }
             else if ((player.place == 1) && (competition.currentRun > 1))
             {
@@ -171,7 +176,7 @@ public class PlayerDisplay : MonoBehaviour
             && (competition.myState != GameState.EndOfRun))
 
         {
-            if (player.secondName == competition.currentCompetitor.secondName)
+            if ((player.secondName == competition.currentCompetitor.secondName) && (player.surname == competition.currentCompetitor.surname))
             {
                 currentCompetitorPanel.SetActive(true);
             }
@@ -179,6 +184,24 @@ public class PlayerDisplay : MonoBehaviour
             {
                 currentCompetitorPanel.SetActive(false);
             }
+        }
+    }
+
+    public void DisplayHeadImage()
+    {
+        if ((!headsDisplayChecked) &&(headGraphic!=null))
+        {
+
+            if (competition.gamemanager.competitionName.Contains("Men"))
+            {
+                headGraphic.GetComponent<SpriteRenderer>().sprite = headImages[0];
+            }
+            else
+            {
+                headGraphic.GetComponent<SpriteRenderer>().sprite = headImages[1];
+            }
+            headsDisplayChecked = true;
+
         }
     }
 }

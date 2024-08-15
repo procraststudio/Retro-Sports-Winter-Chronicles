@@ -1,9 +1,8 @@
+using DamageNumbersPro;
 using DG.Tweening;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class Dice : MonoBehaviour
 {
@@ -34,6 +33,10 @@ public class Dice : MonoBehaviour
     public int currentCompetitorImage;
     public Sprite currentSkierIcon;
     public RectTransform rectTransform;
+    public DamageNumber numberPrefab;
+    public RectTransform[] rectParents;
+    PointsSystem pointsSystem;
+
 
     void Start()
     {
@@ -43,9 +46,10 @@ public class Dice : MonoBehaviour
         description = FindObjectOfType<RunDescription>();
         diceChanging = false;
         currentCompetitorImage = 0;
-       // currentSkierIcon = skiersIcons[0];
+        // currentSkierIcon = skiersIcons[0];
         ResetTimeGapBackgrounds();
         ResetDice();
+        pointsSystem = PointsSystem.Instance;
 
     }
 
@@ -71,28 +75,9 @@ public class Dice : MonoBehaviour
         yield return new WaitForSeconds(pause);
         thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
         diceChanging = false;
+        CheckDiceCombos();
         diceIndex++;
     }
-
-
-    //public int GenerateObject(int length)
-    //{
-    //    var index = Random.Range(0, length);
-    //    currentSkierIcon = skiersIcons[index];
-    //    return index;
-    //}
-
-    //public IEnumerator animateEffect()
-    //{
-    //    // MIX THE IMAGES
-    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-    //    // TODO Moving effect
-    //    yield return new WaitForSeconds(animatePause);
-    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-    //    yield return new WaitForSeconds(animatePause);
-    //    competitorImage[currentCompetitorImage].GetComponent<SpriteRenderer>().sprite = skiersIcons[GenerateObject(skiersIcons.Length)];
-    //    currentCompetitorImage++;
-    //}
 
     public void ResetDice()
     {
@@ -107,7 +92,8 @@ public class Dice : MonoBehaviour
             timeGapTexts[2].text = "";
             ResetTimeGapBackgrounds();
             ResetBackgrounds();
-            ResetCommentsBackgrounds(); 
+            ResetDiceEffect();
+            ResetCommentsBackgrounds();
             ResetCompetitorsImages();
             FindObjectOfType<CommentsSystem>().ResetComments();
             diceIndex = 0;
@@ -181,7 +167,7 @@ public class Dice : MonoBehaviour
         //  panelsSections[sectorNumber].GetComponent<Image>().DOFade(100f, 2f);
     }
 
-    public void ResetBackgrounds() 
+    public void ResetBackgrounds()
     {
         for (int i = 0; i < backgroundImagesSections.Length; i++)
         {
@@ -192,7 +178,7 @@ public class Dice : MonoBehaviour
 
     public void ShowCommentBackground(int index)
     {
-        commentBackgrounds[index].SetActive(true);  
+        commentBackgrounds[index].SetActive(true);
     }
 
     public void ResetCommentsBackgrounds()
@@ -201,6 +187,74 @@ public class Dice : MonoBehaviour
         {
             commentBackgrounds[i].SetActive(false);
         }
+    }
+
+    public void CheckDiceCombos()
+    {
+        // if (firstDieImages[0].GetComponent<SpriteRenderer>().sprite == diceSides[0])
+        if ((competition.firstD6 == competition.secondD6) && (competition.thirdD6 != competition.firstD6))
+        {
+            DiceEffect("double");
+            SpawnComboInfo("DOUBLE!");
+            pointsSystem.AddGamePoints(0, 150);
+        }
+        else if ((competition.firstD6 == competition.secondD6) && (competition.firstD6 == competition.thirdD6))
+        {
+            DiceEffect("triple");
+            SpawnComboInfo("TRIPLE!");
+            pointsSystem.AddGamePoints(0, 800);
+        }
+        else if (((competition.secondD6 - competition.firstD6) == 1) && ((competition.thirdD6 - competition.firstD6) == 2))
+        {
+            DiceEffect("straight");
+            SpawnComboInfo("STRAIGHT!");
+            pointsSystem.AddGamePoints(0, 1000);
+        }
+    }
+
+    public void DiceEffect(string comboType)
+    {
+        SoundManager.PlayOneSound("dice_combo");
+        //List <GameObject> dice =new List<GameObject> ;
+        // comboDice.AddRange(firstDieImages[diceIndex]);   
+        firstDieImages[diceIndex].GetComponentInParent<RectTransform>().DOShakePosition(0.5f, 20.0f, 3, 4f, true, true);
+        secondDieImages[diceIndex].GetComponentInParent<RectTransform>().DOShakePosition(0.5f, 20.0f, 3, 4f, true, true);
+        switch (comboType)
+        {
+            case "double":
+                firstDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.cyan, 0.5f);
+                secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.cyan, 0.5f);
+                break;
+            case "triple":
+            case "straight":
+                thirdDieImages[diceIndex].GetComponentInParent<RectTransform>().DOShakePosition(0.5f, 20.0f, 3, 4f, true, true);
+                firstDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                break;
+                //if (competition.thirdD6 == competition.firstD6)
+                //{
+                //    firstDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                //    secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                //    thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
+                //}
+                // PLUS SOUND EFFECT? ANIMATION- pulsating/bigger dice
+        }
+    }
+
+    public void SpawnComboInfo(string comboType)
+    {
+        DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], Vector2.zero, comboType.ToString());
+    }
+
+    public void ResetDiceEffect()
+    {
+        for (int i = 0; i < allDices.Length; i++)
+        {
+            //allDices[i].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[i];
+            allDices[i].GetComponent<SpriteRenderer>().DOColor(Color.white, 0.1f);
+        }
+
     }
 
 

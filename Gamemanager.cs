@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 public class Gamemanager : MonoBehaviour
 {
     public List<Player> players = new List<Player>();
-    public List<Player> favourites, outsiders, underdogs;
+    public List<Player> favourites, outsiders, underdogs, bonusCompetitors;
     public List<Player>[] lists;
     [SerializeField] Venue actualVenue;
 
@@ -29,18 +29,23 @@ public class Gamemanager : MonoBehaviour
     public VenueLoader venueLoader;
     public CompetitionType thisCompetition;
     public CompetitionType[] sampleCompetitions;
-    private string competitorsPath = "competitors";
+    private string competitorsPath = "Competitors";
     public string filePath = "Assets/Resources/Competitors/";
-    //GameStart gameStart;
 
     void Start()
     {
         competition = Competition.Instance;
         // gameStart = FindObjectOfType<GameStart>();
-        thisCompetition = GameStart.currentCompetition;
 
+        if (GameStart.currentCompetition == null)
+        {
+            thisCompetition = sampleCompetitions[1];
+        }
+        else
+        {
+            thisCompetition = GameStart.currentCompetition;
+        }
         //competitionType = new CompetitionType {competitionName ="Slalom Women", competitionDate = new DateTime (1986,2,23), competitionVenueName ="Sestriere"  };
-
         competitionName = thisCompetition.competitionName.ToString();
         numbersOfRun = thisCompetition.numberOfRuns;
         CalculateSurpriseModifier();
@@ -61,8 +66,13 @@ public class Gamemanager : MonoBehaviour
         //venueNation = "CAN";
         // numbersOfRun = sampleCompetitions[0].numberOfRuns;
         filePath += thisCompetition.competitorsDatabase + ".txt";
+        //bonusCompetitorsFilePath += thisCompetition.bonusDatabaseName + ".txt";
         LoadPlayersFromFile(filePath);
-        lists = new List<Player>[] { favourites, outsiders, underdogs };
+        if (thisCompetition.bonusDatabaseName != null)
+        {
+            LoadPlayersFromFile("Assets/Resources/Competitors/" + thisCompetition.bonusDatabaseName + ".txt");
+        }
+        lists = new List<Player>[] { favourites, outsiders, underdogs, bonusCompetitors };
         RandomizeLists(lists);
         numberOfFavourites = favourites.Count;
     }
@@ -75,7 +85,6 @@ public class Gamemanager : MonoBehaviour
             foreach (string line in lines)
             {
                 string[] values = line.Split(',');
-
                 // Usuwanie zbêdnych spacji i cudzys³owów
                 for (int i = 0; i < values.Length; i++)
                 {
@@ -92,14 +101,12 @@ public class Gamemanager : MonoBehaviour
                 // Tworzenie nowego obiektu Player
                 Player newPlayer = new Player(surname, name, ranking, grade, experience, nationality);
                 players.Add(newPlayer);
-                // Debug.Log na konsoli Unity
-                // Debug.Log(newPlayer.ToString());
-
             }
             // Divide players into 3 groups
             favourites = players.Where(player => player.ranking >= 1 && player.ranking <= 15).ToList();
             outsiders = players.Where(player => player.ranking >= 16 && player.ranking <= 25).ToList();
             underdogs = players.Where(player => player.ranking >= 26 && player.ranking <= 30).ToList();
+            bonusCompetitors = players.Where(player => player.ranking >= 31).ToList();
         }
         catch (System.Exception e)
         {
@@ -139,23 +146,31 @@ public class Gamemanager : MonoBehaviour
 
     public void CalculateSurpriseModifier() // default should be 1.00f, slalom: 2.00 OR 1.50-2.50 depends on weather
     {
-        if (competitionName.Contains("Slalom Women"))
+        if ((competitionName.Contains("Slalom Women")) || (competitionName.Contains("Super G Men")))
         {
             surprisesModifier = 1.55f;
+            Debug.Log("SURPRISE CALCULATED");
         }
-        else if (competitionName.Contains("Slalom Men"))
-        {
-            surprisesModifier = 2.00f;
-        }
-        else if (competitionName.ToString().Contains("Giant Slalom"))
+        else if (competitionName.Contains("Giant Slalom"))
         {
             surprisesModifier = 1.35f;
             Debug.Log("SURPRISE CALCULATED");
+            // this collides with Slalom Men ??
         }
+
+        else if (competitionName.Contains("Slalom Men"))
+        {
+            surprisesModifier = 2.00f;
+            Debug.Log("SURPRISE CALCULATED");
+        }
+
         else
         {
             surprisesModifier = 1.00f;
         }
+
+        //Slalom Men = œr 0,40 // Super G men 0,31
+
 
     }
 

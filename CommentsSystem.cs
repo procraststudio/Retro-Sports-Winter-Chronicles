@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class CommentsSystem : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class CommentsSystem : MonoBehaviour
     private List<string> unusedBadComments = new List<string>();
     private List<string> neutralComments = new List<string>() { "Average run...", "Not good, not bad...", "Nearly falls down...", "More can be expected...", "It's not the day...", "Fans are cheering..." };
     [SerializeField] public TMP_Text[] commentText;
+    public AudioClip sound;
 
     void Start()
     {
@@ -105,15 +107,19 @@ public class CommentsSystem : MonoBehaviour
         var state = player.myState;
         if (competition.partsOfRun > 2)
         {
+            
             switch (state)
             {
                 case Player.PlayerState.Running:
                     {
                         if (player.praisesByCommentator > 0)
                         {
+                            //SoundManager.PlaySound(sound);
+                            SoundManager.PlayOneSound("crowd01");
                             commentText[3].text = "GOOD!".ToString();
                             commentText[3].color = Color.green;
                             dice.ShowSummaryImage("good");
+                            
                         }
                         else if (player.praisesByCommentator < 0)
                         {

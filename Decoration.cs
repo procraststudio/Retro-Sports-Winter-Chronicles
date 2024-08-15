@@ -16,7 +16,6 @@ public class Decoration : MonoBehaviour
     Competition competition;
     [SerializeField] GameObject ExitButton;
     [SerializeField] AudioClip fanfairSound;
-
     public Player winner { get; set; }
     public Player secondPlayer { get; set; }
     public Player thirdPlayer { get; set; }
@@ -34,8 +33,6 @@ public class Decoration : MonoBehaviour
         winner = competition.finishers[0];
         secondPlayer = competition.finishers[1];
         thirdPlayer = competition.finishers[2];
-        //TO DO: Decoration effects
-
         StartCoroutine("DecorateMedalists");
     }
 
@@ -49,15 +46,19 @@ public class Decoration : MonoBehaviour
         yield return new WaitForSeconds(2.00f);
 
         thirdPlacePanel.SetActive(true);
+        SoundManager.PlayOneSound("dice_combo");
         winnersNames[0].text = thirdPlayer.secondName.ToUpper();
         flags[0].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + thirdPlayer.nationality);
         yield return new WaitForSeconds(2.00f);
-        AudioSource.PlayClipAtPoint(fanfairSound, Camera.main.transform.position);
+        // AudioSource.PlayClipAtPoint(fanfairSound, Camera.main.transform.position);
+
         secondPlacePanel.SetActive(true);
+        SoundManager.PlayOneSound("dice_combo");
         winnersNames[1].text = secondPlayer.secondName.ToUpper();
         flags[1].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + secondPlayer.nationality);
         yield return new WaitForSeconds(2.00f);
         winnerPanel.SetActive(true);
+        SoundManager.PlayOneSound("crowd01");
         winnersNames[2].text = winner.secondName.ToUpper();
         flags[2].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + winner.nationality);
         yield return new WaitForSeconds(2.00f);

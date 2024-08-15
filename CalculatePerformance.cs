@@ -59,7 +59,7 @@ public class CalculatePerformance : MonoBehaviour
                 if (currentCompetitor.CheckHomeFactor()) //HOME FACTOR +thirdD6
                 {
                     currentCompetitor.AddRunModifier(competition.currentRun, thirdD6);
-                    Debug.Log("HOME FACTOR: +" + thirdD6*2);
+                    Debug.Log("HOME FACTOR: +" + thirdD6 * 2);
                 }
                 if (currentCompetitor.grade > 3)
                 { calculatePerformance(currentCompetitor, 5, thirdD6); }
@@ -78,7 +78,7 @@ public class CalculatePerformance : MonoBehaviour
 
             case 10:
 
-                if (currentCompetitor.grade > 4) 
+                if (currentCompetitor.grade > 4)
                 { calculatePerformance(currentCompetitor, 6, thirdD6); }
                 else if ((currentCompetitor.grade == 'B') || (currentCompetitor.grade == 'C') || (currentCompetitor.grade == 'D'))
                 { calculatePerformance(currentCompetitor, 5, thirdD6); }
@@ -141,6 +141,11 @@ public class CalculatePerformance : MonoBehaviour
             case 6: player.AddRunModifier(currentRun, thirdDie); break;
             case 7:
                 if (modifier < 6) { player.AddRunModifier(currentRun, 6); }
+                else if (competition.thirdD6 == 6) // 666 ROLL EFFECT
+                {
+                    player.AddRunModifier(currentRun, thirdDie * 3);
+                    SoundManager.PlayOneSound("dice_combo");
+                }
                 else { player.AddRunModifier(currentRun, thirdDie * 2); }
                 break;
         }

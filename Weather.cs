@@ -122,12 +122,18 @@ public class Weather : MonoBehaviour
         weatherSections[2].SetActive(true);
         yield return new WaitForSeconds(pause);
 
-        
+
         //surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
-        if (weatherModifier != 1.0)
+        if (weatherModifier > 1.0)
         {
             weatherSections[3].SetActive(true);
-            surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+            surprisesModifierText.text = "+" + ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
+            // surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        }
+        else if (weatherModifier < 1.0)
+        {
+            weatherSections[3].SetActive(true);
+            surprisesModifierText.text =  ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
         }
         yield return new WaitForSeconds(pause);
         setupButton.SetActive(true);
@@ -245,14 +251,14 @@ public class Weather : MonoBehaviour
                 weatherChangeInfo = ">>>>>SNOW/RAIN STOPPED. ";
                 precipitationImage.GetComponent<SpriteRenderer>().sprite = null;
                 descriptionTexts[1].text = "";
-                weatherModifier -= 0.20f;
+                weatherModifier *= 0.80f;
                 precipitation = "";
             }
         }
         else if ((chance < 0.60f) && (chance > 0.46f) && (!precipitation.Contains("snowing")))
         {
             Debug.Log("SNOW STARTED");
-            weatherChangeInfo = ">>>>SNOW STARTED. ";
+            weatherChangeInfo = ">>>>IT HAS STARTED TO SNOW. ";
             snowConditionModifier -= 1;
             weatherModifier *= 1.20f;
             precipitation = "snowing";
@@ -262,7 +268,7 @@ public class Weather : MonoBehaviour
         else if ((chance < 0.47f) && (!precipitation.Contains("raining")))
         {
             Debug.Log("IT STARTED TO RAIN");
-            weatherChangeInfo = ">>>>IT STARTED TO RAIN. ";
+            weatherChangeInfo = ">>>>IT HAS STARTED TO RAIN. ";
             snowConditionModifier += 1;
             weatherModifier *= 1.40f;
             precipitation = "raining";

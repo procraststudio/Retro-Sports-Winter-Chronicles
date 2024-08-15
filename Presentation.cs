@@ -10,6 +10,7 @@ public class Presentation : MonoBehaviour
     [SerializeField] private TMP_Text[] favouriteName;
     [SerializeField] private TMP_Text[] favouriteGradeExp;
     [SerializeField] private GameObject[] flagSection;
+    [SerializeField] private GameObject[] headsSection;
     [SerializeField] private TMP_Text buttonText;
     Competition competition;
     public string flagsFolderPath = "flags/";
@@ -22,6 +23,7 @@ public class Presentation : MonoBehaviour
     public List<Player> favourites;
     public List<Player> bigFavourites = new List<Player>();
     private List<string> unusedComments = new List<string>();
+    [SerializeField] Sprite[] headImages;
 
 
     void Start()
@@ -40,7 +42,7 @@ public class Presentation : MonoBehaviour
 
     void Update()
     {
-      // CheckEndPhase();
+        // CheckEndPhase();
     }
 
     public void GenerateFavourites()
@@ -57,35 +59,34 @@ public class Presentation : MonoBehaviour
         {
             for (int i = 0; i < favourites.Count; i++)
             {
-
-                    //CHECK HOW MANY 'X' COMPETITORS
-                    if ((favourites[i].grade == 'X') && (noOfBigFavourites < 3))
-                    {
-                        bigFavourites.Add(favourites[i]);
-                        noOfBigFavourites++;
-                    }
-                }
-                for (int i = 0; i < favourites.Count; i++)
+                //CHECK HOW MANY 'X' COMPETITORS
+                if ((favourites[i].grade == 'X') && (noOfBigFavourites < 3))
                 {
-                    if ((favourites[i].grade == 'A') && (noOfBigFavourites < 3))
-                    {
-                        bigFavourites.Add(favourites[i]);
-                        noOfBigFavourites++;
-                    }
-
+                    bigFavourites.Add(favourites[i]);
+                    noOfBigFavourites++;
                 }
-                for (int i = 0; i < favourites.Count; i++)
+            }
+            for (int i = 0; i < favourites.Count; i++)
+            {
+                if ((favourites[i].grade == 'A') && (noOfBigFavourites < 3))
                 {
-                    if ((favourites[i].grade == 'B') && (noOfBigFavourites < 3))
-                    {
-                        bigFavourites.Add(favourites[i]);
-                        noOfBigFavourites++;
-                    }
-
+                    bigFavourites.Add(favourites[i]);
+                    noOfBigFavourites++;
                 }
 
+            }
+            for (int i = 0; i < favourites.Count; i++)
+            {
+                if ((favourites[i].grade == 'B') && (noOfBigFavourites < 3))
+                {
+                    bigFavourites.Add(favourites[i]);
+                    noOfBigFavourites++;
+                }
 
-                switch (noOfBigFavourites)
+            }
+
+
+            switch (noOfBigFavourites)
             {
                 case 1:
                     showPlayerData(0, bigFavourites[0]);
@@ -112,7 +113,7 @@ public class Presentation : MonoBehaviour
         else
         {
             // competition.myState = GameState.CompetitionPhase;
-            competition.ChangeState(GameState.CompetitionPhase);  
+            competition.ChangeState(GameState.CompetitionPhase);
         }
 
     }
@@ -124,51 +125,59 @@ public class Presentation : MonoBehaviour
         favouriteName[favouriteNo].text = player.secondName;
         favouriteGradeExp[favouriteNo].text = "GRADE: " + player.grade.ToString() + "    EXP: " + player.experience.ToString(); ;
         flagSection[favouriteNo].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
-    }
-
-    public void showComments(int player)
-    {
-        //TextAsset textAsset = Resources.Load<TextAsset>(textPath);
-        if (unusedComments.Count > 0)
+        if (competition.gamemanager.competitionName.Contains("Men"))
         {
-            int randomIndex = Random.Range(0, unusedComments.Count);
-            string randomLine = unusedComments[randomIndex];
-            descriptionText[player].text = randomLine;
-            unusedComments.RemoveAt(randomIndex);
+            headsSection[favouriteNo].GetComponent<SpriteRenderer>().sprite = headImages[0];
         }
         else
         {
-            Debug.Log("No more unused lines.");
+            headsSection[favouriteNo].GetComponent<SpriteRenderer>().sprite = headImages[1];
         }
     }
-    private void LoadFileLines()
-    {
-        TextAsset textAsset = Resources.Load<TextAsset>(textPath);
-        if (textAsset != null)
+
+        public void showComments(int player)
         {
-            string[] lines = textAsset.text.Split('\n');
-            foreach (string line in lines)
+            //TextAsset textAsset = Resources.Load<TextAsset>(textPath);
+            if (unusedComments.Count > 0)
             {
-                if (!string.IsNullOrEmpty(line.Trim()))
-                {
-                    unusedComments.Add(line.Trim());
-                }
+                int randomIndex = Random.Range(0, unusedComments.Count);
+                string randomLine = unusedComments[randomIndex];
+                descriptionText[player].text = randomLine;
+                unusedComments.RemoveAt(randomIndex);
+            }
+            else
+            {
+                Debug.Log("No more unused lines.");
             }
         }
-        else
+        private void LoadFileLines()
         {
-            Debug.LogError("Text file not found.");
+            TextAsset textAsset = Resources.Load<TextAsset>(textPath);
+            if (textAsset != null)
+            {
+                string[] lines = textAsset.text.Split('\n');
+                foreach (string line in lines)
+                {
+                    if (!string.IsNullOrEmpty(line.Trim()))
+                    {
+                        unusedComments.Add(line.Trim());
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("Text file not found.");
+            }
+        }
+
+        void CheckEndPhase()
+        {
+            if (favouritesGenerated)
+            {
+                presentationPhaseOver = true;
+
+            }
         }
     }
-
-    void CheckEndPhase()
-    {
-        if (favouritesGenerated)
-        {
-            presentationPhaseOver = true;
-
-        }
-    }
-}
 
 

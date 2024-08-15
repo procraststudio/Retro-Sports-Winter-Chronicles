@@ -18,6 +18,7 @@ public class CompetitionType : ScriptableObject
     public bool IsCombined;
     public string firstCombinedCompetition;
     public string secondCombinedCompetition;
+    public string bonusDatabaseName;
 
 
     //public CompetitionType(string competitionName, DateTime date, string venueName, Player[] competitors, float bestTime, float tenthTime)

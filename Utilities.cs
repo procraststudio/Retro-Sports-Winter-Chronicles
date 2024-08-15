@@ -1,5 +1,4 @@
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class Utilities : MonoBehaviour
 {
@@ -28,10 +27,24 @@ public class Utilities : MonoBehaviour
         competition.currentCompetitorNo = competition.players.Count - 1;
         competition.UpdateLists();
     }
+
+    public void MinimumOutsiders()
+    {
+        int index = 5;
+        competition.outsiders.RemoveRange(competition.outsiders.Count - index, index);
+        // competition.currentCompetitorNo = competition.players.Count - 1;
+        competition.underdogs.RemoveRange(competition.underdogs.Count - index/2, index/2);
+        competition.UpdateLists();
+    }
     public void LowerSurprisesChance()
     {
         gamemanager.surprisesModifier *= 0.50f;
-        
+
+    }
+    public void HigherSurprisesChance()
+    {
+        gamemanager.surprisesModifier *= 1.50f;
+
     }
 
 

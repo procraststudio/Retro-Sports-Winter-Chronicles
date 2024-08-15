@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class PlayerDataLoader : MonoBehaviour
@@ -13,7 +14,8 @@ public class PlayerDataLoader : MonoBehaviour
     public bool competitorsLoaded;
     private string nameOfTheList;
     public bool listFrozen = false;
-   
+    public GameObject bonusCompetitorsTitle;
+
 
 
     void Start()
@@ -67,6 +69,7 @@ public class PlayerDataLoader : MonoBehaviour
         else if (gameObject.CompareTag("outsiders_list"))
         {
             listToLoad = competition.outsiders;
+            BonusCompetitorsEffect();
         }
         else if (gameObject.CompareTag("underdogs_list"))
         {
@@ -120,6 +123,15 @@ public class PlayerDataLoader : MonoBehaviour
     public void ActivateHeaders()
     {
         header.SetActive(true); 
+    }
+
+    public void BonusCompetitorsEffect()
+    {
+        if (competition.bonusCompetitorsUnlocked)
+        {
+            bonusCompetitorsTitle.GetComponent<TMP_Text>().text ="BONUS COMPETITORS".ToString();
+            bonusCompetitorsTitle.GetComponent<TMP_Text>().color = Color.yellow;
+        }
     }
 }
 
