@@ -6,7 +6,7 @@ public class VenueDisplay : MonoBehaviour
     public Venue venue;
     [SerializeField] Sprite venueImage;
     [SerializeField] TMP_Text venueName;
-    [SerializeField] TMP_Text venueNation;
+    [SerializeField] public TMP_Text venueNation;
     [SerializeField] TMP_Text temperatureAverage;
     [SerializeField] GameObject nationFlag;
     public SpriteRenderer flagRenderer;

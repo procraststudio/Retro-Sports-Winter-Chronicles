@@ -39,7 +39,7 @@ public class Gamemanager : MonoBehaviour
 
         if (GameStart.currentCompetition == null)
         {
-            thisCompetition = sampleCompetitions[1];
+            thisCompetition = sampleCompetitions[0];
         }
         else
         {

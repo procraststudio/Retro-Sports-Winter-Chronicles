@@ -1,12 +1,11 @@
+using DamageNumbersPro;
 using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
-using DamageNumbersPro;
 using Random = UnityEngine.Random;
-using UnityEngine.UIElements;
 
 
 public class Competition : MonoBehaviour
@@ -55,7 +54,7 @@ public class Competition : MonoBehaviour
     public GameObject eventPanel;
     public GameObject competitorPanel;
     public GameObject scrollViewPanel;
-    [SerializeField] private GameObject DecorationPanel;
+    //[SerializeField] private GameObject DecorationPanel;
 
     public GameObject runButton;
     public GameObject tabSection;
@@ -90,7 +89,7 @@ public class Competition : MonoBehaviour
     public float bestRunPerformance;
     public GameState myState { get; set; }
     public bool eventHappened = false;
-    private bool decorationSpawned = false;
+    // private bool decorationSpawned = false;
     public Gamemanager gamemanager;
     public float firstSectorMostPoints = 20f; // average from early competitors runs
     public float secondSectorMostPoints = 20f;
@@ -105,6 +104,7 @@ public class Competition : MonoBehaviour
     PointsSystem pointsSystem;
     public bool bonusCompetitorsUnlocked = false;
     public DamageNumber numberPrefab;
+    public GameObject summary;
 
     public enum GameState
     {
@@ -115,7 +115,7 @@ public class Competition : MonoBehaviour
         CheckSurprisePhase = 4,
         EventPhase = 5,
         EndOfRun = 6,
-        DecorationPhase = 7,
+        SummaryPhase = 7,
     }
     private void Awake()
     {
@@ -160,7 +160,8 @@ public class Competition : MonoBehaviour
         //   gamemanager.competitionType.competitionName.ToString() ;  
         _calculatePerformance = FindObjectOfType<CalculatePerformance>();
         numberOfFavourites = players.Count;
-        pointsSystem = PointsSystem.Instance;   
+        pointsSystem = PointsSystem.Instance;
+        pointsSystem.ResetCompetitionPoints();
 
     }
 
@@ -184,7 +185,10 @@ public class Competition : MonoBehaviour
         mainCam.transform.DOShakePosition(2.0f, 100.0f, 10, 10f, true, true);
         if (competitionIsOver)
         {
-            DecorationPhase(); return;
+            //DecorationPhase(); 
+            ChangeState(GameState.SummaryPhase);
+            summary.GetComponent<CompetitionSummary>().DoDecoration();
+            return;
         }
 
         // PLAY AUDIO-START sound
@@ -195,17 +199,17 @@ public class Competition : MonoBehaviour
         _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
         partsOfRun++;
         //if (partsOfRun == 1)
-       // {
-          //  SoundManager.PlayRandomSound(startSounds);
-       // }
+        // {
+        //  SoundManager.PlayRandomSound(startSounds);
+        // }
 
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
         thirdD6 = Random.Range(1, 7);
-        //firstD6 = 1; secondD6 = 1; thirdD6 = 1;
+        //firstD6 = 4; secondD6 = 4; thirdD6 = 4;
         competitionRoll = firstD6 + secondD6;
-        pointsSystem.AddGamePoints((competitionRoll*thirdD6), 0);
-        if ((outsiders.Count > 0) || (underdogs.Count > 0))
+        pointsSystem.AddTemporaryPoints(competitionRoll * thirdD6);
+        if (((outsiders.Count > 0) || (underdogs.Count > 0)) && (firstD6 + secondD6 + thirdD6 != 18))
         {
             surprise.CheckSurprise(currentCompetitor); //SURPRISE CHECK
             CheckEvent(currentCompetitor);           // EVENT CHECK
@@ -217,7 +221,7 @@ public class Competition : MonoBehaviour
             // dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
             _calculatePerformance.GetPerformanceModifier(currentCompetitor, competitionRoll);
             _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
-            if ((partsOfRun == 1)&& (currentCompetitor.myState == Player.PlayerState.Running))
+            if ((partsOfRun == 1) && (currentCompetitor.myState == Player.PlayerState.Running))
             {
                 SoundManager.PlayRandomSound(startSounds);
             }
@@ -259,6 +263,8 @@ public class Competition : MonoBehaviour
             RemoveCurrentCompetitor();
             UpdatePlayerList(players, startingList);
             currentCompetitor.CalculateFinal();
+            pointsSystem.AddGamePoints(pointsSystem.temporaryPoints);
+            pointsSystem.ResetTemporaryPoints();
             updateResults();
 
             UpdateLists();
@@ -404,6 +410,7 @@ public class Competition : MonoBehaviour
         finishersList.text = "";
         resultsList.text = "";
         finishers.Sort((a, b) => b.finalPerformance.CompareTo(a.finalPerformance));
+        // SKI JUMPING Sort b.finalPoints (distance points+judges points) 
         currentClassification = finishers;
         for (int i = 0; i < finishers.Count; i++)
         {
@@ -433,7 +440,7 @@ public class Competition : MonoBehaviour
         }
     }
 
-    public void CheckIfEmptyLists() 
+    public void CheckIfEmptyLists()
     {
         Player newPlayer = null;
         if ((players.Count == 0) && (outsiders.Count > 0))
@@ -453,26 +460,26 @@ public class Competition : MonoBehaviour
             // BONUS COMPETITORS APPEAR
             bonusCompetitorsUnlocked = true;
             outsiders.AddRange(bonusCompetitors);
-            DamageNumber damageNumber = numberPrefab.SpawnGUI(runButton.GetComponent<RectTransform>(), Vector2.zero, "BONUS DATABASE UNLOCKED!".ToString()); 
-            pointsSystem.AddGamePoints(0, 2500);
-            
+            DamageNumber damageNumber = numberPrefab.SpawnGUI(runButton.GetComponent<RectTransform>(), Vector2.zero, "BONUS DATABASE UNLOCKED!".ToString());
+            pointsSystem.AddGamePoints(2500);
+
         }
 
     }
 
-    public void DecorationPhase()
-    {
-        if ((competitionIsOver) && (!decorationSpawned))
-        {
-            // TODO: FINAL COMMENTS appear
-            ChangeState(GameState.DecorationPhase);
-            GameObject newObject = Instantiate(DecorationPanel);
-            newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
-            newObject.transform.localPosition = new Vector3(7.17f, 0.00f, 0.00f);
-            decorationSpawned = true;
+    //public void DecorationPhase()
+    //{
+    //    if ((competitionIsOver) && (!decorationSpawned))
+    //    {
+    //        // TODO: FINAL COMMENTS appear
+    //        ChangeState(GameState.SummaryPhase);
+    //        GameObject newObject = Instantiate(DecorationPanel);
+    //        newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
+    //        newObject.transform.localPosition = new Vector3(7.17f, 122.00f, 0.00f);
+    //        decorationSpawned = true;
 
-        }
-    }
+    //    }
+    //}
 
     public string TimeDisplay(Player player)
     {
@@ -626,7 +633,7 @@ public class Competition : MonoBehaviour
                 scrollViewPanel.SetActive(true);
                 dicePanel.SetActive(false); break;
 
-            case GameState.DecorationPhase:
+            case GameState.SummaryPhase:
                 weatherPanel.SetActive(false);
                 setupButton.SetActive(false);
                 presentationPanel.SetActive(false);

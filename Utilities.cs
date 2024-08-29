@@ -46,6 +46,24 @@ public class Utilities : MonoBehaviour
         gamemanager.surprisesModifier *= 1.50f;
 
     }
+    public void ResetRecords()
+    {
+        PlayerPrefs.SetInt("competitionRecord", 0);
+
+    }
+    public void DeleteAllPlayerPrefs()
+    {
+        PlayerPrefs.DeleteAll();
+
+    }
+    public void AllSwiss()
+    {
+        for (int i = 0; i < competition.players.Count; i++)
+        {
+            competition.players[i].nationality = "SUI";
+        }
+
+    }
 
 
     // TO DO: DEACTIVATE WEATHER & PRESENTATION

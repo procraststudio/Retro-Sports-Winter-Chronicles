@@ -191,6 +191,7 @@ public class Surprises : MonoBehaviour
             dice.SpawnComboInfo("DISASTER!");
             eventWindow.SetActive(true);
             eventTitle.text = "DISASTER! POSSIBLE INJURY!".ToString();
+            //TO DO : INJURY mechanics
             SoundManager.PlayOneSound("disqualified");
             surpriseInfo.text = player.secondName.ToUpper() + " HITS THE GROUND! TRAGEDY!";
             player.myState = Player.PlayerState.DidNotFinish;

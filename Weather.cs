@@ -58,50 +58,49 @@ public class Weather : MonoBehaviour
         // maxTemp = FindObjectOfType<Gamemanager>().temperatureMax;
         actualTemperature = averageTemp;
         // float averageTemperature = Random.Range(minTemp, maxTemp);
-        string description = "";
+        //string description = "";
         Debug.Log("TEMPERATURE ROLL: " + (firstD6 + secondD6));
 
         switch (firstD6 + secondD6)
         {
             case 2:
                 actualTemperature += Random.Range(-13.00f, -7.10f);
-                description = "EXTREME COLD"; //+ "\n" + "+2 to snow condition roll";
+                //description = "EXTREME COLD"; //+ "\n" + "+2 to snow condition roll";
                 snowConditionModifier += 2; weatherModifier *= 1.50f; break;//EXTREME COLD
             case 3:
                 actualTemperature += Random.Range(-7.00f, -5.10f);
-                description = "VERY COLD"; // + "\n" + "+1 to snow condition roll";
+                //description = "VERY COLD"; // + "\n" + "+1 to snow condition roll";
                 snowConditionModifier += 1; weatherModifier *= 1.30f; precipitationModifier -= 1; break;//VERY COLD
             case 4:
-                actualTemperature += Random.Range(-5.00f, -3.10f);
-                description = "COLD"; weatherModifier *= 1.10f; break;// COLD
+                actualTemperature += Random.Range(-5.00f, -3.10f); break;
+                //description = "COLD"; weatherModifier *= 1.10f; // COLD
             case 5:
-                actualTemperature += Random.Range(-3.00f, -1.10f);
-                description = "BELOW AVERAGE"; break;// BELOW AVERAGE
+                actualTemperature += Random.Range(-3.00f, -1.10f); break;
+                //description = "BELOW AVERAGE"; // BELOW AVERAGE
             case 9:
-                actualTemperature += Random.Range(1.10f, 3.00f);
-                description = "ABOVE AVERAGE"; break;// ABOVE AVERAGE
+                actualTemperature += Random.Range(1.10f, 3.00f); break;
+               // description = "ABOVE AVERAGE"; // ABOVE AVERAGE
             case 10:
-                actualTemperature += Random.Range(3.10f, 5.00f);
-                description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; break;// HOT
+                actualTemperature += Random.Range(3.10f, 5.00f); break;
+                //description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; // HOT
             case 11:
-                actualTemperature += Random.Range(5.10f, 7.00f);
-                description = "VERY HOT";// + "\n" + "-1 to snow condition roll";
+                actualTemperature += Random.Range(5.10f, 7.00f); 
+                //description = "VERY HOT";// + "\n" + "-1 to snow condition roll";
                 snowConditionModifier -= 1; weatherModifier *= 0.70f; precipitationModifier += 2; break;// VERY HOT
             case 12:
-                actualTemperature += Random.Range(7.10f, 13.00f);
-                description = "EXTREME HOT"; // + "\n" + "-2 to snow condition roll";
+                //description = "EXTREME HOT"; // + "\n" + "-2 to snow condition roll";
                 snowConditionModifier -= 2; weatherModifier *= 0.50f; precipitationModifier += 3;
-                break;// EXTREME HOT
+                actualTemperature += Random.Range(7.10f, 13.00f); break;
+                // EXTREME HOT
             default:
-                actualTemperature += Random.Range(-2.00f, 2.00f);
-                description = "AVERAGE"; break;// AVERAGE
+                actualTemperature += Random.Range(-2.00f, 2.00f); break;
+                //description = "AVERAGE"; // AVERAGE
 
         }
-        descriptionTexts[0].text = description.ToString();
+        //descriptionTexts[0].text = description.ToString();
         // weatherCharts[0].SetActive(true);
         temperatureText[0].text = actualTemperature.ToString("F0");
         temperatureText[1].text = actualTemperature.ToString("F0");
-        Debug.Log("TEMP IS: " + actualTemperature);
         ChangeButtonName("NEXT");
         temperatureRolled = true;
         //StartCoroutine("WeatherDice");
@@ -121,22 +120,46 @@ public class Weather : MonoBehaviour
         CalculateSnowCondition();
         weatherSections[2].SetActive(true);
         yield return new WaitForSeconds(pause);
-
-
-        //surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
-        if (weatherModifier > 1.0)
-        {
-            weatherSections[3].SetActive(true);
-            surprisesModifierText.text = "+" + ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
-            // surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
-        }
-        else if (weatherModifier < 1.0)
-        {
-            weatherSections[3].SetActive(true);
-            surprisesModifierText.text =  ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
-        }
+        ShowSurpriseChance();
         yield return new WaitForSeconds(pause);
         setupButton.SetActive(true);
+    }
+
+    private void ShowSurpriseChance()
+    {
+        float surpriseModifier = FindObjectOfType<Gamemanager>().surprisesModifier * weatherModifier;
+        
+        weatherSections[3].SetActive(true);
+        if (surpriseModifier <= 1.1)
+        {
+            surprisesModifierText.text = "LOW CHANCE".ToString();
+        }
+        else if ((surpriseModifier > 1.1) && (surpriseModifier < 1.5))
+        {
+            surprisesModifierText.text = "NORMAL CHANCE".ToString();
+        }
+        else if ((surpriseModifier >= 1.5) && (surpriseModifier < 2.00))
+        {
+            surprisesModifierText.text = "HIGH CHANCE".ToString();
+        }
+        else if (surpriseModifier >= 2.0)
+        {
+            surprisesModifierText.text = "VERY HIGH CHANCE".ToString();
+        }
+        Debug.Log("SURPRISE MOD: "+surpriseModifier.ToString());
+
+
+        //if (weatherModifier > 1.0)
+        //{
+        //    weatherSections[3].SetActive(true);
+        //    surprisesModifierText.text = "+" + ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
+        //    // surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
+        //}
+        //else if (weatherModifier < 1.0)
+        //{
+        //    weatherSections[3].SetActive(true);
+        //    surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
+        //}
     }
 
     private void CalculateSnowCondition()

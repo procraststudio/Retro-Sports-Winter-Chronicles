@@ -13,12 +13,16 @@ public class CompetitionType : ScriptableObject
     public string competitorsDatabase;
     public int numberOfRuns;
     //public GameObject competitorsPack;
-    public float bestTimeinSec;
+    public float bestTimeinSec; // TO DO make it common: time, points, metres 
     public float tenthTimeinSec;
     public bool IsCombined;
+    public bool timeIntervals;
     public string firstCombinedCompetition;
     public string secondCombinedCompetition;
     public string bonusDatabaseName;
+    public bool noWeatherImpact = false;
+    public bool judgesSystem = false;   
+    public bool resultsInMetres = false;
 
 
     //public CompetitionType(string competitionName, DateTime date, string venueName, Player[] competitors, float bestTime, float tenthTime)

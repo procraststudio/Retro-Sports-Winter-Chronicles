@@ -172,7 +172,7 @@ public class PlayerDisplay : MonoBehaviour
 
     public void HighlightCurrentCompetitor(Player player)
     {
-        if ((currentCompetitorPanel != null) && (competition.myState != GameState.DecorationPhase)
+        if ((currentCompetitorPanel != null) && (competition.myState != GameState.SummaryPhase)
             && (competition.myState != GameState.EndOfRun))
 
         {

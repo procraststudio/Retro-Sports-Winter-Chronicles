@@ -28,7 +28,6 @@ public class GameStart : MonoBehaviour
     
     void Update()
     {
-       
     }
     public void PlayEvent()
     {
@@ -81,7 +80,7 @@ public class GameStart : MonoBehaviour
         Debug.Log("Clicked on: " + eventData.pointerCurrentRaycast.gameObject.name);
     }
 
-public void QuitGame()
+    public void QuitGame()
     {
         Application.Quit();
     }

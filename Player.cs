@@ -1,9 +1,14 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 public enum grade
 {
    X=6, A=5, B=4, C=3, D=2, E=1, F=0
+}
+public enum startingGrade
+{
+    X=6, A=5, B=4, C=3, D=2, E=1, F=0
 }
 
 
@@ -13,6 +18,7 @@ public class Player : MonoBehaviour
     public string surname { get; set; }
     public int ranking { get; set; }
     public char grade { get; set; }
+    public char startingGrade { get; set; } 
     public int experience { get; set; }
     public string nationality { get; set; }
     public int averagePerformance { get; set; }
@@ -53,6 +59,7 @@ public class Player : MonoBehaviour
         this.secondName = name;
         this.experience = experience;
         this.grade = grade;
+        this.startingGrade = grade;
         this.nationality = nationality;
         this.myState = PlayerState.Running;
     }
@@ -214,7 +221,7 @@ public class Player : MonoBehaviour
         myState = state;
     }
 
-    public string ConvertPointsToTime(float points, string typeOfPoints)
+    public string ConvertPointsToTime(float points, string typeOfPoints) // OR Convert Points to Metres
     {
         float realTime = (!typeOfPoints.Contains("finalPoints")) ? FindObjectOfType<Gamemanager>().bestTimeInSec
            : FindObjectOfType<Gamemanager>().bestTimeInSec * 2;//bestOverallTime; //;//*(timeModifier); // Real best time in secs. What if 2 runs?
@@ -258,6 +265,21 @@ public class Player : MonoBehaviour
          
          
         return formattedTime;
+    }
+
+    public string ConvertPointsToDistance(float points, string typeOfPoints)
+    {
+        // 80 pts = K point in ski jumping // 10th competitor has 40 points and 93,5% of winner distance
+        float kPoint = 80.0f; 
+        Competition competition;
+        competition = Competition.Instance;
+        float jumpDistance = (kPoint) + (points-80.0f / 100f); //+/- 0.5 m in ski jumping
+
+
+
+
+        string formattedDistance = jumpDistance.ToString(); //string.Format(" {0:00}:{1:00}.{2:00}", minutes.ToString(), seconds, hundredths);
+        return formattedDistance;
     }
 
     

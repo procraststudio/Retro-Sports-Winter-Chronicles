@@ -24,18 +24,22 @@ public class Dice : MonoBehaviour
     [SerializeField] GameObject[] panelsSections;
     [SerializeField] GameObject[] backgroundImagesSections;
     [SerializeField] GameObject[] commentBackgrounds;
+
     public bool diceActive;
     public int diceIndex;
+    public int combosActivated = 0;
     RunDescription description;
-    private float pause = 0.15f;
+    private float pause = 0.18f;
     private float animatePause = 0.40f;
     private bool diceChanging;
     public int currentCompetitorImage;
     public Sprite currentSkierIcon;
     public RectTransform rectTransform;
     public DamageNumber numberPrefab;
+    public DamageNumber hatTrickPrefab; 
     public RectTransform[] rectParents;
     PointsSystem pointsSystem;
+    AchievementsManager achievements;
 
 
     void Start()
@@ -50,6 +54,7 @@ public class Dice : MonoBehaviour
         ResetTimeGapBackgrounds();
         ResetDice();
         pointsSystem = PointsSystem.Instance;
+        achievements = AchievementsManager.Instance;
 
     }
 
@@ -68,7 +73,9 @@ public class Dice : MonoBehaviour
         int sectorNumber = competition.partsOfRun;
         diceChanging = true;
         // StartCoroutine("animateEffect");
+        // ShowBackgroundImage(sectorNumber);
         panelActivate(sectorNumber);
+        //StartCoroutine("ChangingDiceFacesEffect");
         firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.firstD6 - 1];
         yield return new WaitForSeconds(pause);
         secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.secondD6 + 5];
@@ -97,6 +104,7 @@ public class Dice : MonoBehaviour
             ResetCompetitorsImages();
             FindObjectOfType<CommentsSystem>().ResetComments();
             diceIndex = 0;
+            combosActivated = 0;
         }
     }
 
@@ -146,14 +154,18 @@ public class Dice : MonoBehaviour
 
     public void panelActivate(int sectorNumber) // COVERING INACTIVE SECTORS
     {
+        int randomImage = Random.Range(0, defaultBackgroundImages.Length);
         switch (sectorNumber)
         {
             case 1:
-                panelsSections[0].SetActive(false); panelsSections[1].SetActive(true); panelsSections[2].SetActive(true); break;
+                panelsSections[0].SetActive(false); panelsSections[1].SetActive(true); panelsSections[2].SetActive(true);
+                backgroundImagesSections[0].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
             case 2:
-                panelsSections[0].SetActive(true); panelsSections[1].SetActive(false); panelsSections[2].SetActive(true); break;
+                panelsSections[0].SetActive(true); panelsSections[1].SetActive(false); panelsSections[2].SetActive(true);
+                backgroundImagesSections[1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
             case 3:
-                panelsSections[0].SetActive(true); panelsSections[1].SetActive(true); panelsSections[2].SetActive(false); break;
+                panelsSections[0].SetActive(true); panelsSections[1].SetActive(true); panelsSections[2].SetActive(false);
+                backgroundImagesSections[2].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
         }
     }
 
@@ -171,8 +183,17 @@ public class Dice : MonoBehaviour
     {
         for (int i = 0; i < backgroundImagesSections.Length; i++)
         {
-            backgroundImagesSections[i].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[i];
+            backgroundImagesSections[i].GetComponent<SpriteRenderer>().sprite = null;// defaultBackgroundImages[i];
             backgroundImagesSections[i].GetComponent<SpriteRenderer>().DOColor(Color.white, 0.1f);
+        }
+    }
+
+    public void ShowBackgroundImage(int sectorIndex)
+    {
+        int randomImage = Random.Range(0, defaultBackgroundImages.Length);
+        if (sectorIndex > -1)
+        {
+            backgroundImagesSections[sectorIndex - 1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage];
         }
     }
 
@@ -196,19 +217,37 @@ public class Dice : MonoBehaviour
         {
             DiceEffect("double");
             SpawnComboInfo("DOUBLE!");
-            pointsSystem.AddGamePoints(0, 150);
+            pointsSystem.AddGamePoints(150);
+            achievements.AddDouble();
+            combosActivated++;
+
         }
         else if ((competition.firstD6 == competition.secondD6) && (competition.firstD6 == competition.thirdD6))
         {
             DiceEffect("triple");
             SpawnComboInfo("TRIPLE!");
-            pointsSystem.AddGamePoints(0, 800);
+            pointsSystem.AddGamePoints(800);
+            achievements.AddTriple();
+            combosActivated++;
         }
         else if (((competition.secondD6 - competition.firstD6) == 1) && ((competition.thirdD6 - competition.firstD6) == 2))
         {
             DiceEffect("straight");
             SpawnComboInfo("STRAIGHT!");
-            pointsSystem.AddGamePoints(0, 1000);
+            pointsSystem.AddGamePoints(1000);
+            achievements.AddStraight();
+            combosActivated++;
+        }
+        CheckHatTrick();
+    }
+
+    public void CheckHatTrick()
+    {
+        if (combosActivated == 3)
+        {
+            DamageNumber damageNumber = hatTrickPrefab.SpawnGUI(rectParents[diceIndex], new Vector2(0f, 220f), "HAT TRICK!".ToString());
+            pointsSystem.AddGamePoints(1500);
+            achievements.AddHatTrick();
         }
     }
 
@@ -232,6 +271,8 @@ public class Dice : MonoBehaviour
                 secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 break;
+         
+
                 //if (competition.thirdD6 == competition.firstD6)
                 //{
                 //    firstDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
@@ -244,17 +285,29 @@ public class Dice : MonoBehaviour
 
     public void SpawnComboInfo(string comboType)
     {
-        DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], Vector2.zero, comboType.ToString());
+        //DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], Vector2.zero, comboType.ToString());
+        DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], new Vector2(0f, 180f), comboType.ToString());
     }
 
     public void ResetDiceEffect()
     {
+        int diceImagesIndex = 0; 
+        
         for (int i = 0; i < allDices.Length; i++)
         {
             //allDices[i].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[i];
             allDices[i].GetComponent<SpriteRenderer>().DOColor(Color.white, 0.1f);
         }
 
+    }
+
+    IEnumerator ChangingDiceFacesEffect()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[Random.Range(0, diceSides.Length)];// diceSides[competition.firstD6 - 1];
+            yield return new WaitForSeconds(0.04f);
+        }
     }
 
 
