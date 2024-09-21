@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class CalculatePerformance : MonoBehaviour
 {
@@ -7,17 +9,14 @@ public class CalculatePerformance : MonoBehaviour
     int currentRun;
     Player currentCompetitor;
     [SerializeField] GameObject dicePanel;
-
-
-
+    //[SerializeField] GameObject judgesSystemScript;
+    private JudgesSystem judgesSystem;
     void Start()
     {
         competition = Competition.Instance;
+        judgesSystem = this.gameObject.GetComponent<JudgesSystem>();
     }
 
-
-
-    // Update is called once per frame
     public void GetPerformanceModifier(Player currentCompetitor, int competitionRoll)
     {
         //currentCompetitor = competition.currentCompetitor;
@@ -160,9 +159,27 @@ public class CalculatePerformance : MonoBehaviour
             currentPlayerPoints = player.secondRunPoints;
         }
 
+
+
         player.CalculateActualRun(currentRun);
-        checkSectorTime(currentRun, currentPlayerPoints, player);
+        if (FindObjectOfType<Gamemanager>().thisCompetition.timeIntervals)
+        {
+            checkSectorTime(currentRun, currentPlayerPoints, player);
+        }
         player.CalculateFinal();
+        
+        if ((competition.partsOfRun == 3) && (player.myState == Player.PlayerState.Running))
+        {
+            if (currentRun == 1)
+            {
+                ConvertPointToDistance(player, player.firstRunPoints);
+            }
+            else
+            {
+                ConvertPointToDistance(player, player.secondRunPoints);
+            }
+        }
+
         competition.showResults(currentCompetitor);
         player.homeFactor = false;
     }
@@ -238,6 +255,40 @@ public class CalculatePerformance : MonoBehaviour
             dicePanel.GetComponent<CommentsSystem>().showComments(player, partsOfRun, sectorPoints);
         }
 
+    }
+
+    private void ConvertPointToDistance(Player competitor, float points)
+    {
+        // locate Kpoint of actual jumping hill
+        float distance = 89.0f - ((80.0f - points) * 0.2f);
+        float roundedDistance = RoundToNearestHalf(distance);//89 is K point    
+        if (currentRun == 1)
+        {
+            competitor.firstRunDistance = roundedDistance;
+            competitor.skiJumpingPoints += ConvertDistanceToSkiJumpingPoints(competitor, roundedDistance);
+        }
+        else
+        {
+            competitor.secondRunDistance = roundedDistance;
+            competitor.skiJumpingPoints += ConvertDistanceToSkiJumpingPoints(competitor, roundedDistance);
+        }
+
+    }
+    private double ConvertDistanceToSkiJumpingPoints(Player competitor, float distance)
+    {
+        double baseDistance = 89.0;
+        double basePoints = 60.0;
+        double pointsPerHalfMeter = 0.8;
+        double difference = Convert.ToDouble(distance) - baseDistance;
+        double points = basePoints + (difference / 0.5) * pointsPerHalfMeter;
+        double judgesPoints = judgesSystem.GetSkiJumpingNotes(competitor, distance);
+        points += judgesPoints;
+        return points;
+    }
+
+    public static float RoundToNearestHalf(float value)
+    {
+        return (float)(Math.Round(value * 2, MidpointRounding.AwayFromZero) / 2);
     }
 
 

@@ -115,9 +115,7 @@ public class Presentation : MonoBehaviour
             // competition.myState = GameState.CompetitionPhase;
             competition.ChangeState(GameState.CompetitionPhase);
         }
-
     }
-
 
 
     public void showPlayerData(int favouriteNo, Player player)

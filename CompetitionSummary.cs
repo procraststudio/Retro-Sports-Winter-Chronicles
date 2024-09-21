@@ -7,8 +7,10 @@ public class CompetitionSummary : MonoBehaviour
     PointsSystem pointsSystem;
     AchievementsManager achievements;
     Competition competition;
+    Gamemanager gamemanager;
     private bool decorationSpawned = false;
     [SerializeField] GameObject ExitButton;
+    [SerializeField] public GameObject NextWorldCupButton;
     [SerializeField] private GameObject DecorationPanel;
     [SerializeField] private GameObject PointsPanel;
     [SerializeField] private GameObject AchievementsPanel;
@@ -23,6 +25,7 @@ public class CompetitionSummary : MonoBehaviour
         pointsSystem = PointsSystem.Instance;
         competition = Competition.Instance;
         achievements = AchievementsManager.Instance;
+        gamemanager = FindObjectOfType<Gamemanager>();
     }
 
     void Update()
@@ -60,10 +63,16 @@ public class CompetitionSummary : MonoBehaviour
 
         ShowGainedCombos();
         ExitButton.SetActive(true);
+        if ((gamemanager.actualWorldCupCompetition!=null) &&(gamemanager.IsNextWorldCupEventPossible()))
+        {
+            NextWorldCupButton.SetActive(true);
+        }
+        else
+        {
+            NextWorldCupButton.SetActive(false);
+        }
         achievements.CheckAchievements();
-        AchievementsPanel.SetActive(true);  
-        
-
+        AchievementsPanel.SetActive(true);
 
     }
 
@@ -89,13 +98,16 @@ public class CompetitionSummary : MonoBehaviour
     {
         ResetActualCompetitionData();
         ExitButton.SetActive(false);
+        NextWorldCupButton.SetActive(false);
         SceneManager.LoadScene(0);
- 
+
     }
 
-public void ResetActualCompetitionData()
-{
-    achievements.ResetActualCompetitionCombos();
-}
+    public void ResetActualCompetitionData()
+    {
+        achievements.ResetActualCompetitionCombos();
+        PlayerPrefs.DeleteKey("currentWorldCupNumber");
+        PlayerPrefs.Save();
+    }
 
 }

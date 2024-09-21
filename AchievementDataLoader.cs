@@ -67,7 +67,7 @@ public class AchievementDataLoader : MonoBehaviour
             yield return new WaitForSeconds(0.25f);
 
         }
-        Debug.Log("ACHIEVEMENTS LOADED");
+        
     }
 
 

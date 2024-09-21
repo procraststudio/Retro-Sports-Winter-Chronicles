@@ -1,13 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Utilities : MonoBehaviour
 {
     Competition competition;
     Gamemanager gamemanager;
+    List<Player> allCompetitors;
 
     // Start is called before the first frame update
     void Start()
     {
+
         competition = Competition.Instance;
         gamemanager = FindObjectOfType<Gamemanager>();
 
@@ -33,7 +36,7 @@ public class Utilities : MonoBehaviour
         int index = 5;
         competition.outsiders.RemoveRange(competition.outsiders.Count - index, index);
         // competition.currentCompetitorNo = competition.players.Count - 1;
-        competition.underdogs.RemoveRange(competition.underdogs.Count - index/2, index/2);
+        competition.underdogs.RemoveRange(competition.underdogs.Count - index / 2, index / 2);
         competition.UpdateLists();
     }
     public void LowerSurprisesChance()
@@ -63,6 +66,23 @@ public class Utilities : MonoBehaviour
             competition.players[i].nationality = "SUI";
         }
 
+    }
+    public void ResetWorldCupPoints()
+    {
+        allCompetitors = competition.allCompetitors;
+        foreach (var competitor in allCompetitors)
+        {
+            string key = competitor.GetKey();
+            if (PlayerPrefs.HasKey(key))
+            {
+                //PlayerPrefs.DeleteKey(key);
+                PlayerPrefs.SetInt(key, competitor.worldCupPoints=0);
+                //PlayerPrefs.SetInt(key, 0);
+                Debug.Log("WC pts deleted");
+            }
+        }
+        PlayerPrefs.DeleteKey("currentWorldCupNumber");
+        PlayerPrefs.Save();
     }
 
 

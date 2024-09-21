@@ -115,6 +115,10 @@ public class PlayerDataLoader : MonoBehaviour
             }
 
         }
+        else if (gameObject.CompareTag("worldcup_list"))
+        {
+            listToLoad = competition.worldCupClassification;
+        }
 
             return listToLoad;
 

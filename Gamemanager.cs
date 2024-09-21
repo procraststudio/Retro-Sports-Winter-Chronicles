@@ -27,46 +27,33 @@ public class Gamemanager : MonoBehaviour
     public float temperatureMin { get; private set; }
     public float temperatureMax { get; private set; }
     public VenueLoader venueLoader;
-    public CompetitionType thisCompetition;
+    public CompetitionType thisCompetition { get; private set; }
     public CompetitionType[] sampleCompetitions;
+    public WorldCupCompetition actualWorldCupCompetition;
     private string competitorsPath = "Competitors";
     public string filePath = "Assets/Resources/Competitors/";
 
     void Start()
     {
         competition = Competition.Instance;
-        // gameStart = FindObjectOfType<GameStart>();
-
         if (GameStart.currentCompetition == null)
         {
             thisCompetition = sampleCompetitions[0];
         }
         else
         {
+            if (GameStart.currentWorldCup != null)
+            actualWorldCupCompetition = GameStart.currentWorldCup;
             thisCompetition = GameStart.currentCompetition;
         }
-        //competitionType = new CompetitionType {competitionName ="Slalom Women", competitionDate = new DateTime (1986,2,23), competitionVenueName ="Sestriere"  };
         competitionName = thisCompetition.competitionName.ToString();
         numbersOfRun = thisCompetition.numberOfRuns;
         CalculateSurpriseModifier();
-        //surprisesModifier =  1.00f; //
         bestTimeInSec = thisCompetition.bestTimeinSec; // DH 119.63f; 2 runs: average from 2 best runs
         tenthTime = thisCompetition.tenthTimeinSec;   //  przy 15 faworytach to czas 15-go?
         timeDifference = tenthTime - bestTimeInSec;
         bestOverallTime = bestTimeInSec;
-
-        //competitionName = GameStart.currentCompetition != null ? GameStart.currentCompetition.competitionName.ToString()
-        // : sampleCompetitions[0].competitionName;
-        //venueLoader = new VenueLoader();
-        //venueLoader.LoadVenue(competitionName);
-        // typeOfCompetition = "alpine skiing";
-        // TODO: select competition type, number of runs, surprises modifier, ??number of competitors
-        //  competitionName = sampleCompetitions[0].competitionName;
-        //filePath += competitionName + ".txt"; // "CALGARY 1988 Alpine Ski: Downhill MEN. RUN: "; //Downhill
-        //venueNation = "CAN";
-        // numbersOfRun = sampleCompetitions[0].numberOfRuns;
         filePath += thisCompetition.competitorsDatabase + ".txt";
-        //bonusCompetitorsFilePath += thisCompetition.bonusDatabaseName + ".txt";
         LoadPlayersFromFile(filePath);
         if (thisCompetition.bonusDatabaseName != null)
         {
@@ -102,7 +89,7 @@ public class Gamemanager : MonoBehaviour
                 Player newPlayer = new Player(surname, name, ranking, grade, experience, nationality);
                 players.Add(newPlayer);
             }
-            // Divide players into 3 groups
+            // Dividing players into 3 groups
             favourites = players.Where(player => player.ranking >= 1 && player.ranking <= 15).ToList();
             outsiders = players.Where(player => player.ranking >= 16 && player.ranking <= 25).ToList();
             underdogs = players.Where(player => player.ranking >= 26 && player.ranking <= 30).ToList();
@@ -114,10 +101,6 @@ public class Gamemanager : MonoBehaviour
         }
     }
 
-    void LoadCompetitionInfo(CompetitionType competitionType)
-    {
-        // all infos abou competition
-    }
 
     private void RandomizeLists(List<Player>[] lists)
     {
@@ -168,42 +151,39 @@ public class Gamemanager : MonoBehaviour
         {
             surprisesModifier = 1.00f;
         }
-
         //Slalom Men = œr 0,40 // Super G men 0,31
-
-
     }
 
-    public void createCompetitorsList() // what's this? what for?
+    public void HandleWorldCupCompetition()
     {
-        // var playerList = new List<Player>();
-        //TextAsset txtFile = null;
-        //txtFile = Resources.Load<TextAsset>(competitorsPath);
-        // textAsset = Resources.Load<TextAsset>(goodTextPath)
-        favourites = new List<Player> { };
-        // foreach (var line in File.ReadLines(txtFile))
+        PlayerPrefs.SetInt("number", 1);
+    }
+
+    public void PlayNextWorldCupCompetition()
+    {
+        int index = PlayerPrefs.GetInt("currentWorldCupNumber");
+        PlayerPrefs.SetInt("currentWorldCupNumber", index + 1);
+        index = PlayerPrefs.GetInt("currentWorldCupNumber");
+        PlayerPrefs.Save();
+        if (index < actualWorldCupCompetition.worldCupEvents.Length)
         {
-            // var parts = line.Split(','); // Za³ó¿my, ¿e dane s¹ oddzielone przecinkami
-            // if (parts.Length >= 4)
-            // {
-            //  Player player00 = new Player(parts[0], parts[1], int.Parse(parts[2]), char.Parse(parts[3]), int.Parse(parts[4]), parts[5]);
-            //Player player = new Player
-            //{
-            //    surname = parts[0],
-            //    name = parts[1],
-            //    ranking = int.Parse(parts[2]),
-            //    grade = char.Parse(parts[3]),
-            //    experience = int.Parse(parts[4]),
-            //    nationality = parts[5],
-
-            //};
-            // favourites.Add(player00);
-
-            //public Player(string surname, string name, int ranking, char grade, int experience, string nationality)
+            Debug.Log("CURRENT WC No: " + PlayerPrefs.GetInt("currentWorldCupNumber"));
+            GameStart.StartCompetition(actualWorldCupCompetition.worldCupEvents[index]);
         }
     }
 
-
+    public bool IsNextWorldCupEventPossible()
+    {
+        int index = PlayerPrefs.GetInt("currentWorldCupNumber");
+        if (index >= actualWorldCupCompetition.worldCupEvents.Length-1)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 }
 
 

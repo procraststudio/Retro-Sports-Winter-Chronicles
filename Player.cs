@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,8 +12,8 @@ public enum startingGrade
     X=6, A=5, B=4, C=3, D=2, E=1, F=0
 }
 
-
-public class Player : MonoBehaviour
+[System.Serializable]
+public class Player: MonoBehaviour
 {
     public string secondName { get; set; }
     public string surname { get; set; }
@@ -29,17 +30,23 @@ public class Player : MonoBehaviour
     public float secondRunPoints { get; set; } = 0;
     public int secondRunModifiers { get; set; } = 0;
     public float finalPerformance { get; set; }
+    public int worldCupPoints { get; set; } = 0;
+    public int currentWorldCupPoints { get; set; } = 0;
     public int place { get; set; }
     public int firstRunPlace { get; set; }
     public int secondRunPlace { get; set; }
+    public int worldCupPlace { get; set; }
     public float totalSeconds { get; set; } = 0;
+    public float firstRunDistance { get; set; } = 0;
+    public float secondRunDistance { get; set; } = 0;
+
+    public double skiJumpingPoints { get; set; } = 0;
+
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
     public bool homeFactor = false;
     public int praisesByCommentator { get; set; } = 0; 
     public PlayerState myState;
-
-    // ? TODO: ADD Dominator like Alberto Tomba = grade A+
 
     public enum PlayerState
     {
@@ -62,6 +69,7 @@ public class Player : MonoBehaviour
         this.startingGrade = grade;
         this.nationality = nationality;
         this.myState = PlayerState.Running;
+        this.worldCupPoints = 0;
     }
 
     public int CalculateAverage()
@@ -69,7 +77,7 @@ public class Player : MonoBehaviour
         // ORIGINAL AVERAGES: X 27, A 24, B 19, C 14, D 9, E 4 
         if (this.grade == 'X')
         {
-            averagePerformance = 27;
+            averagePerformance = 28;
         }
 
         else if (this.grade == 'A')
@@ -282,6 +290,20 @@ public class Player : MonoBehaviour
         return formattedDistance;
     }
 
-    
+    public void AddWorldCupPoints(int points)
+    {
+        currentWorldCupPoints += points;
+        worldCupPoints += points;
+    }
+
+    public void ResetPlayerStats()
+    {
+
+    }
+    public string GetKey()
+    {
+        return $"{secondName}_{surname}";
+    }
+
 
 }

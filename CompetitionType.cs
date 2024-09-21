@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
-[Serializable]
+[System.Serializable]
 [CreateAssetMenu(fileName = "New CompetitionType", menuName = "CompetitionType")] 
 
 public class CompetitionType : ScriptableObject
@@ -12,6 +14,7 @@ public class CompetitionType : ScriptableObject
     public string competitionVenueName;
     public string competitorsDatabase;
     public int numberOfRuns;
+    public float surprisesImpact = 1.00f;
     //public GameObject competitorsPack;
     public float bestTimeinSec; // TO DO make it common: time, points, metres 
     public float tenthTimeinSec;
@@ -23,7 +26,9 @@ public class CompetitionType : ScriptableObject
     public bool noWeatherImpact = false;
     public bool judgesSystem = false;   
     public bool resultsInMetres = false;
-
+    public bool worldCupCompetition = false;
+    [SerializeField] JumpingHill jumpingHill;
+    
 
     //public CompetitionType(string competitionName, DateTime date, string venueName, Player[] competitors, float bestTime, float tenthTime)
     //{
@@ -44,9 +49,3 @@ public enum typesOfCompetitions
     bobsleigh
 }
 
-public class WorldCupCompetition
-{
-    public CompetitionType[] WCCompetitions; //place here competitions with date/name/Venues
-    public int[] pointsToClassification = { 25, 20, 15, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-    // public string competition;
-}

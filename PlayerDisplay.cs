@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using static Competition;
@@ -13,8 +14,13 @@ public class PlayerDisplay : MonoBehaviour
     [SerializeField] TMP_Text competitorSurpriseChance;
     [SerializeField] TMP_Text position;
     [SerializeField] TMP_Text timeDisplay;
+    [SerializeField] TMP_Text worldCupPoints;
+    [SerializeField] TMP_Text currentWorldCupPoints;
+    //[SerializeField] TMP_Text worldCupPosition;
     public TMP_Text secondName;
     [SerializeField] GameObject background;
+    [SerializeField] GameObject[] backgrounds;
+    //[SerializeField] GameObject imageComponent;
     [SerializeField] GameObject currentCompetitorPanel;
     [SerializeField] GameObject formIndicator;
     [SerializeField] GameObject arrowIndicator;
@@ -29,12 +35,16 @@ public class PlayerDisplay : MonoBehaviour
     Competition competition;
     Surprises surprise;
     private bool headsDisplayChecked = false;
+    Gamemanager gamemanager;
+    private bool resultInMetres;
+    private bool wayOfPointsDisplayChecked = false;
 
     public void Start()
     {
         competition = Competition.Instance;
         flagSprite = Resources.Load<Sprite>(flagsFolderPath);
         surprise = FindObjectOfType<Surprises>();
+
     }
 
     public void Update()
@@ -46,10 +56,27 @@ public class PlayerDisplay : MonoBehaviour
         }
     }
 
+    private void CheckPerformanceDisplay()
+    {
+        if (FindObjectOfType<Gamemanager>().thisCompetition.resultsInMetres == true)
+        {
+            resultInMetres = true;
+        }
+        else
+        {
+            resultInMetres = false;
+        }
+    }
+
 
     public void DisplayCompetitor(Player player, int actualRun)
     {
         competition = Competition.Instance;
+        if (!wayOfPointsDisplayChecked)
+        {
+            CheckPerformanceDisplay();
+            wayOfPointsDisplayChecked = true;
+        }
         DisplayHeadImage();
 
         string boldSecondName = "<b>" + player.secondName + "</b>";
@@ -61,7 +88,14 @@ public class PlayerDisplay : MonoBehaviour
 
             arrowIndicator = null;
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
-            TimeDisplay(player);
+            if (resultInMetres == false)
+            {
+                TimeDisplay(player);
+            }
+            else if (resultInMetres == true)
+            {
+                PointsDisplay(player);
+            }
             HighlightCurrentCompetitor(player);
         }
         else if (gameObject.CompareTag("losers"))
@@ -70,6 +104,28 @@ public class PlayerDisplay : MonoBehaviour
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
             HighlightCurrentCompetitor(player);
         }
+        else if (gameObject.CompareTag("worldcup_list"))
+        {
+            if ((player.worldCupPoints > 0) && (player.worldCupPlace < 16))
+            {
+                ShowFlag(player);
+                ShowPosition(player);
+                //TO DO: IF points equal lower player position blank
+                competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
+                worldCupPoints.text = player.worldCupPoints.ToString();
+                if (player.currentWorldCupPoints > 0)
+                {
+                    currentWorldCupPoints.text = "+" + player.currentWorldCupPoints.ToString();
+                }
+                else
+                {
+                    return;
+
+                }
+            }
+            else { this.gameObject.SetActive(false); }
+        }
+
 
         else
         {
@@ -89,18 +145,27 @@ public class PlayerDisplay : MonoBehaviour
 
     public void ShowFormIndicators(Player player)
     {
-
+        //Color color = new Color;
         if (player.goodFormEffect)
         {
-            formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[0];
+            backgrounds[0].SetActive(false);
+            backgrounds[2].SetActive(true);
+            backgrounds[1].SetActive(false);
+            //formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[0];
         }
         else if (player.poorFormEffect)
         {
-            formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[1];
+            backgrounds[0].SetActive(false);
+            backgrounds[2].SetActive(false);
+            backgrounds[1].SetActive(true);
+            //formIndicator.GetComponent<SpriteRenderer>().sprite = formIndicators[1];
         }
         else
         {
-            formIndicator.GetComponent<SpriteRenderer>().sprite = null;
+            //formIndicator.GetComponent<SpriteRenderer>().sprite = null;
+            backgrounds[0].SetActive(true);
+            backgrounds[1].SetActive(false);
+            backgrounds[2].SetActive(false);
         }
     }
 
@@ -113,6 +178,10 @@ public class PlayerDisplay : MonoBehaviour
         else if (gameObject.CompareTag("secondRun_list"))
         {
             position.text = player.secondRunPlace.ToString();
+        }
+        else if (gameObject.CompareTag("worldcup_list"))
+        {
+            position.text = player.worldCupPlace.ToString();
         }
         else
         {
@@ -165,6 +234,34 @@ public class PlayerDisplay : MonoBehaviour
         }
     }
 
+    public void PointsDisplay(Player player)
+    {
+        // timeDisplay.text = player.finalPerformance.ToString();
+        if (gameObject.CompareTag("firstRun_list"))
+        {
+            //timeDisplay.text = player.firstRunPoints.ToString("F1");
+            timeDisplay.text = player.firstRunDistance.ToString("F1");
+        }
+        else if (gameObject.CompareTag("secondRun_list"))
+        {
+            // timeDisplay.text = player.secondRunPoints.ToString("F1");
+            timeDisplay.text = player.secondRunDistance.ToString("F1");
+        }
+        else
+        {
+            if (competition.currentRun < 2)
+            {
+                // timeDisplay.text = player.firstRunPoints.ToString("F1");
+                timeDisplay.text = player.firstRunDistance.ToString("F1");
+            }
+            else
+            {
+                timeDisplay.text = player.skiJumpingPoints.ToString("F1");
+            }
+        }
+    }
+   
+
     public void ShowFlag(Player player)
     {
         playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
@@ -189,7 +286,7 @@ public class PlayerDisplay : MonoBehaviour
 
     public void DisplayHeadImage()
     {
-        if ((!headsDisplayChecked) &&(headGraphic!=null))
+        if ((!headsDisplayChecked) && (headGraphic != null))
         {
 
             if (competition.gamemanager.competitionName.Contains("Men"))
@@ -204,4 +301,5 @@ public class PlayerDisplay : MonoBehaviour
 
         }
     }
+
 }
