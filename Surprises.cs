@@ -1,6 +1,5 @@
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -26,7 +25,7 @@ public class Surprises : MonoBehaviour
     Dice dice;
     private int surpriseRoll;
     [SerializeField] private GameObject scrollViewInfo;
-    [SerializeField] AudioClip [] sounds;
+    [SerializeField] AudioClip[] sounds;
 
     void Start()
     {
@@ -45,7 +44,6 @@ public class Surprises : MonoBehaviour
 
     public void CheckSurprise(Player player)
     {
-
         competition.ChangeState(Competition.GameState.CheckSurprisePhase);
         surpriseInfo.text = "";
         surpriseMod = gamemanager.surprisesModifier * weather.weatherModifier;
@@ -55,9 +53,11 @@ public class Surprises : MonoBehaviour
         surpriseRollIndicator.text = surpriseRoll.ToString();
         Debug.Log("SURPRISE CHANCE: " + realSurpriseChance);
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
+
         CheckCriticalRoll(player);
 
         if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance) && (!player.goodFormEffect))
+             //&&(!Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping")))
         {
             surpriseEffect = true;
             eventWindow.SetActive(true);
@@ -75,14 +75,13 @@ public class Surprises : MonoBehaviour
                     surpriseInfo.text = player.secondName.ToUpper() + " FALLS DOWN! OUT!";
                     player.myState = Player.PlayerState.DidNotFinish;
                 }
-                
                 gamemanager.surprisesModifier -= 0.03f; //LOWER SURPRISE CHANCE
             }
 
             else
             {
                 // eventTitle.text = "SURPRISE!".ToString();
-                surpriseInfo.text = player.secondName.ToUpper() + " IS SLOW: OUT OF 15!";
+                surpriseInfo.text = player.secondName.ToUpper() + " IS WEAK: OUT OF 15!";
                 SoundManager.PlayOneSound("outof15");
                 player.PoorFormEffect();
                 player.myState = Player.PlayerState.OutOf15;
@@ -182,7 +181,7 @@ public class Surprises : MonoBehaviour
         // competition.eventHappened = false;
         competition.ChangeState(Competition.GameState.CompetitionPhase);
     }
-    public void CheckCriticalRoll(Player player)
+    public void CheckCriticalRoll(Player player) // HITTING THE GROUND
     {
         if ((competition.firstD6 == 1) && (competition.secondD6 == 1) && (competition.thirdD6 == 1))
         {
@@ -190,20 +189,37 @@ public class Surprises : MonoBehaviour
             surpriseEffect = true;
             dice.SpawnComboInfo("DISASTER!");
             eventWindow.SetActive(true);
-            eventTitle.text = "DISASTER! POSSIBLE INJURY!".ToString();
-            //TO DO : INJURY mechanics
-            SoundManager.PlayOneSound("disqualified");
-            surpriseInfo.text = player.secondName.ToUpper() + " HITS THE GROUND! TRAGEDY!";
-            player.myState = Player.PlayerState.DidNotFinish;
-            SurpriseEffect(player);
+            if ((Gamemanager.GetCompetitionType().surprisesImpact >= 1) || (Weather.GetWindCondition().Contains("strong")))
+            {
+                HittingTheGround(player);
+            }
+            else if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+            {
+                currentEvent.GetComponent<SkiJumpingEvents>().JumpControl(player, 10);
+            }
             StartCoroutine("CloseWindow");
-
             return;
-
         }
-       
+        else if ((competition.firstD6 == 1) && (competition.secondD6 == 1) && (competition.thirdD6 != 1))
+        {
+            if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+            {
+                // currentEvent.GetComponent<SkiJumpingEvents>().ResolveSkiJumpingEvent(player, 4);
+                currentEvent.GetEventType( 4); 
+                Debug.Log("JUMP CONTROL CHECKED");
+            }
+        }
     }
 
+    public void HittingTheGround(Player player)
+    {
+        eventTitle.text = "DISASTER! POSSIBLE INJURY!".ToString();
+        //TO DO : INJURY mechanics
+        SoundManager.PlayOneSound("disqualified");
+        surpriseInfo.text = player.secondName.ToUpper() + " HITS THE GROUND! TRAGEDY!";
+        player.myState = Player.PlayerState.DidNotFinish;
+        SurpriseEffect(player);
+    }
 }
 
 

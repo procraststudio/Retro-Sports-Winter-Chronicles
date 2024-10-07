@@ -27,10 +27,10 @@ public class TabControl : MonoBehaviour
 
     public void ChangeButtonsNames()
     {
-        if (gamemanager.thisCompetition.IsCombined == true)
+        if (Gamemanager.GetCompetitionType().IsCombined == true)
         {
-            namesOfTabButtons[0].text = gamemanager.thisCompetition.firstCombinedCompetition.ToString();
-            namesOfTabButtons[1].text = gamemanager.thisCompetition.secondCombinedCompetition.ToString();
+            namesOfTabButtons[0].text = Gamemanager.GetCompetitionType().firstCombinedCompetition.ToString();
+            namesOfTabButtons[1].text = Gamemanager.GetCompetitionType().secondCombinedCompetition.ToString();
         }
     }
 }

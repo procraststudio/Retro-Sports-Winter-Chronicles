@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Utilities : MonoBehaviour
 {
@@ -10,7 +11,6 @@ public class Utilities : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
         competition = Competition.Instance;
         gamemanager = FindObjectOfType<Gamemanager>();
 
@@ -59,11 +59,11 @@ public class Utilities : MonoBehaviour
         PlayerPrefs.DeleteAll();
 
     }
-    public void AllSwiss()
+    public void AllCanada()
     {
         for (int i = 0; i < competition.players.Count; i++)
         {
-            competition.players[i].nationality = "SUI";
+            competition.players[i].nationality = "CAN";
         }
 
     }
@@ -83,6 +83,11 @@ public class Utilities : MonoBehaviour
         }
         PlayerPrefs.DeleteKey("currentWorldCupNumber");
         PlayerPrefs.Save();
+    }
+
+    public void BackToTitleMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 
 

@@ -27,7 +27,7 @@ public class Gamemanager : MonoBehaviour
     public float temperatureMin { get; private set; }
     public float temperatureMax { get; private set; }
     public VenueLoader venueLoader;
-    public CompetitionType thisCompetition { get; private set; }
+    public static CompetitionType thisCompetition { get; set; }
     public CompetitionType[] sampleCompetitions;
     public WorldCupCompetition actualWorldCupCompetition;
     private string competitorsPath = "Competitors";
@@ -47,6 +47,7 @@ public class Gamemanager : MonoBehaviour
             thisCompetition = GameStart.currentCompetition;
         }
         competitionName = thisCompetition.competitionName.ToString();
+        venueNation = thisCompetition.competitionVenueNation;
         numbersOfRun = thisCompetition.numberOfRuns;
         CalculateSurpriseModifier();
         bestTimeInSec = thisCompetition.bestTimeinSec; // DH 119.63f; 2 runs: average from 2 best runs
@@ -146,12 +147,13 @@ public class Gamemanager : MonoBehaviour
             surprisesModifier = 2.00f;
             Debug.Log("SURPRISE CALCULATED");
         }
-
+  
         else
         {
-            surprisesModifier = 1.00f;
+            surprisesModifier = thisCompetition.surprisesImpact;
+            Debug.Log("SURPRISE CALCULATED");
         }
-        //Slalom Men = œr 0,40 // Super G men 0,31
+        // Slalom Men = œr 0,40 // Super G men 0,31
     }
 
     public void HandleWorldCupCompetition()
@@ -183,6 +185,11 @@ public class Gamemanager : MonoBehaviour
         {
             return true;
         }
+    }
+
+    public static CompetitionType GetCompetitionType()
+    {
+        return thisCompetition;
     }
 }
 

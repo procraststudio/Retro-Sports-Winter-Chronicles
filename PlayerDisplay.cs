@@ -58,7 +58,7 @@ public class PlayerDisplay : MonoBehaviour
 
     private void CheckPerformanceDisplay()
     {
-        if (FindObjectOfType<Gamemanager>().thisCompetition.resultsInMetres == true)
+        if (Gamemanager.GetCompetitionType().resultsInMetres == true)
         {
             resultInMetres = true;
         }
@@ -104,6 +104,7 @@ public class PlayerDisplay : MonoBehaviour
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
             HighlightCurrentCompetitor(player);
         }
+
         else if (gameObject.CompareTag("worldcup_list"))
         {
             if ((player.worldCupPoints > 0) && (player.worldCupPlace < 16))
@@ -270,7 +271,7 @@ public class PlayerDisplay : MonoBehaviour
     public void HighlightCurrentCompetitor(Player player)
     {
         if ((currentCompetitorPanel != null) && (competition.myState != GameState.SummaryPhase)
-            && (competition.myState != GameState.EndOfRun))
+            && (competition.myState != GameState.EndOfRun) )
 
         {
             if ((player.secondName == competition.currentCompetitor.secondName) && (player.surname == competition.currentCompetitor.surname))

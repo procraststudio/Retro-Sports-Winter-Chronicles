@@ -9,6 +9,7 @@ using UnityEngine;
 public class JumpingHill : ScriptableObject
 {
     public string jumpingHillName;
+    public string hillType; // normal, large, flying...
     public float pointK;
     public float hillRecord;
     public string recordHolder;

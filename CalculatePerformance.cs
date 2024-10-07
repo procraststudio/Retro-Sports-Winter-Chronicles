@@ -11,6 +11,8 @@ public class CalculatePerformance : MonoBehaviour
     [SerializeField] GameObject dicePanel;
     //[SerializeField] GameObject judgesSystemScript;
     private JudgesSystem judgesSystem;
+    private float pointK { get; set; }
+    private bool pointKLoaded = false;
     void Start()
     {
         competition = Competition.Instance;
@@ -20,6 +22,7 @@ public class CalculatePerformance : MonoBehaviour
     public void GetPerformanceModifier(Player currentCompetitor, int competitionRoll)
     {
         //currentCompetitor = competition.currentCompetitor;
+
         thirdD6 = competition.thirdD6;
         switch (competitionRoll)
         {
@@ -57,8 +60,11 @@ public class CalculatePerformance : MonoBehaviour
             case 8:
                 if (currentCompetitor.CheckHomeFactor()) //HOME FACTOR +thirdD6
                 {
-                    currentCompetitor.AddRunModifier(competition.currentRun, thirdD6);
-                    Debug.Log("HOME FACTOR: +" + thirdD6 * 2);
+                    //currentCompetitor.GoodFormEffect();
+                    int homeBonus = (int)(thirdD6 * (Gamemanager.GetCompetitionType().homeFactorModifier));
+                    currentCompetitor.AddRunModifier(competition.currentRun, homeBonus);
+                    // Debug.Log("HOME BONUS: +" + thirdD6 * 2);
+                    Debug.Log("HOME BONUS: +" + homeBonus);
                 }
                 if (currentCompetitor.grade > 3)
                 { calculatePerformance(currentCompetitor, 5, thirdD6); }
@@ -162,13 +168,14 @@ public class CalculatePerformance : MonoBehaviour
 
 
         player.CalculateActualRun(currentRun);
-        if (FindObjectOfType<Gamemanager>().thisCompetition.timeIntervals)
-        {
-            checkSectorTime(currentRun, currentPlayerPoints, player);
-        }
+        //if (FindObjectOfType<Gamemanager>().thisCompetition.timeIntervals)
+        //{
+        checkSectorTime(currentRun, currentPlayerPoints, player);
+        //}
         player.CalculateFinal();
-        
-        if ((competition.partsOfRun == 3) && (player.myState == Player.PlayerState.Running))
+
+        if ((competition.partsOfRun == 3) && (player.myState == Player.PlayerState.Running) &&
+            (Gamemanager.GetCompetitionType().resultsInMetres))
         {
             if (currentRun == 1)
             {
@@ -200,10 +207,6 @@ public class CalculatePerformance : MonoBehaviour
     private void CalculateSectorTime(Player player, float sectorPoints)
     {
         int partsOfRun = competition.partsOfRun;
-        //float firstSectorMostPoints = competition.firstSectorMostPoints;
-        //float secondSectorMostPoints = competition.secondSectorMostPoints;
-        //float thirdSectorMostPoints = competition.thirdSectorMostPoints;
-
 
         if (player.myState == Player.PlayerState.Running)
         {
@@ -259,9 +262,14 @@ public class CalculatePerformance : MonoBehaviour
 
     private void ConvertPointToDistance(Player competitor, float points)
     {
-        // locate Kpoint of actual jumping hill
-        float distance = 89.0f - ((80.0f - points) * 0.2f);
-        float roundedDistance = RoundToNearestHalf(distance);//89 is K point    
+        if ((!pointKLoaded) && (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping")))
+        {
+            pointK = Gamemanager.GetCompetitionType().jumpingHill.pointK;
+            pointKLoaded = true;    
+        }
+
+        float distance = pointK - ((80.0f - points) * 0.2f);
+        float roundedDistance = RoundToNearestHalf(distance);
         if (currentRun == 1)
         {
             competitor.firstRunDistance = roundedDistance;
@@ -276,10 +284,9 @@ public class CalculatePerformance : MonoBehaviour
     }
     private double ConvertDistanceToSkiJumpingPoints(Player competitor, float distance)
     {
-        double baseDistance = 89.0;
         double basePoints = 60.0;
         double pointsPerHalfMeter = 0.8;
-        double difference = Convert.ToDouble(distance) - baseDistance;
+        double difference = Convert.ToDouble(distance) -(double)pointK;
         double points = basePoints + (difference / 0.5) * pointsPerHalfMeter;
         double judgesPoints = judgesSystem.GetSkiJumpingNotes(competitor, distance);
         points += judgesPoints;

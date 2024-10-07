@@ -23,7 +23,7 @@ public class ShortEvent : MonoBehaviour
     Weather weather;
     CommentsSystem comment;
     Gamemanager gamemanager;
-    Surprises surprise;
+    public Surprises surprise;
 
     private enum RolledEvents
     {
@@ -73,74 +73,84 @@ public class ShortEvent : MonoBehaviour
     }
 
 
-    public void GetEventType()
+    public void GetEventType(int dieRoll)
     {
         actualCompetitor = competition.currentCompetitor;
-        d6Roll = competition.thirdD6;
+        d6Roll = dieRoll;
         string description = "";
         // eventObject = Instantiate(eventPrefab, new Vector3(-10.00f, -50.0f, 0.00f), Quaternion.identity);
         // eventObject.transform.SetParent(canvasObject.transform, false);
-        runButton.SetActive(false);
-        eventObject.SetActive(true);
+       
+        //runButton.SetActive(false);
+        //eventObject.SetActive(true);
 
-        Debug.Log("WEATHER MODIFIER: " + weatherModifier);
-
-        switch (d6Roll)
+        if (Gamemanager.GetCompetitionType().competitionType.Contains("alpineSki"))
         {
-            case 1:
-                saveRoll = 100 * ((actualCompetitor.experience - weatherModifier)) / 6;
-                if (saveRoll < 1)
-                {
-                    saveRoll = 10;
-                }
-                Debug.Log("SAVE ROLL: " + saveRoll);//Convert.ToInt32(((actualCompetitor.experience - weatherModifier)/6)*100);
-                description += "BUMP!".ToUpper(); // + "\n" +
-                   // saveRoll.ToString() + "%: the competitor stays on the route" + "\n"
-                   // + (100 - saveRoll).ToString() + "%: OUT, DNF! ";
-                actualEvent = RolledEvents.Bump;
-                break;
-            case 2:
-                saveRoll = 100 * (actualCompetitor.GetGradeModifier() - weatherModifier - GetCompetitionModifier()) / 6;
-                if (saveRoll < 1)
-                {
-                    saveRoll = 10;
-                }
-                description += "CURVE!".ToUpper(); // + "\n" +
-                   // saveRoll.ToString() + "%: no DQ" + "\n"
-                   // + (100 - saveRoll).ToString() + "%: DISQUALIFIED! ";
-                actualEvent = RolledEvents.Curve;
-                break;
-            case 3:
+            runButton.SetActive(false);
+            eventObject.SetActive(true);
+            switch (d6Roll)
+            {
+                case 1:
+                    saveRoll = 100 * ((actualCompetitor.experience - weatherModifier)) / 6;
+                    if (saveRoll < 1)
+                    {
+                        saveRoll = 10;
+                    }
+                    Debug.Log("SAVE ROLL: " + saveRoll);//Convert.ToInt32(((actualCompetitor.experience - weatherModifier)/6)*100);
+                    description += "BUMP!".ToUpper(); // + "\n" +
+                                                      // saveRoll.ToString() + "%: the competitor stays on the route" + "\n"
+                                                      // + (100 - saveRoll).ToString() + "%: OUT, DNF! ";
+                    actualEvent = RolledEvents.Bump;
+                    break;
+                case 2:
+                    saveRoll = 100 * (actualCompetitor.GetGradeModifier() - weatherModifier - GetCompetitionModifier()) / 6;
+                    if (saveRoll < 1)
+                    {
+                        saveRoll = 10;
+                    }
+                    description += "CURVE!".ToUpper(); // + "\n" +
+                                                       // saveRoll.ToString() + "%: no DQ" + "\n"
+                                                       // + (100 - saveRoll).ToString() + "%: DISQUALIFIED! ";
+                    actualEvent = RolledEvents.Curve;
+                    break;
+                case 3:
+                    description += "WEATHER EFFECT!".ToUpper(); // + "\n" + "If snowing/raining: BUMP. " +
+                                                                //"OTHERWISE: If 7 or less competitors to run: CLEARED RUN" + "\n" +
+                                                                // "If 8 or more: POOR STRATEGY";
+                    actualEvent = RolledEvents.Weather;
+                    break;
+                case 4:
+                    description += "TAKING RISK!".ToUpper(); // + "\n" + "Roll d6. If result EVEN: +d6 points. " +
+                                                             //  "\n" + "If result ODD: -d6 points." + "\n" + "If d6 is 1 and GRADE C or worse: OUT OF 15/DNF/DQ.";
+                    actualEvent = RolledEvents.Risk;
+                    break;
+                case 5:
+                    description += "EXPERIENCE MATTERS".ToUpper(); // + "\n" + "Roll d6. If EXP 0 or 3 see d6. " +
+                                                                   // "\n" + "If 1: -6 points, if 6: +6 points." + "\n" + "OTHERWISE: If HARD snow +d6 points.";
+                    actualEvent = RolledEvents.Talent;
+                    break;
+                case 6:
+                    description += "BIG SURPRISE!".ToUpper(); // + "\n" + "If 2nd run: competitor from OUT OF 15 is back. " +
+                                                              // "\n" + "OTHERWISE: UNDERDOG (with +2 grade) enters.";
+                    actualEvent = RolledEvents.Surprise;
+                    break;
 
-                description += "WEATHER EFFECT!".ToUpper(); // + "\n" + "If snowing/raining: BUMP. " +
-                    //"OTHERWISE: If 7 or less competitors to run: CLEARED RUN" + "\n" +
-                   // "If 8 or more: POOR STRATEGY";
-                actualEvent = RolledEvents.Weather;
-                break;
-            case 4:
-                description += "TAKING RISK!".ToUpper(); // + "\n" + "Roll d6. If result EVEN: +d6 points. " +
-                  //  "\n" + "If result ODD: -d6 points." + "\n" + "If d6 is 1 and GRADE C or worse: OUT OF 15/DNF/DQ.";
-                actualEvent = RolledEvents.Risk;
-                break;
-            case 5:
-                description += "EXPERIENCE MATTERS".ToUpper(); // + "\n" + "Roll d6. If EXP 0 or 3 see d6. " +
-                   // "\n" + "If 1: -6 points, if 6: +6 points." + "\n" + "OTHERWISE: If HARD snow +d6 points.";
-                actualEvent = RolledEvents.Talent;
-                break;
-            case 6:
-                description += "BIG SURPRISE!".ToUpper(); // + "\n" + "If 2nd run: competitor from OUT OF 15 is back. " +
-                   // "\n" + "OTHERWISE: UNDERDOG (with +2 grade) enters.";
-                actualEvent = RolledEvents.Surprise;
-                break;
+            }
+            // descriptionText.color = Color.white;
+            descriptionText.text = description.ToString();
+            // description += "\n" + "------------------------";
 
+            Debug.Log("Event described");
+            eventRolled = true;
+            ResolveEvent();
         }
-        // descriptionText.color = Color.white;
-        descriptionText.text = description.ToString();
-        // description += "\n" + "------------------------";
+        else if  (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+        {
+            GetComponent<SkiJumpingEvents>().ResolveSkiJumpingEvent(actualCompetitor, d6Roll);
+        }
+        eventResolved = true;
+        competition.ChangeState(Competition.GameState.CompetitionPhase);
 
-        Debug.Log("Event described");
-        eventRolled = true;
-        ResolveEvent();
     }
 
     public void ResolveEvent()
@@ -194,7 +204,7 @@ public class ShortEvent : MonoBehaviour
 
     private void WeatherTest()
     {
-        if ((weather.precipitation.Contains("snowing")) || (weather.precipitation.Contains("raining")))
+        if ((Weather.precipitation.Contains("snowing")) || (Weather.precipitation.Contains("raining")))
         {
             descriptionText.text += "OOPS! DANGEROUS BUMP... ";
             BumpTest();
@@ -327,7 +337,7 @@ public class ShortEvent : MonoBehaviour
         }
         competition.UpdateLists();
     }
-    private void CloseEventWindow()
+    public void CloseEventWindow()
     {
         if ((eventResolved) && (Input.GetMouseButtonDown(0)))
         {

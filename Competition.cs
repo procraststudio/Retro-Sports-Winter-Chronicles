@@ -219,12 +219,12 @@ public class Competition : MonoBehaviour
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
         thirdD6 = Random.Range(1, 7);
-        //firstD6 = 4; secondD6 = 4; thirdD6 = 4;
+       // firstD6 = 1; secondD6 = 1; thirdD6 = 1;
         competitionRoll = firstD6 + secondD6;
         pointsSystem.AddTemporaryPoints(competitionRoll * thirdD6);
         if (((outsiders.Count > 0) || (underdogs.Count > 0)) && (firstD6 + secondD6 + thirdD6 != 18))
-        {
-            surprise.CheckSurprise(currentCompetitor); //SURPRISE CHECK
+        {   
+            surprise.CheckSurprise(currentCompetitor);//SURPRISE CHECK
             CheckEvent(currentCompetitor);           // EVENT CHECK
         }
         dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
@@ -258,7 +258,8 @@ public class Competition : MonoBehaviour
                 bool playerExists = false;
                 for (int i = finishers.Count - 1; i >= 0; i--)
                 {
-                    if (finishers[i].secondName == currentCompetitor.secondName)
+                    if ((finishers[i].secondName == currentCompetitor.secondName)
+                        && (finishers[i].surname == currentCompetitor.surname))
                     {
                         playerExists = true;
                     }
@@ -375,7 +376,7 @@ public class Competition : MonoBehaviour
             listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
         }
     }
-    public void ShowFirstRunList()
+    public void ShowFirstRunList()  // reference from tab button
     {
         if (currentRun > 1)
         {
@@ -386,7 +387,7 @@ public class Competition : MonoBehaviour
             {
                 listsSection[i].GetComponent<PlayerDataLoader>().UpdateCompetitors();
             }
-            endOfFirstRunList.GetComponent<PlayerDataLoader>().listFrozen = true;
+            //endOfFirstRunList.GetComponent<PlayerDataLoader>().listFrozen = true;
         }
         else
         {
@@ -426,7 +427,7 @@ public class Competition : MonoBehaviour
     {
         finishersList.text = "";
         resultsList.text = "";
-        if (gamemanager.thisCompetition.competitionType.Contains("skiJumping"))
+        if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
         {
             finishers.Sort((a, b) => b.skiJumpingPoints.CompareTo(a.skiJumpingPoints));
         }
@@ -534,7 +535,7 @@ public class Competition : MonoBehaviour
             var shortEvent = FindObjectOfType<ShortEvent>();
             Debug.Log("EVENT!");
             ChangeState(GameState.EventPhase);
-            shortEvent.GetEventType();
+            shortEvent.GetEventType(thirdD6);
         }
     }
     public void HandleNextRun()
@@ -575,6 +576,7 @@ public class Competition : MonoBehaviour
                 blackHorses.AddRange(outsiders);
                 blackHorses.AddRange(underdogs);
                 blackHorses.AddRange(outOf15Competitors);
+                blackHorses.AddRange(bonusCompetitors);
                 // COMMENTATOR PRAISES RESET
                 foreach (var player in players)
                 {
@@ -584,6 +586,7 @@ public class Competition : MonoBehaviour
                 foreach (var player in blackHorses)
                 {
                     player.firstRunPoints = finishers[finishers.Count - 1].firstRunPoints - 3;
+                    player.skiJumpingPoints = finishers[finishers.Count - 1].skiJumpingPoints - 5;
                 }
                 finishers.Clear();
                 UpdateLists();
@@ -597,7 +600,7 @@ public class Competition : MonoBehaviour
 
     public void HandleWorldCupPoints(List<Player> list)
     {
-        if (gamemanager.thisCompetition.worldCupCompetition)
+        if (Gamemanager.GetCompetitionType().worldCupCompetition)
         {
             int index = 0;
             for (int i = 0; i < list.Count; i++)
@@ -638,7 +641,7 @@ public class Competition : MonoBehaviour
 
     public void LoadWorldCupPoints(List<Player> competitors)
     {
-        if (gamemanager.thisCompetition.worldCupCompetition)
+        if (Gamemanager.GetCompetitionType().worldCupCompetition)
         {
             foreach (var competitor in competitors)
             {
@@ -780,15 +783,15 @@ public class Competition : MonoBehaviour
     }
     public void AlpineCombinedModifiers()
     {
-        if (gamemanager.thisCompetition.IsCombined == true)
+        if (Gamemanager.GetCompetitionType().IsCombined == true)
         {
             if (currentRun == 1)
             {
-                competitionName.text += " " + gamemanager.thisCompetition.firstCombinedCompetition.ToString();
+                competitionName.text += " " + Gamemanager.GetCompetitionType().firstCombinedCompetition.ToString();
             }
             else if (currentRun == 2)
             {
-                competitionName.text += " " + gamemanager.thisCompetition.secondCombinedCompetition.ToString();
+                competitionName.text += " " + Gamemanager.GetCompetitionType().secondCombinedCompetition.ToString();
                 gamemanager.competitionName = "Slalom";
             }
         }

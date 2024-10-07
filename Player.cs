@@ -191,6 +191,8 @@ public class Player: MonoBehaviour
         else if (poorFormEffect)
         {
             poorFormEffect = false;
+            grade--;
+            ranking -= 5;
         }
 
     }
@@ -212,6 +214,8 @@ public class Player: MonoBehaviour
         else if (goodFormEffect)
         {
             goodFormEffect = false;
+            grade++;
+            ranking += 5;
         }
     }
     public bool CheckHomeFactor()

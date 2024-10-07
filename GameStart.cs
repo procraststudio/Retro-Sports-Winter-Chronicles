@@ -11,6 +11,7 @@ public class GameStart : MonoBehaviour
     [SerializeField] GameObject DisciplinesPanel;
     [SerializeField] GameObject WorldCupPanel;
     [SerializeField] GameObject WorldCupDisciplinesPanel;
+    [SerializeField] GameObject backgroundPanel;
     public RectTransform rectTransform;
     public List<GameObject> winterGames = new List<GameObject>();
     public bool winterOlympicsMode = false;
@@ -81,6 +82,7 @@ public class GameStart : MonoBehaviour
     public void ShowDisciplines()
     {
         MenuPanel.SetActive(false);
+        backgroundPanel.SetActive(true);
 
         if (actualGameMode == gameModes.casualMode)
         {
@@ -114,6 +116,7 @@ public class GameStart : MonoBehaviour
         DisciplinesPanel.SetActive(false);
         WinterGamesPanel.SetActive(false);
         WorldCupDisciplinesPanel.SetActive(false);
+        backgroundPanel.SetActive(false);
         actualGameMode = gameModes.noMode;
 
 

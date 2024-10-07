@@ -20,6 +20,7 @@ public class Weather : MonoBehaviour
     [SerializeField] TMP_Text[] temperatureText;
     [SerializeField] TMP_Text snowConditionText;
     [SerializeField] TMP_Text precipitationText;
+    [SerializeField] TMP_Text windConditionText;
     [SerializeField] GameObject[] weatherCharts;
     [SerializeField] TMP_Text[] descriptionTexts;
     [SerializeField] GameObject precipitationImage;
@@ -28,8 +29,10 @@ public class Weather : MonoBehaviour
     [SerializeField] GameObject[] weatherSections;
     [SerializeField] GameObject setupButton;
     [SerializeField] TMP_Text surprisesModifierText;
-    public string precipitation { get; set; }
+    public static string precipitation { get; set; }
     public string snowCondition { get; set; }
+    public static string windCondition { get; set; }
+    public static string windDirection = "";
     private int snowConditionModifier;
     private int precipitationModifier = 0;
     public bool weatherPhaseOver;
@@ -73,25 +76,25 @@ public class Weather : MonoBehaviour
                 snowConditionModifier += 1; weatherModifier *= 1.30f; precipitationModifier -= 1; break;//VERY COLD
             case 4:
                 actualTemperature += Random.Range(-5.00f, -3.10f); break;
-                //description = "COLD"; weatherModifier *= 1.10f; // COLD
+            //description = "COLD"; weatherModifier *= 1.10f; // COLD
             case 5:
                 actualTemperature += Random.Range(-3.00f, -1.10f); break;
-                //description = "BELOW AVERAGE"; // BELOW AVERAGE
+            //description = "BELOW AVERAGE"; // BELOW AVERAGE
             case 9:
                 actualTemperature += Random.Range(1.10f, 3.00f); break;
-               // description = "ABOVE AVERAGE"; // ABOVE AVERAGE
+            // description = "ABOVE AVERAGE"; // ABOVE AVERAGE
             case 10:
                 actualTemperature += Random.Range(3.10f, 5.00f); break;
-                //description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; // HOT
+            //description = "HOT"; weatherModifier *= 0.90f; precipitationModifier += 1; // HOT
             case 11:
-                actualTemperature += Random.Range(5.10f, 7.00f); 
+                actualTemperature += Random.Range(5.10f, 7.00f);
                 //description = "VERY HOT";// + "\n" + "-1 to snow condition roll";
                 snowConditionModifier -= 1; weatherModifier *= 0.70f; precipitationModifier += 2; break;// VERY HOT
             case 12:
                 //description = "EXTREME HOT"; // + "\n" + "-2 to snow condition roll";
                 snowConditionModifier -= 2; weatherModifier *= 0.50f; precipitationModifier += 3;
                 actualTemperature += Random.Range(7.10f, 13.00f); break;
-                // EXTREME HOT
+            // EXTREME HOT
             default:
                 actualTemperature += Random.Range(-2.00f, 2.00f); break;
                 //description = "AVERAGE"; // AVERAGE
@@ -120,6 +123,9 @@ public class Weather : MonoBehaviour
         CalculateSnowCondition();
         weatherSections[2].SetActive(true);
         yield return new WaitForSeconds(pause);
+        weatherSections[3].SetActive(true);
+        yield return new WaitForSeconds(pause);
+        weatherSections[4].SetActive(true);
         ShowSurpriseChance();
         yield return new WaitForSeconds(pause);
         setupButton.SetActive(true);
@@ -128,7 +134,7 @@ public class Weather : MonoBehaviour
     private void ShowSurpriseChance()
     {
         float surpriseModifier = FindObjectOfType<Gamemanager>().surprisesModifier * weatherModifier;
-        
+
         weatherSections[3].SetActive(true);
         if (surpriseModifier <= 1.1)
         {
@@ -146,20 +152,7 @@ public class Weather : MonoBehaviour
         {
             surprisesModifierText.text = "VERY HIGH CHANCE".ToString();
         }
-        Debug.Log("SURPRISE MOD: "+surpriseModifier.ToString());
-
-
-        //if (weatherModifier > 1.0)
-        //{
-        //    weatherSections[3].SetActive(true);
-        //    surprisesModifierText.text = "+" + ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
-        //    // surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("+0;F0") + "%";
-        //}
-        //else if (weatherModifier < 1.0)
-        //{
-        //    weatherSections[3].SetActive(true);
-        //    surprisesModifierText.text = ((weatherModifier - 1.00f) * 100f).ToString("F0") + "%";
-        //}
+        Debug.Log("SURPRISE MOD: " + surpriseModifier.ToString());
     }
 
     private void CalculateSnowCondition()
@@ -215,48 +208,63 @@ public class Weather : MonoBehaviour
         }
         else
         {
-            if (chance > 47)
-            {
-                precipitation = "very windy";
-            }
-            else if ((chance > 41) && (chance < 48))
-            {
-                precipitation = "overcast";
-            }
-            else if ((chance > 35) && (chance < 42))
-            {
-                precipitation = "windy";
-            }
-            else
-            {
-                precipitation = "sunny";
-            }
+            precipitation = "none";
+            //ADD "clear sky" image
         }
-        //TO DO if roll==30 Chinook wind - special effect
 
-        //switch (firstD6 + secondD6+precipitationModifier)
-        //{
-        //    case 2:
-        //    case 3:
-        //    case 4:
-        //    case 5:
-        //    case 6:
-        //        precipitation = "snowing"; snowConditionModifier -= 2; weatherModifier *= 1.30f;
-        //        precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0]; break;//SNOWING
-        //    case 9:
-        //        precipitation = "raining"; snowConditionModifier += 1; weatherModifier *= 1.50f;
-        //        precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1]; break;//RAINING
-        //    default:
-        //        precipitation = "none"; break;// AVERAGE
-        //        // TODO case 11: CHINOOK WIND Special weather effect
-
-        //}
         descriptionTexts[2].text = precipitation.ToUpper().ToString();
         precipitationText.text = precipitation.ToUpper().ToString();
-
+        CheckWindCondition(chance);
         ChangeButtonName("NEXT");
     }
 
+    public void CheckWindCondition(int chance)
+    {    //TO DO if roll==50 Chinook wind - special effect
+        if (chance > 47)
+        {
+            windCondition = "strong";
+        }
+        else if ((chance > 41) && (chance < 48))
+        {
+            windCondition = "medium";
+        }
+        else if ((chance > 35) && (chance < 42))
+        {
+            windCondition = "light";
+        }
+        else
+        {
+            windCondition = "calm";
+        }
+        descriptionTexts[3].text = windCondition.ToUpper().ToString();
+        windConditionText.text = windCondition.ToUpper().ToString();
+        if (windCondition != "calm")
+        {
+            CheckWindDirection();
+        }
+        if (windDirection != "")
+        {
+            descriptionTexts[3].text += " (" + windDirection.ToUpper().ToString() + ")";
+            windConditionText.text += " (" + windDirection.ToUpper().ToString() + ")";
+        }
+    }
+
+    public void CheckWindDirection()
+    {
+        int chance = Random.Range(1, 11);
+        if (chance < 4)
+        {
+            windDirection = "tail";
+        }
+        else if ((chance > 3) && (chance < 7))
+        {
+            windDirection = "head";
+        }
+        else if (chance == 10)
+        {
+            windDirection = "gusts";
+        }
+    }
 
     public void ChangeButtonName(string buttonName)
     {
@@ -299,6 +307,11 @@ public class Weather : MonoBehaviour
             descriptionTexts[1].text = precipitation.ToUpper().ToString();
         }
         return weatherChangeInfo;
+    }
+
+    public static string GetWindCondition()
+    {
+        return windCondition;
     }
 
 }

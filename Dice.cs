@@ -1,6 +1,7 @@
 using DamageNumbersPro;
 using DG.Tweening;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ public class Dice : MonoBehaviour
     [SerializeField] GameObject[] allDices;
     [SerializeField] GameObject[] timeGapBackground;
     [SerializeField] TMP_Text[] timeGapTexts;
+    [SerializeField] TMP_Text[] sectionTitles;
     [SerializeField] GameObject[] commentatorIcon;
     [SerializeField] public GameObject[] competitorImage;
     [SerializeField] GameObject summaryImage;
@@ -21,9 +23,12 @@ public class Dice : MonoBehaviour
     //[SerializeField] Sprite[] skiersIcons;
     [SerializeField] Sprite[] imagesForSurprise;
     [SerializeField] Sprite[] defaultBackgroundImages;
+    [SerializeField] Sprite[] skiJumpingBackgroundImages;
     [SerializeField] GameObject[] panelsSections;
     [SerializeField] GameObject[] backgroundImagesSections;
     [SerializeField] GameObject[] commentBackgrounds;
+    [SerializeField] GameObject judgesNotesPanel;
+    [SerializeField] TMP_Text[] judgesNotes;
 
     public bool diceActive;
     public int diceIndex;
@@ -36,10 +41,12 @@ public class Dice : MonoBehaviour
     public Sprite currentSkierIcon;
     public RectTransform rectTransform;
     public DamageNumber numberPrefab;
-    public DamageNumber hatTrickPrefab; 
+    public DamageNumber hatTrickPrefab;
     public RectTransform[] rectParents;
     PointsSystem pointsSystem;
     AchievementsManager achievements;
+    Gamemanager gamemanager;
+
 
 
     void Start()
@@ -55,7 +62,20 @@ public class Dice : MonoBehaviour
         ResetDice();
         pointsSystem = PointsSystem.Instance;
         achievements = AchievementsManager.Instance;
+        gamemanager = FindObjectOfType<Gamemanager>();
+        LoadSectionTitles();
+        if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+        {
+            defaultBackgroundImages = skiJumpingBackgroundImages;
+        }
 
+    }
+
+    private void LoadSectionTitles()
+    {
+        sectionTitles[0].text = Gamemanager.GetCompetitionType().firstSectionTitle.ToString();
+        sectionTitles[1].text = Gamemanager.GetCompetitionType().secondSectionTitle.ToString();
+        sectionTitles[2].text = Gamemanager.GetCompetitionType().thirdSectionTitle.ToString();
     }
 
 
@@ -105,24 +125,29 @@ public class Dice : MonoBehaviour
             FindObjectOfType<CommentsSystem>().ResetComments();
             diceIndex = 0;
             combosActivated = 0;
+            judgesNotesPanel.SetActive(false);
         }
     }
 
     public void UpdateTimeGap(Player player, float timeDifference)
     {
-        timeGapTexts[competition.partsOfRun - 1].text = player.ConvertDifference(timeDifference).ToString();
-        timeGapBackground[competition.partsOfRun - 1].SetActive(true);
-        if (timeDifference > 0)
+        if (Gamemanager.GetCompetitionType().timeIntervals == true)
         {
-            // timeGapTexts[competition.partsOfRun - 1].text = "<color=red>" + (player.ConvertDifference(timeDifference).ToString()) + "<color=red>";
+            timeGapTexts[competition.partsOfRun - 1].text = player.ConvertDifference(timeDifference).ToString();
+            timeGapBackground[competition.partsOfRun - 1].SetActive(true);
+            if (timeDifference > 0)
+            {
+                // timeGapTexts[competition.partsOfRun - 1].text = "<color=red>" + (player.ConvertDifference(timeDifference).ToString()) + "<color=red>";
 
-            timeGapBackground[competition.partsOfRun - 1].GetComponent<SpriteRenderer>().color = Color.red;
-        }
-        else
-        {
-            timeGapBackground[competition.partsOfRun - 1].GetComponent<SpriteRenderer>().color = Color.green;
+                timeGapBackground[competition.partsOfRun - 1].GetComponent<SpriteRenderer>().color = Color.red;
+            }
+            else
+            {
+                timeGapBackground[competition.partsOfRun - 1].GetComponent<SpriteRenderer>().color = Color.green;
+            }
         }
     }
+
     public void ResetTimeGapBackgrounds()
     {
         for (int i = 0; i < timeGapBackground.Length; i++)
@@ -159,13 +184,13 @@ public class Dice : MonoBehaviour
         {
             case 1:
                 panelsSections[0].SetActive(false); panelsSections[1].SetActive(true); panelsSections[2].SetActive(true);
-                backgroundImagesSections[0].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
+                backgroundImagesSections[0].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[0]; break;
             case 2:
                 panelsSections[0].SetActive(true); panelsSections[1].SetActive(false); panelsSections[2].SetActive(true);
-                backgroundImagesSections[1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
+                backgroundImagesSections[1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[1]; break;
             case 3:
                 panelsSections[0].SetActive(true); panelsSections[1].SetActive(true); panelsSections[2].SetActive(false);
-                backgroundImagesSections[2].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage]; break;
+                backgroundImagesSections[2].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[2]; break;
         }
     }
 
@@ -193,7 +218,14 @@ public class Dice : MonoBehaviour
         int randomImage = Random.Range(0, defaultBackgroundImages.Length);
         if (sectorIndex > -1)
         {
-            backgroundImagesSections[sectorIndex - 1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage];
+            if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+            {
+                backgroundImagesSections[sectorIndex - 1].GetComponent<SpriteRenderer>().sprite = skiJumpingBackgroundImages[sectorIndex - 1];
+            }
+            else
+            {
+                backgroundImagesSections[sectorIndex - 1].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[randomImage];
+            }
         }
     }
 
@@ -254,8 +286,6 @@ public class Dice : MonoBehaviour
     public void DiceEffect(string comboType)
     {
         SoundManager.PlayOneSound("dice_combo");
-        //List <GameObject> dice =new List<GameObject> ;
-        // comboDice.AddRange(firstDieImages[diceIndex]);   
         firstDieImages[diceIndex].GetComponentInParent<RectTransform>().DOShakePosition(0.5f, 20.0f, 3, 4f, true, true);
         secondDieImages[diceIndex].GetComponentInParent<RectTransform>().DOShakePosition(0.5f, 20.0f, 3, 4f, true, true);
         switch (comboType)
@@ -271,34 +301,23 @@ public class Dice : MonoBehaviour
                 secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 break;
-         
-
-                //if (competition.thirdD6 == competition.firstD6)
-                //{
-                //    firstDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
-                //    secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
-                //    thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
-                //}
-                // PLUS SOUND EFFECT? ANIMATION- pulsating/bigger dice
         }
     }
 
     public void SpawnComboInfo(string comboType)
     {
-        //DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], Vector2.zero, comboType.ToString());
         DamageNumber damageNumber = numberPrefab.SpawnGUI(rectParents[diceIndex], new Vector2(0f, 180f), comboType.ToString());
     }
 
     public void ResetDiceEffect()
     {
-        int diceImagesIndex = 0; 
-        
+        int diceImagesIndex = 0;
+
         for (int i = 0; i < allDices.Length; i++)
         {
             //allDices[i].GetComponent<SpriteRenderer>().sprite = defaultBackgroundImages[i];
             allDices[i].GetComponent<SpriteRenderer>().DOColor(Color.white, 0.1f);
         }
-
     }
 
     IEnumerator ChangingDiceFacesEffect()
@@ -310,9 +329,22 @@ public class Dice : MonoBehaviour
         }
     }
 
+    public void ShowJudgesNotes(List<double> notes)
+    {
+        judgesNotesPanel.SetActive(true);
 
-
-
+        for (int i = 0; i < notes.Count; i++)
+        {
+            if ((i==0) || (i==notes.Count-1))
+            {
+                judgesNotes[i].text = "<color=grey>" + notes[i].ToString("F1");
+            }
+            else
+            {
+                judgesNotes[i].text = notes[i].ToString("F1");
+            }
+        }
+    }
 
 }
 

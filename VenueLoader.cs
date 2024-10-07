@@ -14,14 +14,9 @@ public class VenueLoader : MonoBehaviour
 
         LoadVenuesFromJSON();
 
-    //}
-
-    //public void LoadVenue(string venueName)
-    //{ 
-
         if (venuesList != null && venuesList.Count > 0)
         {
-            string targetVenueName = GetComponent<Gamemanager>().thisCompetition.competitionVenueName.ToString();   //   Competition.  //"Calgary";
+            string targetVenueName = Gamemanager.GetCompetitionType().competitionVenueName.ToString();   //   Competition.  //"Calgary";
             //string targetVenueName = GameStart.currentCompetition.competitionVenueName.ToString();
             actualVenue = venuesList.Find(venue => venue.venueName == targetVenueName);
 

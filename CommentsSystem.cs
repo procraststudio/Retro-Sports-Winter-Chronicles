@@ -114,7 +114,6 @@ public class CommentsSystem : MonoBehaviour
                     {
                         if (player.praisesByCommentator > 0)
                         {
-                            //SoundManager.PlaySound(sound);
                             SoundManager.PlayOneSound("crowd01");
                             commentText[3].text = "GOOD!".ToString();
                             commentText[3].color = Color.green;

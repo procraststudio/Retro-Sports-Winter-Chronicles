@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class JudgesSystem : MonoBehaviour
@@ -9,6 +9,7 @@ public class JudgesSystem : MonoBehaviour
     // This script is in CalculatePerformance script
 
     public List<double> judgesNotes = new List<double> { };
+    public List<double> extremeNotes = new List<double> { };
     void Start()
     {
 
@@ -19,7 +20,6 @@ public class JudgesSystem : MonoBehaviour
         switch (discipline)
         {
             case "skiJumping": GetSkiJumpingNotes(player, performance); break;
-
         }
 
     }
@@ -38,31 +38,34 @@ public class JudgesSystem : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             note = RatingDiversity(averageNote);
-            if (performance >50)
+            if (performance > 50)
             {
-                note += 2.0;
+                note += 1.5;
                 //note += ((performance-50)/15);
             }
             else if (performance < 30)
             {
-                note -= 2.0;
+                note -= 3.0;
                 //note -= ((performance - 30)/10);
             }
             else if (player.grade > 'B')
             {
                 note += 1.0;
             }
-            else if (player.grade <'C')
+            else if (player.grade < 'C')
             {
-                note -= 1.0;
+                note -= 1.5;
             }
-            if (note>=19.5)
+            if (note >= 19.5)
             {
                 note = 19.5;
             }
             judgesNotes.Add(note);
         }
-        judgesPoints = GetAverageNotes(judgesNotes);
+
+        judgesPoints = GetFinalNotes(judgesNotes);
+       // FindObjectOfType<Dice>().ShowJudgesNotes(judgesNotes);
+        //FindObjectOfType<Dice>().GreyOutExtremeNotes(extremeNotes);
 
         return judgesPoints;
     }
@@ -73,11 +76,11 @@ public class JudgesSystem : MonoBehaviour
         float diversity = 0;
         double modifiedRating = 0;
 
-        if (index > 8)
+        if (index > 7)
         {
             diversity = Random.Range(-1.5f, 1.5f);
         }
-        else if ((index > 5) && (index < 9))
+        else if ((index > 4) && (index < 8))
         {
             diversity = Random.Range(-0.5f, 0.5f);
         }
@@ -91,22 +94,23 @@ public class JudgesSystem : MonoBehaviour
 
     }
 
-    public void ResetNotes()
+    public double GetFinalNotes(List<double> list)
     {
-        // TO DO?
-    }
-
-    public double GetAverageNotes(List<double> list)
-    {
+        //double extremeNote = 0.0;
+        list.Sort();
+        FindObjectOfType<Dice>().ShowJudgesNotes(list);
+        extremeNotes.Add(list[0]);
+        extremeNotes.Add(list.Count - 1);
         list.RemoveAt(0); // remove highest & lowest 
-        list.RemoveAt(list.Count - 1); 
+        list.RemoveAt(list.Count - 1);
         foreach (double note in list)
         {
-            Debug.Log("NOTE: " + note.ToString() +" ");   
+            Debug.Log("NOTE: " + note.ToString() + " ");
         }
-        Debug.Log(". NOTES SUM: " +  list.Sum().ToString());
+        Debug.Log(". NOTES SUM: " + list.Sum().ToString());
         return list.Sum();
     }
+
 
 
 }
