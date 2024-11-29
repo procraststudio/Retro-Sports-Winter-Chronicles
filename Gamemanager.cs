@@ -29,7 +29,7 @@ public class Gamemanager : MonoBehaviour
     public VenueLoader venueLoader;
     public static CompetitionType thisCompetition { get; set; }
     public CompetitionType[] sampleCompetitions;
-    public WorldCupCompetition actualWorldCupCompetition;
+    public static WorldCupCompetition actualWorldCupCompetition;
     private string competitorsPath = "Competitors";
     public string filePath = "Assets/Resources/Competitors/";
 
@@ -43,7 +43,7 @@ public class Gamemanager : MonoBehaviour
         else
         {
             if (GameStart.currentWorldCup != null)
-            actualWorldCupCompetition = GameStart.currentWorldCup;
+                actualWorldCupCompetition = GameStart.currentWorldCup;
             thisCompetition = GameStart.currentCompetition;
         }
         competitionName = thisCompetition.competitionName.ToString();
@@ -90,6 +90,11 @@ public class Gamemanager : MonoBehaviour
                 Player newPlayer = new Player(surname, name, ranking, grade, experience, nationality);
                 players.Add(newPlayer);
             }
+
+            foreach (Player player in players)
+            {
+                player.myState = Player.PlayerState.Running;
+            }
             // Dividing players into 3 groups
             favourites = players.Where(player => player.ranking >= 1 && player.ranking <= 15).ToList();
             outsiders = players.Where(player => player.ranking >= 16 && player.ranking <= 25).ToList();
@@ -125,7 +130,6 @@ public class Gamemanager : MonoBehaviour
         bestOverallTime += bestTimeInSec;
         tenthTime += tenthTime * modifier;
         timeDifference = tenthTime - bestTimeInSec;
-
     }
 
     public void CalculateSurpriseModifier() // default should be 1.00f, slalom: 2.00 OR 1.50-2.50 depends on weather
@@ -133,26 +137,23 @@ public class Gamemanager : MonoBehaviour
         if ((competitionName.Contains("Slalom Women")) || (competitionName.Contains("Super G Men")))
         {
             surprisesModifier = 1.55f;
-            Debug.Log("SURPRISE CALCULATED");
         }
         else if (competitionName.Contains("Giant Slalom"))
         {
             surprisesModifier = 1.35f;
-            Debug.Log("SURPRISE CALCULATED");
             // this collides with Slalom Men ??
         }
 
         else if (competitionName.Contains("Slalom Men"))
         {
             surprisesModifier = 2.00f;
-            Debug.Log("SURPRISE CALCULATED");
         }
-  
+
         else
         {
             surprisesModifier = thisCompetition.surprisesImpact;
-            Debug.Log("SURPRISE CALCULATED");
         }
+        Debug.Log("SURPRISE CALCULATED");
         // Slalom Men = œr 0,40 // Super G men 0,31
     }
 
@@ -177,7 +178,7 @@ public class Gamemanager : MonoBehaviour
     public bool IsNextWorldCupEventPossible()
     {
         int index = PlayerPrefs.GetInt("currentWorldCupNumber");
-        if (index >= actualWorldCupCompetition.worldCupEvents.Length-1)
+        if (index >= actualWorldCupCompetition.worldCupEvents.Length - 1)
         {
             return false;
         }
@@ -190,6 +191,10 @@ public class Gamemanager : MonoBehaviour
     public static CompetitionType GetCompetitionType()
     {
         return thisCompetition;
+    }
+    public static WorldCupCompetition GetWorldCupCompetitionType()
+    {
+        return actualWorldCupCompetition;
     }
 }
 

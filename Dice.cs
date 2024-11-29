@@ -301,6 +301,9 @@ public class Dice : MonoBehaviour
                 secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 break;
+            //case "homefactor":
+            //    SpawnComboInfo("HOME FACTOR"); break;
+
         }
     }
 

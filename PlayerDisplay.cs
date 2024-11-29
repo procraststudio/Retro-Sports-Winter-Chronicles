@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using static Competition;
@@ -7,14 +6,17 @@ using static Competition;
 public class PlayerDisplay : MonoBehaviour
 {
     public Player player;
-    [SerializeField] TMP_Text competitorName;
-    [SerializeField] TMP_Text competitorGrade;
-    [SerializeField] TMP_Text competitorExperience;
-    [SerializeField] TMP_Text competitorRanking;
+    public Player playerLoaded;
+    [SerializeField] public TMP_Text competitorName;
+    [SerializeField] public TMP_Text competitorGrade;
+    [SerializeField] public TMP_Text competitorExperience;
+    [SerializeField] public TMP_Text competitorRanking;
+    [SerializeField] public TMP_Text competitorStatus;
     [SerializeField] TMP_Text competitorSurpriseChance;
     [SerializeField] TMP_Text position;
     [SerializeField] TMP_Text timeDisplay;
     [SerializeField] TMP_Text worldCupPoints;
+    [SerializeField] TMP_Text worldCupPlace;
     [SerializeField] TMP_Text currentWorldCupPoints;
     //[SerializeField] TMP_Text worldCupPosition;
     public TMP_Text secondName;
@@ -24,7 +26,7 @@ public class PlayerDisplay : MonoBehaviour
     [SerializeField] GameObject currentCompetitorPanel;
     [SerializeField] GameObject formIndicator;
     [SerializeField] GameObject arrowIndicator;
-    [SerializeField] GameObject playerFlag;
+    [SerializeField] public GameObject playerFlag;
     [SerializeField] GameObject headGraphic;
     [SerializeField] Sprite[] formIndicators;
     [SerializeField] Sprite[] headImages;
@@ -71,6 +73,7 @@ public class PlayerDisplay : MonoBehaviour
 
     public void DisplayCompetitor(Player player, int actualRun)
     {
+        playerLoaded = player;
         competition = Competition.Instance;
         if (!wayOfPointsDisplayChecked)
         {
@@ -81,10 +84,11 @@ public class PlayerDisplay : MonoBehaviour
 
         string boldSecondName = "<b>" + player.secondName + "</b>";
         if ((gameObject.CompareTag("finishers_list")) || (gameObject.CompareTag("firstRun_list")) ||
-            (gameObject.CompareTag("secondRun_list")))
+            (gameObject.CompareTag("secondRun_list")) || (gameObject.CompareTag("hoverCard")))
         {
             ShowPosition(player);
             ShowFlag(player);
+            ShowStatus(player);
 
             arrowIndicator = null;
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
@@ -134,6 +138,10 @@ public class PlayerDisplay : MonoBehaviour
             competitorGrade.text = player.grade.ToString();
             competitorExperience.text = player.experience.ToString();
             competitorRanking.text = player.ranking.ToString();
+            if ((worldCupPlace != null) && (player.worldCupPlace > 0))
+            {
+                worldCupPlace.text = player.worldCupPlace.ToString();
+            }
             ShowFormIndicators(player);
             ShowFlag(player);
             if (competitorSurpriseChance != null)
@@ -261,17 +269,25 @@ public class PlayerDisplay : MonoBehaviour
             }
         }
     }
-   
+
 
     public void ShowFlag(Player player)
     {
         playerFlag.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>(flagsFolderPath + player.nationality);
     }
+    public void ShowStatus(Player player)
+    {
+        if (competitorStatus != null)
+        {
+            competitorStatus.text = player.myState.ToString();
+        }
+    }
+
 
     public void HighlightCurrentCompetitor(Player player)
     {
         if ((currentCompetitorPanel != null) && (competition.myState != GameState.SummaryPhase)
-            && (competition.myState != GameState.EndOfRun) )
+            && (competition.myState != GameState.EndOfRun))
 
         {
             if ((player.secondName == competition.currentCompetitor.secondName) && (player.surname == competition.currentCompetitor.surname))

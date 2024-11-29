@@ -32,5 +32,10 @@ public class TabControl : MonoBehaviour
             namesOfTabButtons[0].text = Gamemanager.GetCompetitionType().firstCombinedCompetition.ToString();
             namesOfTabButtons[1].text = Gamemanager.GetCompetitionType().secondCombinedCompetition.ToString();
         }
+        else if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+        {
+            namesOfTabButtons[0].text = "1st Jump".ToString();
+            namesOfTabButtons[1].text = "2nd Jump".ToString();
+        }
     }
 }

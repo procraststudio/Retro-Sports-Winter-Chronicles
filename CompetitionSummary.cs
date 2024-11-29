@@ -63,7 +63,7 @@ public class CompetitionSummary : MonoBehaviour
 
         ShowGainedCombos();
         ExitButton.SetActive(true);
-        if ((gamemanager.actualWorldCupCompetition!=null) &&(gamemanager.IsNextWorldCupEventPossible()))
+        if ((Gamemanager.actualWorldCupCompetition!=null) &&(gamemanager.IsNextWorldCupEventPossible()))
         {
             NextWorldCupButton.SetActive(true);
         }

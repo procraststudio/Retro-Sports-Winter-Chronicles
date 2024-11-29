@@ -91,7 +91,8 @@ public class AchievementsManager : MonoBehaviour
         // summary - after points display
         //What data: winner, 2-3 places, player initial ranking, weather, Venue
         //out of 15, DQ, DNF, good/bad comments 65%, 
-        // createas actual achievements
+        // creates actual achievements
+        // "Tragedy of nation" 3 competitors from one country OUTOF15/DQ/DNF
         if (homeCompetitorOnPodium)
         {
             achievementsKeywords.Add("Home podium");

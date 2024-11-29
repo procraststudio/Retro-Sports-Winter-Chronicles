@@ -67,7 +67,7 @@ public class Utilities : MonoBehaviour
         }
 
     }
-    public void ResetWorldCupPoints()
+    public void ResetWorldCupData()
     {
         allCompetitors = competition.allCompetitors;
         foreach (var competitor in allCompetitors)
@@ -77,8 +77,9 @@ public class Utilities : MonoBehaviour
             {
                 //PlayerPrefs.DeleteKey(key);
                 PlayerPrefs.SetInt(key, competitor.worldCupPoints=0);
+                PlayerPrefs.SetInt(key, competitor.worldCupPlace=0);  
                 //PlayerPrefs.SetInt(key, 0);
-                Debug.Log("WC pts deleted");
+                Debug.Log("WC pts/places deleted");
             }
         }
         PlayerPrefs.DeleteKey("currentWorldCupNumber");
@@ -88,6 +89,23 @@ public class Utilities : MonoBehaviour
     public void BackToTitleMenu()
     {
         SceneManager.LoadScene(0);
+    }
+
+    public void QuickSimOn()
+    {
+        if (!competition.quickSimModeOn)
+        {
+            competition.quickSimModeOn = true;
+            Debug.Log("QUICK SIM ON");
+        }
+
+        else
+        {
+            competition.quickSimModeOn = false;
+            Debug.Log("QUICK SIM OFF");
+        }
+
+        
     }
 
 

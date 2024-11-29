@@ -21,7 +21,7 @@ public class SkiJumpingEvents : MonoBehaviour
     public void ResolveSkiJumpingEvent(Player player, int dieRoll)
     {
         Debug.Log("SKI JUMPING EVENT");
-       // Weather.windCondition = "light";
+        // Weather.windCondition = "light";
         //Weather.windDirection = "tail";
         description = "";
         string windDescription = Weather.windCondition.ToString();
@@ -39,12 +39,20 @@ public class SkiJumpingEvents : MonoBehaviour
                     //actualCompetitor.AddRunModifier(competition.currentRun, 6);
                     //descriptionText.text += "GREAT SPEED of " + actualCompetitor.secondName + "!" + "  +6pts. "; break;
                 }
+                else
+                {
+                    return;
+                }
                 break;
             case 2:
                 if ((Weather.windCondition != "calm") || (Weather.windCondition != "light"))
                 {
                     EventHappened();
                     WindImpact(player, windDescription, windDirection);
+                }
+                else
+                {
+                    return;
                 }
                 break;
             case 3:
@@ -66,11 +74,11 @@ public class SkiJumpingEvents : MonoBehaviour
                 }
                 break;
             case 6:
-                if (precipitation != "none")
-                {
-                    EventHappened();
-                    JumpControl(player, player.GetGradeModifier() * -3);// average 25% to OUT of 15
-                }
+                // if (precipitation != "none")
+                // {
+                EventHappened();
+                shortEvent.UnderdogEnters();
+                description += " OUTSIDER'S GOOD FORM. ";
                 break;
             default: Debug.Log("NO IMPACT"); break;
                 //        saveRoll = 100 * ((player.experience - weatherModifier)) / 6;
@@ -203,6 +211,7 @@ public class SkiJumpingEvents : MonoBehaviour
 
     public void JumpControl(Player player, int modifier)
     {
+        // modifier -13 and player rank 8 & exp 1 means 3% for losing jump control
         int lostControlChance = Random.Range(1, 101) - modifier - (player.ranking - player.experience);
         if (lostControlChance < 10)
         {
@@ -214,16 +223,15 @@ public class SkiJumpingEvents : MonoBehaviour
         }
         else
         {
-            
             description += player.secondName.ToString().ToUpper() + " DIDN'T LOSE CONTROL.";
         }
-       //descriptionText.text = description.ToString();
+        //descriptionText.text = description.ToString();
     }
     public void EventHappened()
     {
         shortEvent.runButton.SetActive(false);
         shortEvent.eventObject.SetActive(true);
         shortEvent.eventTitle.text = "EVENT".ToString();
-        descriptionText.text += "\n" + ">>>>>";
+        shortEvent.descriptionText.text += "\n" + ">>>>>";
     }
 }

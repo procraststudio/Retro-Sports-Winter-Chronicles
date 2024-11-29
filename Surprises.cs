@@ -55,6 +55,12 @@ public class Surprises : MonoBehaviour
         Debug.Log("SURPRISE ROLL: " + surpriseRoll);
 
         CheckCriticalRoll(player);
+        //if (Gamemanager.GetCompetitionType().competitionName.Contains("skiJumping"))
+        //{
+        //    // default modifier -13
+        //    currentEvent.GetComponent<SkiJumpingEvents>().JumpControl(player, (-15 + ((int)weather.weatherModifier*2)));
+        //    Debug.Log("SKI JUMP SURPRISE CHECKED");
+        //}
 
         if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance) && (!player.goodFormEffect))
              //&&(!Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping")))
@@ -205,7 +211,7 @@ public class Surprises : MonoBehaviour
             if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
             {
                 // currentEvent.GetComponent<SkiJumpingEvents>().ResolveSkiJumpingEvent(player, 4);
-                currentEvent.GetEventType( 4); 
+                currentEvent.GetEventType(4); 
                 Debug.Log("JUMP CONTROL CHECKED");
             }
         }

@@ -3,8 +3,8 @@ using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -112,7 +112,8 @@ public class Competition : MonoBehaviour
     public DamageNumber numberPrefab;
     public GameObject summary;
     public GameObject competitionInfo;
-    public int[] pointsToClassification = { 25, 20, 15, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+    public bool quickSimModeOn = false;
+    // public int[] pointsToClassification = { 25, 20, 15, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
     public enum GameState
     {
@@ -174,7 +175,7 @@ public class Competition : MonoBehaviour
         numberOfFavourites = players.Count;
         pointsSystem = PointsSystem.Instance;
         pointsSystem.ResetCompetitionPoints();
-        LoadWorldCupPoints(allCompetitors);
+        LoadWorldCupData(allCompetitors);
 
     }
 
@@ -207,7 +208,7 @@ public class Competition : MonoBehaviour
         // PLAY AUDIO-START sound
         surprise.surpriseEffect = false;
         surprise.disqualification = false;
-        dicePanel.GetComponent<Dice>().ResetDice();
+        if (quickSimModeOn == false) { dicePanel.GetComponent<Dice>().ResetDice(); }
         currentCompetitor = players[currentCompetitorNo];
         _playerDisplay.DisplayCompetitor(currentCompetitor, currentRun);
         partsOfRun++;
@@ -219,15 +220,18 @@ public class Competition : MonoBehaviour
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
         thirdD6 = Random.Range(1, 7);
-       // firstD6 = 1; secondD6 = 1; thirdD6 = 1;
+        //firstD6 = 3; secondD6 = 3; thirdD6 = 6;
         competitionRoll = firstD6 + secondD6;
         pointsSystem.AddTemporaryPoints(competitionRoll * thirdD6);
         if (((outsiders.Count > 0) || (underdogs.Count > 0)) && (firstD6 + secondD6 + thirdD6 != 18))
-        {   
+        {
             surprise.CheckSurprise(currentCompetitor);//SURPRISE CHECK
             CheckEvent(currentCompetitor);           // EVENT CHECK
         }
-        dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
+        if (quickSimModeOn == false)
+        {
+            dicePanel.GetComponent<Dice>().StartCoroutine("showDice");
+        }
         if ((currentCompetitorNo >= 0) && (currentCompetitor.myState == Player.PlayerState.Running)
              && (!surprise.surpriseEffect) && (myState == GameState.CompetitionPhase)) // and Event resolved with no surprise
         {
@@ -290,6 +294,10 @@ public class Competition : MonoBehaviour
         {
             UpdateLists();
         }
+        if (quickSimModeOn)
+        {
+            Run();
+        }
 
     }
     public void showResults(Player player)
@@ -310,7 +318,7 @@ public class Competition : MonoBehaviour
             {
                 message += player.firstRunPoints.ToString("F2");
             }
-            if (player.skiJumpingPoints >0)
+            if (player.skiJumpingPoints > 0)
             {
                 message += "\n" + "SKI JUMP PTS: " + player.skiJumpingPoints.ToString("F1");
             }
@@ -542,11 +550,13 @@ public class Competition : MonoBehaviour
     {
         if ((partsOfRun == 0) && (players.Count == 0))// (finishers.Count==10))// && (currentRun < Gamemanager.numbersOfRun))
         {
+            quickSimModeOn = false;
             currentRun++;
             SoundManager.PlayOneSound("crowd01");
             if (currentRun > Gamemanager.numbersOfRun) // DECORATION PHASE starts
             {
                 competitionIsOver = true;
+                //quickSimModeOn = false;
                 //currentCompetitor = null;
                 SpawnEndOfRunClassification();
                 HandleWorldCupPoints(finishers);
@@ -556,6 +566,7 @@ public class Competition : MonoBehaviour
 
             else
             {
+                //quickSimModeOn = false;
                 ChangeState(GameState.EndOfRun);
                 tabSection.SetActive(true);
                 firstRunClassification.AddRange(finishers);
@@ -568,7 +579,7 @@ public class Competition : MonoBehaviour
                 possibleReturnsFromOutOf15 = outOf15Competitors.Count;
 
                 // TODO: change weather, decrease surprise/weather effect
-                ConditionsChange();
+                weatherPanel.GetComponent<Weather>().ConditionsChange();
                 UpdatePlayerList(players, startingList);
                 UpdateLists();
                 currentCompetitorNo = players.Count - 1;
@@ -605,8 +616,19 @@ public class Competition : MonoBehaviour
             int index = 0;
             for (int i = 0; i < list.Count; i++)
             {
-                list[i].AddWorldCupPoints(pointsToClassification[index]);
+                //list[i].AddWorldCupPoints(pointsToClassification[index]);
+                list[i].AddWorldCupPoints(Gamemanager.GetWorldCupCompetitionType().pointsToClassification[index]);
                 index++;
+            }
+            if ((Gamemanager.GetWorldCupCompetitionType().pointsToClassification.Length > 15) &&
+                    (outOf15Competitors.Count > 0))
+            {
+                for (int i = 0; i < outOf15Competitors.Count; i++)
+                {
+                    //list[i].AddWorldCupPoints(pointsToClassification[index]);
+                    outOf15Competitors[i].AddWorldCupPoints(Gamemanager.GetWorldCupCompetitionType().pointsToClassification[index]);
+                    index++;
+                }
             }
             foreach (Player player in allCompetitors)
             {
@@ -616,22 +638,41 @@ public class Competition : MonoBehaviour
                 }
             }
 
-            worldCupClassification.Sort((a, b) => b.worldCupPoints.CompareTo(a.worldCupPoints));
+            //worldCupClassification.Sort((a, b) => b.worldCupPoints.CompareTo(a.worldCupPoints));
+            worldCupClassification = worldCupClassification.OrderByDescending(p => p.worldCupPoints).ToList();
+            int currentPlace = 1;
+            int samePlaceCount = 0;
+            //RESOLVING SAME POINTS AMOUNT 
             for (int i = 0; i < worldCupClassification.Count; i++)
             {
-                worldCupClassification[i].worldCupPlace = i + 1;
+                if (i > 0 && worldCupClassification[i].worldCupPoints == worldCupClassification[i - 1].worldCupPoints)
+                {
+                    worldCupClassification[i].worldCupPlace = currentPlace;
+                    samePlaceCount++;
+                }
+                else
+                {
+                    currentPlace += samePlaceCount;
+                    worldCupClassification[i].worldCupPlace = currentPlace;
+                    samePlaceCount = 1;
+                }
             }
 
             startersSection.SetActive(false);
             outsidersSection.SetActive(false);
             underdogsSection.SetActive(false);
 
+            List<Player> playersGettingPoints = new List<Player>();
+            playersGettingPoints.AddRange(finishers);
+            playersGettingPoints.AddRange(outOf15Competitors);
+
             worldCupList.SetActive(true);
-            foreach (Player player in finishers)
+            foreach (Player player in playersGettingPoints)
             {
                 // GetComponent<PlayerDataManager>().SavePlayerData();
                 string key = player.GetKey();
                 PlayerPrefs.SetInt(key, player.worldCupPoints);
+               // PlayerPrefs.SetInt(key, player.worldCupPlace);
             }
             //worldCupList.GetComponent<ObjectManager>().MoveToCenter();
             PlayerPrefs.Save();
@@ -639,7 +680,7 @@ public class Competition : MonoBehaviour
         }
     }
 
-    public void LoadWorldCupPoints(List<Player> competitors)
+    public void LoadWorldCupData(List<Player> competitors)
     {
         if (Gamemanager.GetCompetitionType().worldCupCompetition)
         {
@@ -649,6 +690,7 @@ public class Competition : MonoBehaviour
                 if (PlayerPrefs.HasKey(key)) // Sprawdza, czy istnieje zapisane dane dla tego zawodnika
                 {
                     competitor.worldCupPoints = PlayerPrefs.GetInt(key);
+                  //  competitor.worldCupPlace = PlayerPrefs.GetInt(key);
                 }
             }
         }
@@ -710,10 +752,10 @@ public class Competition : MonoBehaviour
                 dicePanel.SetActive(false);
                 competitorPanel.SetActive(false);
                 startersSection.SetActive(false);
-                outsidersSection.SetActive(false);  
+                outsidersSection.SetActive(false);
                 underdogsSection.SetActive(false);
                 competitorPanel.SetActive(false);
-                competitionInfo.SetActive(false);    
+                competitionInfo.SetActive(false);
                 scrollViewPanel.SetActive(false); break;
 
             default: throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -776,7 +818,9 @@ public class Competition : MonoBehaviour
         var shortEvent = FindObjectOfType<ShortEvent>();
         shortEvent.eventObject.SetActive(true);
         // shortEvent.eventTitle.text = "CONDITIONS CHANGE";
+
         shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckPrecipitationChange(probabilityToChange);
+        shortEvent.descriptionText.text += weatherPanel.GetComponent<Weather>().CheckWindChange();
         //shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
         shortEvent.eventResolved = true;
 

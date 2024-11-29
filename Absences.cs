@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -10,6 +11,7 @@ public class Absences : MonoBehaviour
     public List<Player> _underdogs;
     Weather weather;
     private float weatherFactor;
+    public int absenceModifier = 0;
 
     public void Start()
     {
@@ -24,7 +26,7 @@ public class Absences : MonoBehaviour
         _underdogs = competition.underdogs;
         weatherFactor = weather.weatherModifier * 2;
 
-        int absenceRoll = Random.Range(1, 101) - (int)(weatherFactor);
+        int absenceRoll = Random.Range(1, 101) - (int)(weatherFactor)-absenceModifier;
         Debug.Log("ABSENCE ROLL: " + absenceRoll + ". Weather factor: " + (int)weatherFactor);
         if ((absenceRoll < 16) && (absenceRoll > 8))
         {
@@ -85,9 +87,23 @@ public class Absences : MonoBehaviour
                 competition.underdogs.RemoveAt(competition.underdogs.Count - 1);
             }
         }
-
+        FillUnderdogsList();
         competition.showResults(absencePlayer);
         // Debug.Log("DNS: " + competition.players[competition.players.Count - 1].secondName);
+    }
+
+    public void FillUnderdogsList()
+    {
+        _underdogs = competition.underdogs;
+         while (_underdogs.Count < 5)
+            {
+                competition.underdogs.Insert(competition.underdogs.Count, competition.bonusCompetitors[competition.bonusCompetitors.Count - 1]);
+                competition.bonusCompetitors.RemoveAt(competition.bonusCompetitors.Count - 1);
+            }
+
+
+
+
     }
 
 }

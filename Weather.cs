@@ -236,34 +236,42 @@ public class Weather : MonoBehaviour
         {
             windCondition = "calm";
         }
-        descriptionTexts[3].text = windCondition.ToUpper().ToString();
+        //descriptionTexts[3].text = windCondition.ToUpper().ToString();
         windConditionText.text = windCondition.ToUpper().ToString();
-        if (windCondition != "calm")
-        {
-            CheckWindDirection();
-        }
-        if (windDirection != "")
-        {
-            descriptionTexts[3].text += " (" + windDirection.ToUpper().ToString() + ")";
-            windConditionText.text += " (" + windDirection.ToUpper().ToString() + ")";
-        }
+        CheckWindDirection();
+
     }
 
     public void CheckWindDirection()
     {
         int chance = Random.Range(1, 11);
-        if (chance < 4)
+
+        if (windCondition != "calm")
         {
-            windDirection = "tail";
+            if (chance < 4)
+            {
+                windDirection = "tail";
+            }
+            else if ((chance > 3) && (chance < 7))
+            {
+                windDirection = "head";
+            }
+            else if (chance == 10)
+            {
+                windDirection = "gusts";
+            }
+            else
+            {
+                windDirection = "";
+            }
+            
+            windConditionText.text += " (" + windDirection.ToUpper().ToString() + ")";
         }
-        else if ((chance > 3) && (chance < 7))
+        else
         {
-            windDirection = "head";
+            windDirection = "";
         }
-        else if (chance == 10)
-        {
-            windDirection = "gusts";
-        }
+        UpdateWind();
     }
 
     public void ChangeButtonName(string buttonName)
@@ -280,8 +288,6 @@ public class Weather : MonoBehaviour
             {
                 Debug.Log("SNOW/RAIN STOPPED");
                 weatherChangeInfo = ">>>>>SNOW/RAIN STOPPED. ";
-                precipitationImage.GetComponent<SpriteRenderer>().sprite = null;
-                descriptionTexts[1].text = "";
                 weatherModifier *= 0.80f;
                 precipitation = "";
             }
@@ -293,8 +299,6 @@ public class Weather : MonoBehaviour
             snowConditionModifier -= 1;
             weatherModifier *= 1.20f;
             precipitation = "snowing";
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0];
-            descriptionTexts[1].text = precipitation.ToUpper().ToString();
         }
         else if ((chance < 0.47f) && (!precipitation.Contains("raining")))
         {
@@ -303,15 +307,94 @@ public class Weather : MonoBehaviour
             snowConditionModifier += 1;
             weatherModifier *= 1.40f;
             precipitation = "raining";
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1];
-            descriptionTexts[1].text = precipitation.ToUpper().ToString();
         }
+        UpdatePrecipitation();  
         return weatherChangeInfo;
+    }
+
+    public string CheckWindChange()
+    {
+        string windChangeInfo = "";
+        int chance = Random.Range(1, 7);
+        Debug.Log("WEATHER CHANCE ROLL: " + chance);
+        if (chance < 3)
+        {
+            windChangeInfo = ">>>WIND CHANGES. ";
+            int index = Random.Range(1, 7);
+            switch (windCondition)
+            {
+                case "strong":
+                    if (index > 4 && windDirection != "gusts")
+                    {
+                        windDirection = "gusts";
+                        windChangeInfo += "GUSTS. ";
+                    }
+                    else { windCondition = "medium"; }
+                    break;
+                case "medium":
+                    if (index > 3) { windCondition = "strong"; }
+                    else { windCondition = "light"; }
+                    break;
+                case "light":
+                    if (index > 3) { windCondition = "medium"; }
+                    else { windCondition = "calm"; }
+                    break;
+                case "calm":
+                    windCondition = "light"; break;
+            };
+            CheckWindDirection();
+            // TO DO: CHANGE WIND DIRECTION tail/head/gusts
+            UpdateWind();
+            windChangeInfo += windCondition.ToUpper().ToString();
+        }
+        return windChangeInfo;
     }
 
     public static string GetWindCondition()
     {
         return windCondition;
+    }
+    public void UpdatePrecipitation()
+    {
+        if (precipitation == "snowing")
+        {
+            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0];
+        }
+
+        else if (precipitation == "raining")
+        {
+            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1];// break;//RAINING
+        }
+        descriptionTexts[2].text = precipitation.ToUpper().ToString();
+        precipitationText.text = precipitation.ToUpper().ToString();
+    }
+
+    public void UpdateWind()
+    {
+        descriptionTexts[3].text = windCondition.ToUpper().ToString() + " " + windDirection.ToUpper().ToString();
+    }
+
+    public void ConditionsChange()
+    {
+        float probabilityToChange = Random.Range(0.40f, 1.21f);
+        float timeModifier = probabilityToChange < 0.60 ? Random.Range(-0.09f, -0.05f) :
+                             probabilityToChange > 1.00 ? Random.Range(-0.04f, 0.09f) :
+                             -0.05f;//AVERAGE IS 0.80
+        Gamemanager _gameManager = FindObjectOfType<Gamemanager>();
+        _gameManager.surprisesModifier *= probabilityToChange * 0.90f;
+        _gameManager.ModifyTimes(timeModifier);
+        Debug.Log("CONDITITINS CHANGE: " + probabilityToChange.ToString("F2"));
+        Debug.Log("TIME MODIFIER: " + timeModifier.ToString("F2"));
+        Debug.Log("NEW BEST TIME: " + _gameManager.bestTimeInSec.ToString("F2"));
+        var shortEvent = FindObjectOfType<ShortEvent>();
+        shortEvent.eventObject.SetActive(true);
+        // shortEvent.eventTitle.text = "CONDITIONS CHANGE";
+
+        shortEvent.descriptionText.text += CheckPrecipitationChange(probabilityToChange);
+        shortEvent.descriptionText.text += CheckWindChange();
+        //shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
+        shortEvent.eventResolved = true;
+
     }
 
 }

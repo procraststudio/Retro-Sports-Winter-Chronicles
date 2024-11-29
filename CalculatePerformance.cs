@@ -64,6 +64,7 @@ public class CalculatePerformance : MonoBehaviour
                     int homeBonus = (int)(thirdD6 * (Gamemanager.GetCompetitionType().homeFactorModifier));
                     currentCompetitor.AddRunModifier(competition.currentRun, homeBonus);
                     // Debug.Log("HOME BONUS: +" + thirdD6 * 2);
+                    FindObjectOfType<Dice>().SpawnComboInfo("HOME FACTOR");
                     Debug.Log("HOME BONUS: +" + homeBonus);
                 }
                 if (currentCompetitor.grade > 3)

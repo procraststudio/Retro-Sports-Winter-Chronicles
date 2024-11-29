@@ -59,8 +59,7 @@ public class Decoration : MonoBehaviour
         yield return new WaitForSeconds(1.00f);
         //ExitButton.SetActive(true);
         FindObjectOfType<CompetitionSummary>().ShowGainedPoints();
-        
     }
 
-   
+
 }

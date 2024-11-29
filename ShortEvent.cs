@@ -9,7 +9,6 @@ public class ShortEvent : MonoBehaviour
     public bool eventRolled;
     public bool eventResolved;
     public int saveRoll;
-
     public TMP_Text descriptionText;
     public TMP_Text eventTitle;
     [SerializeField] GameObject eventPrefab;
@@ -299,7 +298,7 @@ public class ShortEvent : MonoBehaviour
 
 
     }
-    private void UnderdogEnters()  // UNDERDOG ENTERS INTO OUTSIDERS or "OUTOF15" COMPETITOR IS BACK
+    public void UnderdogEnters()  // UNDERDOG ENTERS INTO OUTSIDERS or "OUTOF15" COMPETITOR IS BACK
     {
         Player underdog = null;
 
@@ -339,7 +338,7 @@ public class ShortEvent : MonoBehaviour
     }
     public void CloseEventWindow()
     {
-        if ((eventResolved) && (Input.GetMouseButtonDown(0)))
+        if ((eventResolved) && ((Input.GetMouseButtonDown(0))|| (competition.quickSimModeOn)))
         {
             eventObject.SetActive(false);
             eventResolved = false;

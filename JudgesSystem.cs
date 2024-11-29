@@ -40,7 +40,7 @@ public class JudgesSystem : MonoBehaviour
             note = RatingDiversity(averageNote);
             if (performance > 50)
             {
-                note += 1.5;
+                note += 2.0;
                 //note += ((performance-50)/15);
             }
             else if (performance < 30)
