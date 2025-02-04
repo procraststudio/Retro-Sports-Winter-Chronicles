@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameStart : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class GameStart : MonoBehaviour
     public static CompetitionType currentCompetition;
     public static WorldCupCompetition currentWorldCup;
     public gameModes actualGameMode;
+
 
     public enum gameModes
     {
@@ -101,6 +103,14 @@ public class GameStart : MonoBehaviour
         currentCompetition = actualCompetition;
         SceneManager.LoadScene(1);
     }
+    public void StartRandomCompetition()
+    {
+        int competitionNumber = Random.Range(0, availableCompetitions.Length + 1);
+        //var competitionIndex = availableCompetitions[click];
+        currentCompetition = availableCompetitions[competitionNumber];
+        Debug.Log("RANDOM COMPETITION: " + currentCompetition.competitionName.ToString());
+        SceneManager.LoadScene(1);
+    }
     public static void StartWorldCup(WorldCupCompetition actualWorldCupCompetition)
     {
         //var competitionIndex = availableCompetitions[click];
@@ -121,6 +131,7 @@ public class GameStart : MonoBehaviour
 
 
     }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         Debug.Log("Clicked on: " + eventData.pointerCurrentRaycast.gameObject.name);

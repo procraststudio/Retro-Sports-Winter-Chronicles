@@ -264,7 +264,7 @@ public class Weather : MonoBehaviour
             {
                 windDirection = "";
             }
-            
+
             windConditionText.text += " (" + windDirection.ToUpper().ToString() + ")";
         }
         else
@@ -281,13 +281,13 @@ public class Weather : MonoBehaviour
 
     public string CheckPrecipitationChange(float chance)
     {
-        string weatherChangeInfo = ">>>>>WEATHER DIDN'T CHANGE ";
+        string weatherChangeInfo = ">>>WEATHER DIDN'T CHANGE ";
         if (chance > 1.00f)
         {
             if ((precipitation.Contains("snowing")) || (precipitation.Contains("raining")))
             {
                 Debug.Log("SNOW/RAIN STOPPED");
-                weatherChangeInfo = ">>>>>SNOW/RAIN STOPPED. ";
+                weatherChangeInfo = ">>>SNOW/RAIN STOPPED. ";
                 weatherModifier *= 0.80f;
                 precipitation = "";
             }
@@ -295,7 +295,7 @@ public class Weather : MonoBehaviour
         else if ((chance < 0.60f) && (chance > 0.46f) && (!precipitation.Contains("snowing")))
         {
             Debug.Log("SNOW STARTED");
-            weatherChangeInfo = ">>>>IT HAS STARTED TO SNOW. ";
+            weatherChangeInfo = ">>>IT HAS STARTED TO SNOW. ";
             snowConditionModifier -= 1;
             weatherModifier *= 1.20f;
             precipitation = "snowing";
@@ -303,12 +303,12 @@ public class Weather : MonoBehaviour
         else if ((chance < 0.47f) && (!precipitation.Contains("raining")))
         {
             Debug.Log("IT STARTED TO RAIN");
-            weatherChangeInfo = ">>>>IT HAS STARTED TO RAIN. ";
+            weatherChangeInfo = ">>>IT HAS STARTED TO RAIN. ";
             snowConditionModifier += 1;
             weatherModifier *= 1.40f;
             precipitation = "raining";
         }
-        UpdatePrecipitation();  
+        UpdatePrecipitation();
         return weatherChangeInfo;
     }
 
@@ -319,7 +319,7 @@ public class Weather : MonoBehaviour
         Debug.Log("WEATHER CHANCE ROLL: " + chance);
         if (chance < 3)
         {
-            windChangeInfo = ">>>WIND CHANGES. ";
+            windChangeInfo = ">>>WIND CHANGES TO ";
             int index = Random.Range(1, 7);
             switch (windCondition)
             {

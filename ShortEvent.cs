@@ -32,6 +32,7 @@ public class ShortEvent : MonoBehaviour
         Risk = 4,
         Talent = 5,
         Surprise = 6,
+        Injury = 7,
     }
 
     public void Start()
@@ -79,7 +80,7 @@ public class ShortEvent : MonoBehaviour
         string description = "";
         // eventObject = Instantiate(eventPrefab, new Vector3(-10.00f, -50.0f, 0.00f), Quaternion.identity);
         // eventObject.transform.SetParent(canvasObject.transform, false);
-       
+
         //runButton.SetActive(false);
         //eventObject.SetActive(true);
 
@@ -143,7 +144,7 @@ public class ShortEvent : MonoBehaviour
             eventRolled = true;
             ResolveEvent();
         }
-        else if  (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
+        else if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
         {
             GetComponent<SkiJumpingEvents>().ResolveSkiJumpingEvent(actualCompetitor, d6Roll);
         }
@@ -157,7 +158,7 @@ public class ShortEvent : MonoBehaviour
         eventRolled = false;
         eventRoll = Random.Range(1, 7);
         eventTitle.text = "EVENT".ToString();
-        descriptionText.text += "\n" + ">>>>>" ; // + "Roll is: " + eventRoll + ". ";
+        descriptionText.text += ">>>"; // + "Roll is: " + eventRoll + ". ";
 
         switch (actualEvent)
         {
@@ -306,7 +307,7 @@ public class ShortEvent : MonoBehaviour
             (competition.outOf15Competitors.Count > 0) && (competition.possibleReturnsFromOutOf15 > 0))
         {
             underdog = competition.outOf15Competitors[0];
-            underdog.myState = Player.PlayerState.Running; 
+            underdog.myState = Player.PlayerState.Running;
             descriptionText.text += underdog.secondName.ToString() + " IS BACK! ";
             competition.outOf15Competitors.Remove(underdog);
             competition.outsiders.Insert(0, underdog);
@@ -336,9 +337,10 @@ public class ShortEvent : MonoBehaviour
         }
         competition.UpdateLists();
     }
+
     public void CloseEventWindow()
     {
-        if ((eventResolved) && ((Input.GetMouseButtonDown(0))|| (competition.quickSimModeOn)))
+        if ((eventResolved) && ((Input.GetMouseButtonDown(0)) || (competition.quickSimModeOn)))
         {
             eventObject.SetActive(false);
             eventResolved = false;

@@ -1,7 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Decoration : MonoBehaviour
 {
@@ -17,6 +16,7 @@ public class Decoration : MonoBehaviour
     public Player winner { get; set; }
     public Player secondPlayer { get; set; }
     public Player thirdPlayer { get; set; }
+    public bool worldCupDecoration = false;
 
 
     void Start()
@@ -28,6 +28,7 @@ public class Decoration : MonoBehaviour
         secondPlacePanel.SetActive(false);
         winnerPanel.SetActive(false);
         podiumImage.SetActive(false);
+        // check alternate winners if WC final decoration
         winner = competition.finishers[0];
         secondPlayer = competition.finishers[1];
         thirdPlayer = competition.finishers[2];
@@ -58,7 +59,26 @@ public class Decoration : MonoBehaviour
         flags[2].GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("flags/" + winner.nationality);
         yield return new WaitForSeconds(1.00f);
         //ExitButton.SetActive(true);
-        FindObjectOfType<CompetitionSummary>().ShowGainedPoints();
+        if (!worldCupDecoration)
+        {
+            FindObjectOfType<CompetitionSummary>().ShowGainedPoints();
+        }
+    }
+
+    public void WorldCupFinalPodium()
+    {
+        winnerPanel.SetActive(false);
+        secondPlacePanel.SetActive(false);
+        thirdPlacePanel.SetActive(false);
+        winner = null; secondPlayer = null; thirdPlayer = null;
+        // WHAT IF players with identical points
+        // stand next to each other, lower position on podium is empty
+        winner = competition.worldCupClassification[0];
+        secondPlayer = competition.worldCupClassification[1];
+        thirdPlayer = competition.worldCupClassification[2];
+        // cups graphics instead of medals
+        worldCupDecoration = true;
+        StartCoroutine("DecorateMedalists");
     }
 
 

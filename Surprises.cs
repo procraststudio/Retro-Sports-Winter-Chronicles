@@ -63,7 +63,7 @@ public class Surprises : MonoBehaviour
         //}
 
         if ((surpriseRoll == 1) || ((player.ranking) <= 15) && (surpriseRoll <= realSurpriseChance) && (!player.goodFormEffect))
-             //&&(!Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping")))
+        //&&(!Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping")))
         {
             surpriseEffect = true;
             eventWindow.SetActive(true);
@@ -201,7 +201,9 @@ public class Surprises : MonoBehaviour
             }
             else if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
             {
-                currentEvent.GetComponent<SkiJumpingEvents>().JumpControl(player, 10);
+                //currentEvent.GetComponent<SkiJumpingEvents>().JumpControl(player, 10);
+                player.AddRunModifier(competition.currentRun, -20); //SHORT JUMP
+                surpriseInfo.text = "SHORTER JUMP!".ToString();
             }
             StartCoroutine("CloseWindow");
             return;
@@ -211,7 +213,7 @@ public class Surprises : MonoBehaviour
             if (Gamemanager.GetCompetitionType().competitionType.Contains("skiJumping"))
             {
                 // currentEvent.GetComponent<SkiJumpingEvents>().ResolveSkiJumpingEvent(player, 4);
-                currentEvent.GetEventType(4); 
+                currentEvent.GetEventType(4);
                 Debug.Log("JUMP CONTROL CHECKED");
             }
         }
@@ -224,6 +226,8 @@ public class Surprises : MonoBehaviour
         SoundManager.PlayOneSound("disqualified");
         surpriseInfo.text = player.secondName.ToUpper() + " HITS THE GROUND! TRAGEDY!";
         player.myState = Player.PlayerState.DidNotFinish;
+        player.isInjured = true;
+        player.weeksOfInjury = Random.Range(2, 31);
         SurpriseEffect(player);
     }
 }

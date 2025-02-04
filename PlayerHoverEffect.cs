@@ -15,6 +15,9 @@ public class PlayerHoverEffect : MonoBehaviour, IPointerExitHandler, IPointerCli
     [SerializeField] public TMP_Text competitorRanking;
     [SerializeField] public TMP_Text competitorExperience;
     [SerializeField] public TMP_Text competitorStatus;
+    [SerializeField] public TMP_Text competitorForm;
+    [SerializeField] public TMP_Text competitorPerformancePoints;
+    [SerializeField] public TMP_Text injuryInformation;
     [SerializeField] GameObject playerFlag;
     [SerializeField] public Sprite headGraphic;
     public PlayerDisplay script;
@@ -44,6 +47,7 @@ public class PlayerHoverEffect : MonoBehaviour, IPointerExitHandler, IPointerCli
     public void OnPointerExit(PointerEventData eventData)
     {
         HidePlayerCard();
+        objectClicked = false;
     }
 
     private void ShowPlayerCard()
@@ -55,8 +59,12 @@ public class PlayerHoverEffect : MonoBehaviour, IPointerExitHandler, IPointerCli
         competitorExperience.text = script.playerLoaded.experience.ToString();
         playerFlag.GetComponent<SpriteRenderer>().sprite = script.playerFlag.GetComponent<SpriteRenderer>().sprite;
         competitorStatus.text = script.playerLoaded.myState.ToString();
+        competitorPerformancePoints.text = script.playerLoaded.finalPerformance.ToString("F2");
+        script.DisplayHeadImage();
+        //headGraphic.GetComponent<SpriteRenderer>().sprite = script.headGraphic.GetComponent<SpriteRenderer>().sprite;
+        ShowCompetitorForm(script.playerLoaded);
+        ShowInjuryStatus(script.playerLoaded);
         //competitorGrade.text = script.competitorGrade.text.ToString();
-
         //competitorRanking.text = script.competitorRanking.text.ToString();
         //competitorExperience.text = script.competitorExperience.text.ToString();
         // playerFlag.GetComponent<SpriteRenderer>().sprite = script.playerFlag.GetComponent<SpriteRenderer>().sprite;
@@ -92,5 +100,35 @@ public class PlayerHoverEffect : MonoBehaviour, IPointerExitHandler, IPointerCli
         }
         return false;
     }
+
+    private void ShowCompetitorForm(Player player)
+    {
+        if (player.goodFormEffect)
+        {
+            competitorForm.text = "GOOD";
+        }
+        else if (player.poorFormEffect)
+        {
+            competitorForm.text = "POOR";
+        }
+        else
+        {
+            competitorForm.text = "AVERAGE";
+        }
+    }
+
+    private void ShowInjuryStatus(Player player)
+    {
+        if ((player.isInjured) && (injuryInformation != null))
+        {
+            injuryInformation.gameObject.SetActive(true);
+            injuryInformation.text = "Injury: " + player.weeksOfInjury.ToString() + " weeks";
+        }
+        else
+        {
+            injuryInformation.text = "";
+        }
+    }
+
 }
 

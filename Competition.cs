@@ -220,7 +220,7 @@ public class Competition : MonoBehaviour
         firstD6 = Random.Range(1, 7);
         secondD6 = Random.Range(1, 7);
         thirdD6 = Random.Range(1, 7);
-        //firstD6 = 3; secondD6 = 3; thirdD6 = 6;
+        //firstD6 = 1; secondD6 = 1; thirdD6 = 1;
         competitionRoll = firstD6 + secondD6;
         pointsSystem.AddTemporaryPoints(competitionRoll * thirdD6);
         if (((outsiders.Count > 0) || (underdogs.Count > 0)) && (firstD6 + secondD6 + thirdD6 != 18))
@@ -672,7 +672,7 @@ public class Competition : MonoBehaviour
                 // GetComponent<PlayerDataManager>().SavePlayerData();
                 string key = player.GetKey();
                 PlayerPrefs.SetInt(key, player.worldCupPoints);
-               // PlayerPrefs.SetInt(key, player.worldCupPlace);
+                // PlayerPrefs.SetInt(key, player.worldCupPlace);
             }
             //worldCupList.GetComponent<ObjectManager>().MoveToCenter();
             PlayerPrefs.Save();
@@ -690,7 +690,7 @@ public class Competition : MonoBehaviour
                 if (PlayerPrefs.HasKey(key)) // Sprawdza, czy istnieje zapisane dane dla tego zawodnika
                 {
                     competitor.worldCupPoints = PlayerPrefs.GetInt(key);
-                  //  competitor.worldCupPlace = PlayerPrefs.GetInt(key);
+                    //  competitor.worldCupPlace = PlayerPrefs.GetInt(key);
                 }
             }
         }

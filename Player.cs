@@ -1,25 +1,23 @@
-using System.Diagnostics.Contracts;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 
 public enum grade
 {
-   X=6, A=5, B=4, C=3, D=2, E=1, F=0
+    X = 6, A = 5, B = 4, C = 3, D = 2, E = 1, F = 0
 }
 public enum startingGrade
 {
-    X=6, A=5, B=4, C=3, D=2, E=1, F=0
+    X = 6, A = 5, B = 4, C = 3, D = 2, E = 1, F = 0
 }
 
 [System.Serializable]
-public class Player: MonoBehaviour
+public class Player : MonoBehaviour
 {
     public string secondName { get; set; }
     public string surname { get; set; }
     public int ranking { get; set; }
     public char grade { get; set; }
-    public char startingGrade { get; set; } 
+    public char startingGrade { get; set; }
     public int experience { get; set; }
     public string nationality { get; set; }
     public int averagePerformance { get; set; }
@@ -45,8 +43,10 @@ public class Player: MonoBehaviour
     public bool goodFormEffect { get; set; }
     public bool poorFormEffect { get; set; }
     public bool homeFactor = false;
-    public int praisesByCommentator { get; set; } = 0; 
+    public int praisesByCommentator { get; set; } = 0;
     public PlayerState myState;
+    public int weeksOfInjury = 0;
+    public bool isInjured = false;
 
     public enum PlayerState
     {
@@ -130,7 +130,7 @@ public class Player: MonoBehaviour
         else if (currentRun == 2)
         {
             secondRunModifiers += modifier;
-           // Debug.Log(modifier + " pts added.");
+            // Debug.Log(modifier + " pts added.");
         }
     }
     public float CalculateActualRun(int currentRun)
@@ -159,32 +159,32 @@ public class Player: MonoBehaviour
         {
             return firstRunModifiers;
         }
-        else if (currentRun== 2)
+        else if (currentRun == 2)
         {
             return secondRunModifiers;
         }
-        else { return 0; }  
+        else { return 0; }
     }
 
     public float CalculateFinal()
     {
         finalPerformance = firstRunPoints + secondRunPoints; // + Random.Range(0.00f, 1.00f);
-        //finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
-        
+                                                             //finalPerformance += Random.Range(0.00f, 1.00f); // Random value to break ties
+
         return finalPerformance;
     }
 
 
     public void GoodFormEffect()
     {
-        if ((this.grade != 'X') &&(this.grade != 'A') && (!poorFormEffect))
+        if ((this.grade != 'X') && (this.grade != 'A') && (!poorFormEffect))
         {
             grade--;
             ranking -= 5;
             if (ranking < 1)
             {
                 ranking = 1;
-            }   
+            }
             goodFormEffect = true;
             Debug.Log("Good form!" + " New ranking: " + ranking);
         }
@@ -198,14 +198,14 @@ public class Player: MonoBehaviour
     }
     public void PoorFormEffect()
     {
-        if ((this.grade != 'F') && (this.grade !='X') && (!goodFormEffect))
+        if ((this.grade != 'F') && (this.grade != 'X') && (!goodFormEffect))
         {
             grade++;
             ranking += 5;
             poorFormEffect = true;
             Debug.Log("Poor form!" + " New ranking: " + ranking);
         }
-        else if ((this.grade=='X') && (!goodFormEffect))
+        else if ((this.grade == 'X') && (!goodFormEffect))
         {
             this.grade = 'B';
             ranking += 5;
@@ -239,7 +239,7 @@ public class Player: MonoBehaviour
            : FindObjectOfType<Gamemanager>().bestTimeInSec * 2;//bestOverallTime; //;//*(timeModifier); // Real best time in secs. What if 2 runs?
         // Assume that 1 point = 1/100 sec
         float realPerformance = (!typeOfPoints.Contains("finalPoints")) ? points / 80.00f
-        :  points / 160.00f;// 80 pts to miara najlepszego wystêpu w jednej serii
+        : points / 160.00f;// 80 pts to miara najlepszego wystêpu w jednej serii
         float differenceInSeconds = realTime - (realTime * realPerformance);
         totalSeconds = realTime + (differenceInSeconds * 0.0875f); // or 0.114
         int minutes = (int)totalSeconds / 60;
@@ -259,33 +259,34 @@ public class Player: MonoBehaviour
         int seconds = (int)totalDifference % 60;
         int hundredths = Mathf.RoundToInt((totalDifference - Mathf.Floor(totalDifference)) * 100);
 
-        if (hundredths ==100) // FIX +0.100 bug, SHOULD BE: +1.00, +1.100 should be +2.00
+        if (hundredths == 100) // FIX +0.100 bug, SHOULD BE: +1.00, +1.100 should be +2.00
         {
             hundredths = 0;
             seconds += 1;
         }
-        string formattedTime = (minutes > 0)  ?
+        string formattedTime = (minutes > 0) ?
 
         string.Format("{0:00}:{1:00}.{2:00}", minutes, seconds, hundredths) :
-        (difference<0) ?
-        string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths):
+        (difference < 0) ?
+        string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths) :
         string.Format("+" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
 
-         if (difference < 0) {
-           string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
+        if (difference < 0)
+        {
+            string.Format("-" + "{0:00}.{1:00}", seconds.ToString(), hundredths);
         }
-         
-         
+
+
         return formattedTime;
     }
 
     public string ConvertPointsToDistance(float points, string typeOfPoints)
     {
         // 80 pts = K point in ski jumping // 10th competitor has 40 points and 93,5% of winner distance
-        float kPoint = 80.0f; 
+        float kPoint = 80.0f;
         Competition competition;
         competition = Competition.Instance;
-        float jumpDistance = (kPoint) + (points-80.0f / 100f); //+/- 0.5 m in ski jumping
+        float jumpDistance = (kPoint) + (points - 80.0f / 100f); //+/- 0.5 m in ski jumping
 
 
 

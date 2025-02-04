@@ -11,12 +11,14 @@ public class CompetitionSummary : MonoBehaviour
     private bool decorationSpawned = false;
     [SerializeField] GameObject ExitButton;
     [SerializeField] public GameObject NextWorldCupButton;
+    [SerializeField] public GameObject WorldCupSummaryButton;
     [SerializeField] private GameObject DecorationPanel;
     [SerializeField] private GameObject PointsPanel;
     [SerializeField] private GameObject AchievementsPanel;
     [SerializeField] TMP_Text gamePointsScored;
     [SerializeField] TMP_Text newRecordIndicator;
     [SerializeField] TMP_Text diceCombosInfo;
+    private GameObject spawnedDecorationPanel;
 
 
     void Start()
@@ -26,6 +28,7 @@ public class CompetitionSummary : MonoBehaviour
         competition = Competition.Instance;
         achievements = AchievementsManager.Instance;
         gamemanager = FindObjectOfType<Gamemanager>();
+        spawnedDecorationPanel = new GameObject();
     }
 
     void Update()
@@ -40,6 +43,7 @@ public class CompetitionSummary : MonoBehaviour
             // TODO: FINAL COMMENTS appear
             //ChangeState(GameState.SummaryPhase);
             GameObject newObject = Instantiate(DecorationPanel);
+            spawnedDecorationPanel = newObject;
             newObject.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
             newObject.transform.localPosition = new Vector3(7.17f, 122.00f, 0.00f);
             decorationSpawned = true;
@@ -63,7 +67,7 @@ public class CompetitionSummary : MonoBehaviour
 
         ShowGainedCombos();
         ExitButton.SetActive(true);
-        if ((Gamemanager.actualWorldCupCompetition!=null) &&(gamemanager.IsNextWorldCupEventPossible()))
+        if ((Gamemanager.actualWorldCupCompetition != null) && (gamemanager.IsNextWorldCupEventPossible()))
         {
             NextWorldCupButton.SetActive(true);
         }
@@ -73,6 +77,7 @@ public class CompetitionSummary : MonoBehaviour
         }
         achievements.CheckAchievements();
         AchievementsPanel.SetActive(true);
+        CheckWorldCupFinalDecoration();
 
     }
 
@@ -91,6 +96,24 @@ public class CompetitionSummary : MonoBehaviour
         {
             diceCombosInfo.text += ". HAT TRICKS: " + achievements.actualCompetitionHatTricks.ToString();
         }
+    }
+
+    public void CheckWorldCupFinalDecoration()
+    {
+        if ((Gamemanager.actualWorldCupCompetition != null) && (!NextWorldCupButton.activeInHierarchy))
+        {
+            // summon button Decorate WC SUMMARY
+            WorldCupSummaryButton.SetActive(true);
+            //Destroy(DecorationPanel.gameObject);
+
+        }
+    }
+
+    public void DoDecorationButton()
+    {
+        //FindObjectOfType < "Decoration_panel" > ().first;
+        FindObjectOfType<Decoration>().WorldCupFinalPodium();
+        WorldCupSummaryButton.SetActive(false);
     }
 
 

@@ -27,7 +27,8 @@ public class PlayerDisplay : MonoBehaviour
     [SerializeField] GameObject formIndicator;
     [SerializeField] GameObject arrowIndicator;
     [SerializeField] public GameObject playerFlag;
-    [SerializeField] GameObject headGraphic;
+    [SerializeField] public GameObject headGraphic;
+    [SerializeField] public GameObject injurySymbol;
     [SerializeField] Sprite[] formIndicators;
     [SerializeField] Sprite[] headImages;
     //public TextMeshProUGUI nationalityText; 
@@ -107,6 +108,7 @@ public class PlayerDisplay : MonoBehaviour
             ShowFlag(player);
             competitorName.text = player.surname.ToString() + " " + boldSecondName.ToUpper() + "  " + player.nationality;
             HighlightCurrentCompetitor(player);
+            ShowInjuryStatus(player);
         }
 
         else if (gameObject.CompareTag("worldcup_list"))
@@ -280,6 +282,18 @@ public class PlayerDisplay : MonoBehaviour
         if (competitorStatus != null)
         {
             competitorStatus.text = player.myState.ToString();
+        }
+    }
+
+    public void ShowInjuryStatus(Player player)
+    {
+        if (player.isInjured)
+        {
+            injurySymbol.SetActive(true);
+        }
+        else
+        {
+            injurySymbol.SetActive(false);
         }
     }
 

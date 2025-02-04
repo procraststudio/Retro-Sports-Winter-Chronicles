@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-public static class SoundManager 
+public static class SoundManager
 {
 
     public enum Sound
@@ -20,7 +17,13 @@ public static class SoundManager
         AudioSource audioSource = soundGameObject.AddComponent<AudioSource>();
         //audioSource.PlayOneShot(soundClips[numberOfSound]);
         audioSource.PlayOneShot(clip);
+        Object.Destroy(soundGameObject, clip.length);
 
+    }
+
+    public static void PlaySoundOnHover(AudioClip clip)
+    {
+        //
     }
 
     //public static void PlayRandomSound(AudioClip[] sounds)
