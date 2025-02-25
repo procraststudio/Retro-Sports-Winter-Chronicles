@@ -214,13 +214,13 @@ public class ShortEvent : MonoBehaviour
             if (competition.players.Count < 8)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, 5);
-                descriptionText.text += "CLEARED RUN! ACCELERATION! +5 points. ";
+                descriptionText.text += "CLEARED RUN! ACCELERATION! POINTS GAINED. ";
             }
 
             else
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, -5);
-                descriptionText.text += "POOR STRATEGY! -5 points. ";
+                descriptionText.text += "POOR STRATEGY! POINTS LOST. ";
             }
         }
     }
@@ -251,12 +251,12 @@ public class ShortEvent : MonoBehaviour
         else if (eventRoll % 2 == 0)
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll * 2);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED!" + " +" + (eventRoll * 2) + " pts. ";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... GREAT SPEED! POINTS GAINED.";
         }
         else
         {
             actualCompetitor.AddRunModifier(competition.currentRun, -eventRoll * 2);
-            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD..." + " " + (-eventRoll * 2) + " pts. ";
+            descriptionText.text += actualCompetitor.secondName + " TAKES RISK... NO GOOD... POINTS LOST.";
         }
     }
 
@@ -268,12 +268,12 @@ public class ShortEvent : MonoBehaviour
             if (eventRoll == 1)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, -6);
-                descriptionText.text += "HORRIBLE MISTAKE by " + actualCompetitor.secondName + ".  -6pts. ";
+                descriptionText.text += "HORRIBLE MISTAKE by " + actualCompetitor.secondName + ". POINTS LOST";
             }
             else if (eventRoll == 6)
             {
                 actualCompetitor.AddRunModifier(competition.currentRun, 6);
-                descriptionText.text += "GREAT SPEED of " + actualCompetitor.secondName + "!" + "  +6pts. ";
+                descriptionText.text += "GREAT SPEED of " + actualCompetitor.secondName + "! POINTS GAINED";
             }
             else
             {
@@ -283,7 +283,7 @@ public class ShortEvent : MonoBehaviour
         else if (weather.snowCondition.Contains("hard"))
         {
             actualCompetitor.AddRunModifier(competition.currentRun, eventRoll);
-            descriptionText.text += "GREAT ROUTE CONDITION. " + "  +" + eventRoll + " points";
+            descriptionText.text += "GREAT ROUTE CONDITION. POINTS GAINED";
         }
 
         else if (gamemanager.competitionName.Contains("Slalom"))

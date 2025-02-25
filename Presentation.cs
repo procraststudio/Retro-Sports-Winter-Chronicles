@@ -114,6 +114,7 @@ public class Presentation : MonoBehaviour
         {
             // competition.myState = GameState.CompetitionPhase;
             competition.ChangeState(GameState.CompetitionPhase);
+            competition.runButton.SetActive(true);
         }
     }
 
@@ -133,49 +134,49 @@ public class Presentation : MonoBehaviour
         }
     }
 
-        public void showComments(int player)
+    public void showComments(int player)
+    {
+        //TextAsset textAsset = Resources.Load<TextAsset>(textPath);
+        if (unusedComments.Count > 0)
         {
-            //TextAsset textAsset = Resources.Load<TextAsset>(textPath);
-            if (unusedComments.Count > 0)
-            {
-                int randomIndex = Random.Range(0, unusedComments.Count);
-                string randomLine = unusedComments[randomIndex];
-                descriptionText[player].text = randomLine;
-                unusedComments.RemoveAt(randomIndex);
-            }
-            else
-            {
-                Debug.Log("No more unused lines.");
-            }
+            int randomIndex = Random.Range(0, unusedComments.Count);
+            string randomLine = unusedComments[randomIndex];
+            descriptionText[player].text = randomLine;
+            unusedComments.RemoveAt(randomIndex);
         }
-        private void LoadFileLines()
+        else
         {
-            TextAsset textAsset = Resources.Load<TextAsset>(textPath);
-            if (textAsset != null)
-            {
-                string[] lines = textAsset.text.Split('\n');
-                foreach (string line in lines)
-                {
-                    if (!string.IsNullOrEmpty(line.Trim()))
-                    {
-                        unusedComments.Add(line.Trim());
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogError("Text file not found.");
-            }
-        }
-
-        void CheckEndPhase()
-        {
-            if (favouritesGenerated)
-            {
-                presentationPhaseOver = true;
-
-            }
+            Debug.Log("No more unused lines.");
         }
     }
+    private void LoadFileLines()
+    {
+        TextAsset textAsset = Resources.Load<TextAsset>(textPath);
+        if (textAsset != null)
+        {
+            string[] lines = textAsset.text.Split('\n');
+            foreach (string line in lines)
+            {
+                if (!string.IsNullOrEmpty(line.Trim()))
+                {
+                    unusedComments.Add(line.Trim());
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("Text file not found.");
+        }
+    }
+
+    void CheckEndPhase()
+    {
+        if (favouritesGenerated)
+        {
+            presentationPhaseOver = true;
+
+        }
+    }
+}
 
 

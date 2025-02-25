@@ -16,19 +16,16 @@ public class Weather : MonoBehaviour
     public bool temperatureRolled;
     private float pause = 1.00f;
     public TMP_Text buttonText;
-    [SerializeField] Sprite[] diceSides;
     [SerializeField] TMP_Text[] temperatureText;
     [SerializeField] TMP_Text snowConditionText;
     [SerializeField] TMP_Text precipitationText;
     [SerializeField] TMP_Text windConditionText;
-    [SerializeField] GameObject[] weatherCharts;
     [SerializeField] TMP_Text[] descriptionTexts;
-    [SerializeField] GameObject precipitationImage;
     [SerializeField] Sprite[] precipitationSprites;
-    [SerializeField] GameObject[] chartIndicator;
     [SerializeField] GameObject[] weatherSections;
     [SerializeField] GameObject setupButton;
     [SerializeField] TMP_Text surprisesModifierText;
+    [SerializeField] TMP_Text surpriseChanceText;
     public static string precipitation { get; set; }
     public string snowCondition { get; set; }
     public static string windCondition { get; set; }
@@ -39,11 +36,15 @@ public class Weather : MonoBehaviour
     Competition competition;
     public float weatherModifier; //affects probability of surprises 
     VenueLoader venueLoader;
+    public GameObject snowParticlesSystem;
+    public GameObject rainParticlesSystem;
 
 
     public void Start()
     {
         competition = Competition.Instance;
+        snowParticlesSystem.SetActive(false);
+        rainParticlesSystem.SetActive(false);
         diceIndex = 0;
         precipitation = string.Empty;
         temperatureRolled = false;
@@ -134,24 +135,26 @@ public class Weather : MonoBehaviour
     private void ShowSurpriseChance()
     {
         float surpriseModifier = FindObjectOfType<Gamemanager>().surprisesModifier * weatherModifier;
-
+        string surpriseText = "";
         weatherSections[3].SetActive(true);
         if (surpriseModifier <= 1.1)
         {
-            surprisesModifierText.text = "LOW CHANCE".ToString();
+            surpriseText = "LOW";
         }
         else if ((surpriseModifier > 1.1) && (surpriseModifier < 1.5))
         {
-            surprisesModifierText.text = "NORMAL CHANCE".ToString();
+            surpriseText = "NORMAL";
         }
         else if ((surpriseModifier >= 1.5) && (surpriseModifier < 2.00))
         {
-            surprisesModifierText.text = "HIGH CHANCE".ToString();
+            surpriseText = "HIGH";
         }
         else if (surpriseModifier >= 2.0)
         {
-            surprisesModifierText.text = "VERY HIGH CHANCE".ToString();
+            surpriseText = "VERY HIGH";
         }
+        surprisesModifierText.text = surpriseText.ToString();
+        surpriseChanceText.text = surpriseText.ToString();
         Debug.Log("SURPRISE MOD: " + surpriseModifier.ToString());
     }
 
@@ -168,7 +171,6 @@ public class Weather : MonoBehaviour
             snowCondition = "hard";//HARD SHOW }
         }
         snowConditionText.text = snowCondition.ToUpper().ToString();
-
         descriptionTexts[1].text = snowCondition.ToUpper().ToString();
         // weatherCharts[2].SetActive(true);
         Debug.Log("WEATHER MODIFIER: " + weatherModifier);
@@ -194,24 +196,23 @@ public class Weather : MonoBehaviour
         int snowDays = venueLoader.actualVenue.averageSnowingDays;
         int rainDays = venueLoader.actualVenue.averageRainingDays;
 
-        int chance = Random.Range(1, 51);
+        //int chance = Random.Range(1, 51);
+        int chance = Random.Range(1, 31);
         Debug.Log("WEATHER ROLL: " + chance);
         if (chance <= snowDays)
         {
             precipitation = "snowing"; snowConditionModifier -= 2; weatherModifier *= 1.30f;
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0];// break;//SNOWING
         }
         else if ((chance <= (snowDays + rainDays)) && (chance > snowDays))
         {
             precipitation = "raining"; snowConditionModifier += 1; weatherModifier *= 1.50f;
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1];// break;//RAINING
         }
         else
         {
             precipitation = "none";
             //ADD "clear sky" image
         }
-
+        ActivatePrecipitationParticles();
         descriptionTexts[2].text = precipitation.ToUpper().ToString();
         precipitationText.text = precipitation.ToUpper().ToString();
         CheckWindCondition(chance);
@@ -281,7 +282,7 @@ public class Weather : MonoBehaviour
 
     public string CheckPrecipitationChange(float chance)
     {
-        string weatherChangeInfo = ">>>WEATHER DIDN'T CHANGE ";
+        string weatherChangeInfo = ">>>NO CHANGE IN WEATHER. ";
         if (chance > 1.00f)
         {
             if ((precipitation.Contains("snowing")) || (precipitation.Contains("raining")))
@@ -356,15 +357,7 @@ public class Weather : MonoBehaviour
     }
     public void UpdatePrecipitation()
     {
-        if (precipitation == "snowing")
-        {
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[0];
-        }
-
-        else if (precipitation == "raining")
-        {
-            precipitationImage.GetComponent<SpriteRenderer>().sprite = precipitationSprites[1];// break;//RAINING
-        }
+        ActivatePrecipitationParticles();
         descriptionTexts[2].text = precipitation.ToUpper().ToString();
         precipitationText.text = precipitation.ToUpper().ToString();
     }
@@ -389,13 +382,25 @@ public class Weather : MonoBehaviour
         var shortEvent = FindObjectOfType<ShortEvent>();
         shortEvent.eventObject.SetActive(true);
         // shortEvent.eventTitle.text = "CONDITIONS CHANGE";
-
         shortEvent.descriptionText.text += CheckPrecipitationChange(probabilityToChange);
         shortEvent.descriptionText.text += CheckWindChange();
         //shortEvent.descriptionText.text += "CONDITIONS CHANGE: " + probabilityToChange.ToString("F2");
         shortEvent.eventResolved = true;
 
     }
+
+    public void ActivatePrecipitationParticles()
+    {
+        if (precipitation == "snowing")
+        {
+            snowParticlesSystem.SetActive(true);
+        }
+        else if (precipitation == "raining")
+        {
+            rainParticlesSystem.SetActive(true);
+        }
+    }
+
 
 }
 

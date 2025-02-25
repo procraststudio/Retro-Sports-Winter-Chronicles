@@ -52,6 +52,7 @@ public class Utilities : MonoBehaviour
     public void ResetRecords()
     {
         PlayerPrefs.SetInt("competitionRecord", 0);
+        Debug.Log("RECORDS CLEARED");
 
     }
     public void DeleteAllPlayerPrefs()
@@ -76,8 +77,8 @@ public class Utilities : MonoBehaviour
             if (PlayerPrefs.HasKey(key))
             {
                 //PlayerPrefs.DeleteKey(key);
-                PlayerPrefs.SetInt(key, competitor.worldCupPoints=0);
-                PlayerPrefs.SetInt(key, competitor.worldCupPlace=0);  
+                PlayerPrefs.SetInt(key, competitor.worldCupPoints = 0);
+                PlayerPrefs.SetInt(key, competitor.worldCupPlace = 0);
                 //PlayerPrefs.SetInt(key, 0);
                 Debug.Log("WC pts/places deleted");
             }
@@ -105,7 +106,7 @@ public class Utilities : MonoBehaviour
             Debug.Log("QUICK SIM OFF");
         }
 
-        
+
     }
 
 

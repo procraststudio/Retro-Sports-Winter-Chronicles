@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -13,6 +14,7 @@ public class GameStart : MonoBehaviour
     [SerializeField] GameObject WorldCupPanel;
     [SerializeField] GameObject WorldCupDisciplinesPanel;
     [SerializeField] GameObject backgroundPanel;
+    [SerializeField] GameObject achievementsPanel;
     public RectTransform rectTransform;
     public List<GameObject> winterGames = new List<GameObject>();
     public bool winterOlympicsMode = false;
@@ -23,6 +25,7 @@ public class GameStart : MonoBehaviour
     public static CompetitionType currentCompetition;
     public static WorldCupCompetition currentWorldCup;
     public gameModes actualGameMode;
+    public TextMeshProUGUI actualRecord;
 
 
     public enum gameModes
@@ -42,6 +45,7 @@ public class GameStart : MonoBehaviour
         WorldCupDisciplinesPanel.SetActive(false);
         WinterGamesPanel.SetActive(false);
         WorldCupPanel.SetActive(false);
+        achievementsPanel.SetActive(false);
         actualGameMode = gameModes.noMode;
     }
 
@@ -118,6 +122,11 @@ public class GameStart : MonoBehaviour
         currentCompetition = currentWorldCup.worldCupEvents[0];
         SceneManager.LoadScene(1);
     }
+    public void ShowAchievements()
+    {
+        achievementsPanel.SetActive(true);
+        actualRecord.text = PlayerPrefs.GetInt("competitionRecord").ToString();
+    }
 
     public void BackToMenu()
     {
@@ -126,6 +135,7 @@ public class GameStart : MonoBehaviour
         DisciplinesPanel.SetActive(false);
         WinterGamesPanel.SetActive(false);
         WorldCupDisciplinesPanel.SetActive(false);
+        achievementsPanel.SetActive(false);
         backgroundPanel.SetActive(false);
         actualGameMode = gameModes.noMode;
 

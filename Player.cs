@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
     public string secondName { get; set; }
     public string surname { get; set; }
     public int ranking { get; set; }
+    public int startingRanking { get; set; }
     public char grade { get; set; }
     public char startingGrade { get; set; }
     public int experience { get; set; }
@@ -62,6 +63,7 @@ public class Player : MonoBehaviour
     public Player(string surname, string name, int ranking, char grade, int experience, string nationality)
     {
         this.ranking = ranking;
+        this.startingRanking = ranking;
         this.surname = surname;
         this.secondName = name;
         this.experience = experience;

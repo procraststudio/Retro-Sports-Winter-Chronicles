@@ -1,3 +1,5 @@
+using DG.Tweening;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,6 +21,7 @@ public class CompetitionSummary : MonoBehaviour
     [SerializeField] TMP_Text newRecordIndicator;
     [SerializeField] TMP_Text diceCombosInfo;
     private GameObject spawnedDecorationPanel;
+    public ScoreCounter scoreCounter;
 
 
     void Start()
@@ -33,7 +36,7 @@ public class CompetitionSummary : MonoBehaviour
 
     void Update()
     {
-        // ShowGainedPoints();
+
     }
 
     public void DoDecoration()
@@ -54,17 +57,10 @@ public class CompetitionSummary : MonoBehaviour
     public void ShowGainedPoints()
     {
         PointsPanel.SetActive(true);
-        gamePointsScored.text = pointsSystem.actualCompetitionGamePoints.ToString();
-        if (pointsSystem.CheckRecords() == true)
-        {
-            newRecordIndicator.text = "NEW RECORD!";
-            SoundManager.PlayOneSound("dice_combo");
-        }
-        else
-        {
-            newRecordIndicator.text = "";
-        }
-
+        //gamePointsScored.text = pointsSystem.actualCompetitionGamePoints.ToString();
+        // ADD SPECIAL EFFECT
+        PointsPanel.GetComponent<ScoreCounter>().AddScore(pointsSystem.actualCompetitionGamePoints);
+        StartCoroutine("CheckRecords");
         ShowGainedCombos();
         ExitButton.SetActive(true);
         if ((Gamemanager.actualWorldCupCompetition != null) && (gamemanager.IsNextWorldCupEventPossible()))
@@ -81,20 +77,47 @@ public class CompetitionSummary : MonoBehaviour
 
     }
 
+    private IEnumerator CheckRecords()
+    {
+        yield return new WaitForSeconds(3f);
+        if (pointsSystem.CheckRecords() == true)
+        {
+            newRecordIndicator.text = "NEW RECORD!";
+            SoundManager.PlayOneSound("dice_combo");
+            newRecordIndicator.GetComponentInParent<RectTransform>().DOShakePosition(1f, 20.0f, 3, 4f, true, true);
+            StartCoroutine("TextChangingColor");
+        }
+        else
+        {
+            newRecordIndicator.text = "";
+        }
+    }
+
+    private IEnumerator TextChangingColor()
+    {
+        while (newRecordIndicator.text != null)
+        {
+            yield return new WaitForSeconds(0.5f);
+            newRecordIndicator.GetComponent<TMP_Text>().DOBlendableColor(Color.yellow, 0.1f);
+            yield return new WaitForSeconds(0.5f);
+            newRecordIndicator.GetComponent<TMP_Text>().DOBlendableColor(Color.white, 0.1f);
+        }
+    }
+
     public void ShowGainedCombos()
     {
-        diceCombosInfo.text += "DOUBLES: " + achievements.actualCompetitionDoubles.ToString();
+        diceCombosInfo.text += "DOUBLES: " + "<color=white>" + achievements.actualCompetitionDoubles.ToString() + "<color=white>";
         if (achievements.actualCompetitionTriples > 0)
         {
-            diceCombosInfo.text += ". TRIPLES: " + achievements.actualCompetitionTriples.ToString();
+            diceCombosInfo.text += ". TRIPLES: " + "<color=yellow>" + achievements.actualCompetitionTriples.ToString() + "<color=yellow>";
         }
         if (achievements.actualCompetitionStraights > 0)
         {
-            diceCombosInfo.text += ". STRAIGHTS: " + achievements.actualCompetitionStraights.ToString();
+            diceCombosInfo.text += ". STRAIGHTS: " + "<color=blue>" + achievements.actualCompetitionStraights.ToString() + "<color=blue>";
         }
         if (achievements.actualCompetitionHatTricks > 0)
         {
-            diceCombosInfo.text += ". HAT TRICKS: " + achievements.actualCompetitionHatTricks.ToString();
+            diceCombosInfo.text += ". HAT TRICKS: " + "<color=green>" + achievements.actualCompetitionHatTricks.ToString() + "<color=green>";
         }
     }
 
@@ -105,7 +128,6 @@ public class CompetitionSummary : MonoBehaviour
             // summon button Decorate WC SUMMARY
             WorldCupSummaryButton.SetActive(true);
             //Destroy(DecorationPanel.gameObject);
-
         }
     }
 

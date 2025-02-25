@@ -34,7 +34,7 @@ public class Dice : MonoBehaviour
     public int diceIndex;
     public int combosActivated = 0;
     RunDescription description;
-    private float pause = 0.18f;
+    private float pause = 0.40f;   //0.18f;
     private float animatePause = 0.40f;
     private bool diceChanging;
     public int currentCompetitorImage;
@@ -95,15 +95,24 @@ public class Dice : MonoBehaviour
         // StartCoroutine("animateEffect");
         // ShowBackgroundImage(sectorNumber);
         panelActivate(sectorNumber);
+        competition.runButton.SetActive(false);
         //StartCoroutine("ChangingDiceFacesEffect");
+        //firstDieImages[diceIndex].GetComponentInParent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, 180f), 0.48f, RotateMode.Fast);
         firstDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.firstD6 - 1];
+        DiceRollingEffect(1);
+        // firstDieImages[diceIndex].GetComponentInParent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, 180f), 0.40f, RotateMode.Fast);
         yield return new WaitForSeconds(pause);
         secondDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.secondD6 + 5];
+        DiceRollingEffect(2);
+        //secondDieImages[diceIndex].GetComponent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, -180f), 0.40f, RotateMode.Fast);
         yield return new WaitForSeconds(pause);
         thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().sprite = diceSides[competition.thirdD6 + 11];
+        DiceRollingEffect(3);
         diceChanging = false;
         CheckDiceCombos();
         diceIndex++;
+        yield return new WaitForSeconds(pause);
+        competition.runButton.SetActive(true);
     }
 
     public void ResetDice()
@@ -301,11 +310,28 @@ public class Dice : MonoBehaviour
                 secondDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 thirdDieImages[diceIndex].GetComponent<SpriteRenderer>().DOColor(Color.green, 0.5f);
                 break;
-            //case "homefactor":
-            //    SpawnComboInfo("HOME FACTOR"); break;
+                //case "homefactor":
+                //    SpawnComboInfo("HOME FACTOR"); break;
 
         }
     }
+    public void DiceRollingEffect(int diceNumber)
+    {
+        if (diceNumber == 1)
+        {
+            firstDieImages[diceIndex].GetComponentInParent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, 720f), 0.35f, RotateMode.FastBeyond360);
+        }
+        else if (diceNumber == 2)
+        {
+            secondDieImages[diceIndex].GetComponentInParent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, -720f), 0.35f, RotateMode.FastBeyond360);
+        }
+        else if (diceNumber == 3)
+        {
+            thirdDieImages[diceIndex].GetComponentInParent<RectTransform>().DOLocalRotate(new Vector3(0f, 0f, 720f), 0.35f, RotateMode.FastBeyond360);
+        }
+
+    }
+
 
     public void SpawnComboInfo(string comboType)
     {
@@ -338,7 +364,7 @@ public class Dice : MonoBehaviour
 
         for (int i = 0; i < notes.Count; i++)
         {
-            if ((i==0) || (i==notes.Count-1))
+            if ((i == 0) || (i == notes.Count - 1))
             {
                 judgesNotes[i].text = "<color=grey>" + notes[i].ToString("F1");
             }

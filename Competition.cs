@@ -719,7 +719,7 @@ public class Competition : MonoBehaviour
             case GameState.CompetitionPhase:
                 presentationPanel.SetActive(false);
                 endOfFirstRunList.SetActive(false);
-                runButton.SetActive(true);
+                //runButton.SetActive(true);
                 dicePanel.SetActive(true);
                 scrollViewPanel.SetActive(true); break;
 
